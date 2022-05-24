@@ -1,0 +1,39 @@
+Package: rema
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: person("Jane", "Sullivan", , "jane.sullivan@noaa.gov", role = c("aut", "cre"))
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: A generalized framework to fit the "Random Effects (RE) model", 
+    a state-space random walk model developed at the Alaska Fisheries Science 
+    Center (AFSC) for apportionment and biomass estimation. REMA is a multivariate 
+    extension of the original single-survey, single-strata RE model that allows 
+    the use of multiple strata within a survey and an additional survey (e.g. CPUE 
+    or relative population numbers) to inform the biomass trend (Hulson et al. 2021). 
+    If multi-survey mode is turned off, REMA runs the same as the univariate (RE) 
+    and multivariate (i.e. multiple area or depth strata; REM) versions of the 
+    model. REMA was developed in Template Model Builder (TMB; Kristensen et al. 2016).
+Depends:
+    R (>= 3.6.0)
+    TMB, RcppEigen
+Imports:
+    TMB (>= 1.7.20),
+    tidyr (>= 1.1.2),
+    dplyr (>= 1.0.2),
+    ggplot2 (>= 3.3.2),
+    sessioninfo (>= 1.1.1),
+    abind (>= 1.4-5),
+    rmarkdown (>= 2.11),
+    knitr (>= 1.37),
+LinkingTo:
+    TMB, 
+    RcppEigen
+URL: TBD
+BugReports: TBD
+License: GPL-3
+LazyData: true
+VignetteBuilder: knitr
+RoxygenNote: 7.1.2
+Encoding: UTF-8
+Suggests: 
+    testthat
