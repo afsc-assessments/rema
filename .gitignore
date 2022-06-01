@@ -2,3 +2,14 @@
 .Rhistory
 .RData
 .Ruserdata
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+/src/*.so
+/src/*.o
+/src/*.dll
+inst/doc
+doc
+Meta
+*.Rproj

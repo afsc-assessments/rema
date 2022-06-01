@@ -1,6 +1,6 @@
 Package: rema
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Random effects model for estimating biomass, with option to include an additional survey index
 Version: 0.1.0
 Author: person("Jane", "Sullivan", , "jane.sullivan@noaa.gov", role = c("aut", "cre"))
 Maintainer: The package maintainer <yourself@somewhere.net>
@@ -15,7 +15,6 @@ Description: A generalized framework to fit the "Random Effects (RE) model",
     model. REMA was developed in Template Model Builder (TMB; Kristensen et al. 2016).
 Depends:
     R (>= 3.6.0)
-    TMB, RcppEigen
 Imports:
     TMB (>= 1.7.20),
     tidyr (>= 1.1.2),
@@ -24,16 +23,16 @@ Imports:
     sessioninfo (>= 1.1.1),
     abind (>= 1.4-5),
     rmarkdown (>= 2.11),
-    knitr (>= 1.37),
+    knitr (>= 1.37)
 LinkingTo:
-    TMB, 
-    RcppEigen
+    TMB (>= 1.8.1),
+    RcppEigen (>= 0.3.3.9.1)
 URL: TBD
 BugReports: TBD
 License: GPL-3
 LazyData: true
 VignetteBuilder: knitr
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
 Encoding: UTF-8
 Suggests: 
     testthat
