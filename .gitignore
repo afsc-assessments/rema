@@ -9,6 +9,8 @@
 /src/*.so
 /src/*.o
 /src/*.dll
+*.o
+*.dll
 inst/doc
 doc
 Meta
