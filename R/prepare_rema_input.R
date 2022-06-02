@@ -41,9 +41,9 @@
 #'     prior on \code{log_PE} include the following:
 #'     \describe{
 #'         \item{"none"}{(default) no penalty or prior used}
-#'         \item{"wt"}{a fixed multiplier on the PE component of the negative
-#'         log likelihood. For example, \code{nll = wt * nll}, where \code{wt = 1.5}
-#'         is specified as a single value in the \code{penalty_values} argument}
+#'         \item{"wt"}{a multiplier on the PE and random effects component of
+#'         the negative log likelihood. For example, nll = wt * nll, where wt =
+#'         1.5 is specified as a single value in the penalty_values argument}
 #'        \item{"squared_penalty"}{As implemented in an earlier version of the
 #'        RE.tpl, this penalty prevents the PE from shrinking to zero. For
 #'        example, \code{nll = nll + (log_PE + squared_penalty)^2}, where
@@ -55,10 +55,12 @@
 #'        \code{penalty_values} argument}
 #'        }
 #'     }
-#'     \item{penalty_values}{user-defined values for the \code{penalty_options}. Each penalty type will is entered as follows:
+#'     \item{penalty_values}{user-defined values for the \code{penalty_options}.
+#'     Each penalty type will is entered as follows:
 #'     \describe{
 #'         \item{"none"}{(default) NULL For example, \code{penalty_values = NULL}}
-#'         \item{"wt"}{a single numeric value. For example, \code{penalty_values = 1.5}}
+#'         \item{"wt"}{a single numeric value. For example,
+#'         \code{penalty_values = 1.5}}
 #'         \item{"squared_penalty"}{a vector of numeric values with length =
 #'         number of estimated PE parameters. For example, if three PE
 #'         parameters are being estimated and the user wants them to have the
@@ -115,7 +117,7 @@
 #'     used to inform the biomass survey trend.}
 #'     \item{$initial_pars}{A vector of initial values for \code{log_q}. The
 #'     default initial value for each log_q is 1.}
-#'     \item{$fix_pars}{ Option to fix q parameters, where
+#'     \item{$fix_pars}{Option to fix q parameters, where
 #'     the user specifies the index value of the q parameter they would like to
 #'     fix at the initial value. For example, if there are three CPUE survey
 #'     strata, and the user wants to fix the \code{log_q} for the second
@@ -125,9 +127,6 @@
 #'     a prior on \code{log_q} include the following:
 #'      \describe{
 #'         \item{"none"}{(default) no penalty or prior used}
-#'         \item{"wt"}{a fixed multiplier on the q component of the negative log
-#'         likelihood. For example, \code{nll = wt * nll}, where \code{wt = 0.5}
-#'         is specified as a single value in the \code{penalty_values} argument}
 #'         \item{"normal_prior"}{Warning, experimental and not well-tested.
 #'         Normal prior in log space, where \code{nll = nll - dnorm(log_q,
 #'         pmu_log_q, psig_log_q, 1)} and \code{pmu_log_q} and \code{psig_log_q}
@@ -140,8 +139,6 @@
 #'     \describe{
 #'         \item{"none"}{(default) NULL For example, \code{penalty_values =
 #'         NULL}}
-#'         \item{"wt"}{a single numeric value. For example, \code{penalty_values
-#'         = 0.5}}
 #'         \item{"normal_prior"}{a vector of paired values for each q parameter,
 #'         where each vector pair is the prior mean of log_q \code{pmu_log_q}
 #'         and the associated standard deviation \code{psig_log_q}. For example,
@@ -186,6 +183,12 @@
 #' @param end_year (optional) integer value specifying the last year for
 #'   estimation in the model; defaults to the last year of data in either
 #'   \code{biomass_dat} or \code{cpue_dat}
+#' @param wt_biomass (optional) a multiplier on the biomass survey data
+#'   component of the negative log likelihood. For example, \code{nll =
+#'   wt_biomass * nll}. Defaults to \code{wt_biomass = 1}
+#' @param wt_cpue (optional) a multiplier on the CPUE survey data
+#'   component of the negative log likelihood. For example, \code{nll =
+#'   wt_cpue * nll}. Defaults to \code{wt_cpue = 1}
 #' @param PE_options (optional) customize implementation of process error (PE)
 #'   parameters, including options to share PE across biomass survey strata,
 #'   change starting values, fix parameters, and add penalties or priors (see
@@ -211,6 +214,8 @@ prepare_rema_input <- function(multi_survey = NULL,
                                cpue_dat = NULL,
                                start_year = NULL,
                                end_year = NULL,
+                               wt_biomass = NULL,
+                               wt_cpue = NULL,
                                PE_options = NULL,
                                q_options = NULL) {
   data = list()

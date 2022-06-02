@@ -10,6 +10,8 @@ prepare_rema_input(
   cpue_dat = NULL,
   start_year = NULL,
   end_year = NULL,
+  wt_biomass = NULL,
+  wt_cpue = NULL,
   PE_options = NULL,
   q_options = NULL
 )
@@ -55,6 +57,14 @@ estimation in the model; defaults to the first year of data in either
 estimation in the model; defaults to the last year of data in either
 \code{biomass_dat} or \code{cpue_dat}}
 
+\item{wt_biomass}{(optional) a multiplier on the biomass survey data
+component of the negative log likelihood. For example, \code{nll =
+wt_biomass * nll}. Defaults to \code{wt_biomass = 1}}
+
+\item{wt_cpue}{(optional) a multiplier on the CPUE survey data
+component of the negative log likelihood. For example, \code{nll =
+wt_cpue * nll}. Defaults to \code{wt_cpue = 1}}
+
 \item{PE_options}{(optional) customize implementation of process error (PE)
 parameters, including options to share PE across biomass survey strata,
 change starting values, fix parameters, and add penalties or priors (see
@@ -88,7 +98,7 @@ scaling parameter $q$, such as \code{cpue_dat} and \code{options_q} are only
 needed when \code{multi_survey = 1}.
 }
 \details{
-\code{PE_options} specifies options for process error (PE) parameters. If
+\code{PE_options} allows the user to specify options for process error (PE) parameters. If
 \code{NULL}, default PE specifications are used: one PE parameter is
 estimated for each biomass survey strata, initial values for \code{log_PE}
 are set to 1, and no penalties or priors are added. The user can modify the
@@ -119,9 +129,9 @@ default \code{PE_options} using the following list of entries:
     prior on \code{log_PE} include the following:
     \describe{
         \item{"none"}{(default) no penalty or prior used}
-        \item{"wt"}{a fixed multiplier on the PE component of the negative
-        log likelihood. For example, \code{nll = wt * nll}, where \code{wt = 1.5}
-        is specified as a single value in the \code{penalty_values} argument}
+        \item{"wt"}{a multiplier on the PE and random effects component of
+        the negative log likelihood. For example, nll = wt * nll, where wt =
+        1.5 is specified as a single value in the penalty_values argument}
        \item{"squared_penalty"}{As implemented in an earlier version of the
        RE.tpl, this penalty prevents the PE from shrinking to zero. For
        example, \code{nll = nll + (log_PE + squared_penalty)^2}, where
@@ -133,10 +143,12 @@ default \code{PE_options} using the following list of entries:
        \code{penalty_values} argument}
        }
     }
-    \item{penalty_values}{user-defined values for the \code{penalty_options}. Each penalty type will is entered as follows:
+    \item{penalty_values}{user-defined values for the \code{penalty_options}.
+    Each penalty type will is entered as follows:
     \describe{
         \item{"none"}{(default) NULL For example, \code{penalty_values = NULL}}
-        \item{"wt"}{a single numeric value. For example, \code{penalty_values = 1.5}}
+        \item{"wt"}{a single numeric value. For example,
+        \code{penalty_values = 1.5}}
         \item{"squared_penalty"}{a vector of numeric values with length =
         number of estimated PE parameters. For example, if three PE
         parameters are being estimated and the user wants them to have the
@@ -152,7 +164,7 @@ default \code{PE_options} using the following list of entries:
         }
 }}
 
-\code{q_options} specifies options for the CPUE survey scaling parameters
+\code{q_options} allows the user to specify options for the CPUE survey scaling parameters
 (q). If \code{multi_survey = 0}, no q parameters are estimated regardless of
 what the user defines in \code{q_options}. \code{multi_survey = 0} and
 \code{q_options = NULL}, default q specifications are used: one q parameter
@@ -193,7 +205,7 @@ the following list of entries:
     used to inform the biomass survey trend.}
     \item{$initial_pars}{A vector of initial values for \code{log_q}. The
     default initial value for each log_q is 1.}
-    \item{$fix_pars}{ Option to fix q parameters, where
+    \item{$fix_pars}{Option to fix q parameters, where
     the user specifies the index value of the q parameter they would like to
     fix at the initial value. For example, if there are three CPUE survey
     strata, and the user wants to fix the \code{log_q} for the second
@@ -203,9 +215,6 @@ the following list of entries:
     a prior on \code{log_q} include the following:
      \describe{
         \item{"none"}{(default) no penalty or prior used}
-        \item{"wt"}{a fixed multiplier on the q component of the negative log
-        likelihood. For example, \code{nll = wt * nll}, where \code{wt = 0.5}
-        is specified as a single value in the \code{penalty_values} argument}
         \item{"normal_prior"}{Warning, experimental and not well-tested.
         Normal prior in log space, where \code{nll = nll - dnorm(log_q,
         pmu_log_q, psig_log_q, 1)} and \code{pmu_log_q} and \code{psig_log_q}
@@ -218,8 +227,6 @@ the following list of entries:
     \describe{
         \item{"none"}{(default) NULL For example, \code{penalty_values =
         NULL}}
-        \item{"wt"}{a single numeric value. For example, \code{penalty_values
-        = 0.5}}
         \item{"normal_prior"}{a vector of paired values for each q parameter,
         where each vector pair is the prior mean of log_q \code{pmu_log_q}
         and the associated standard deviation \code{psig_log_q}. For example,

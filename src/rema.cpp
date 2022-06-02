@@ -1,19 +1,16 @@
 // REMA
 
-// Model author: Pete Hulson
-// Adapted to TMB by Jane Sullivan in May 2022
-// Hulson, P.-J. F., K. B. Echave, P. D. Spencer, and J. N. Ianelli. 2021. Using multiple Indices for
-// biomass and apportionment estimation of Alaska groundfish stocks. U.S. Dep. Commer., NOAA
-// Tech. Memo. NMFS-AFSC-414, 28 p.
-
-// Code summary: A multivariate random effects model that accepts an additional
-// relative (i.e. cpue) survey index. If the multi-survey mode is off, REMA runs
-// the same as the univariate (RE) and multivariate (REM) versions of the randon
-// effects model. The biomass and cpue surveys can have multiple strata, which
-// can be uniquely defined by survey. Because the cpue survey is intended to inform the
+// A multivariate random effects model that accepts an additional relative (i.e.
+// cpue) survey index. If the multi-survey mode is off, REMA runs the same as
+// the univariate (RE) and multivariate (REM) versions of the randon effects
+// model. The biomass and cpue surveys can have multiple strata, which can be
+// uniquely defined by survey. Because the cpue survey is intended to inform the
 // trend of the biomass, the number of cpue strata cannot exceed the number of
 // biomass strata.
 
+// Hulson, P.-J. F., K. B. Echave, P. D. Spencer, and J. N. Ianelli. 2021. Using multiple Indices for
+// biomass and apportionment estimation of Alaska groundfish stocks. U.S. Dep. Commer., NOAA
+// Tech. Memo. NMFS-AFSC-414, 28 p.
 
 #define TMB_LIB_INIT R_init_wham
 #include <TMB.hpp>
@@ -37,20 +34,31 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(model_yrs);
 
   // survey biomass (absolute biomass gives scale to the model)
-  // DATA_IVECTOR(biomass_yrs);
   DATA_MATRIX(biomass_obs);
   DATA_MATRIX(biomass_cv);
-  DATA_SCALAR(wt_biomass);
+  // DATA_SCALAR(wt_biomass);
   DATA_IVECTOR(pointer_PE_biomass); // length = ncol biomass obs (# strata), unique values = number of PE parameters
   DATA_IVECTOR(pointer_q_biomass);  // length = ncol biomass obs (# strata), unique values = number of q parameters
 
   // survey cpue (relative index that can inform trend in the model)
-  // DATA_IVECTOR(cpue_yrs);
   DATA_MATRIX(cpue_obs);
   DATA_MATRIX(cpue_cv);
-  DATA_SCALAR(wt_cpue);
-  // DATA_IVECTOR(pointer_PE_cpue);
+  // DATA_SCALAR(wt_cpue);
   DATA_IVECTOR(pointer_q_cpue);
+
+  // process error penalty/prior options
+  DATA_SCALAR(wt_biomass); // weight for biomass data likelihood (default = 1)
+  DATA_SCALAR(wt_cpue); // weight for cpue data likelihood (default = 1)
+  DATA_INTEGER(PE_penalty_type); // 0 = "none", 1 = "wt", 2 = "squared_penalty", 3 = "normal_prior"
+  DATA_SCALAR(wt_PE); // weight for the random effects and process error likelihood (default = 1)
+  DATA_VECTOR(squared_penalty_PE); // prevents process error from shrinking to zero
+  DATA_VECTOR(pmu_log_PE); // normal prior
+  DATA_VECTOR(psig_log_PE);
+  // scaling parameter penalty/prior options and likelihood weight for CPUE data
+  // likelihood
+  DATA_INTEGER(q_penalty_type); // 0 = "none", 1 = "normal_prior"
+  DATA_VECTOR(pmu_log_q);
+  DATA_VECTOR(psig_log_q);
 
   // parameter section
   PARAMETER(dummy);  // dummy var for troubleshooting
@@ -93,7 +101,7 @@ Type objective_function<Type>::operator() ()
 
   // process errors
   vector<Type> PE_var(log_PE.size());
-  PE_var = exp(Type(2.0) * log_PE.array()); // FLAG - should this by x^2 not 2*x?
+  PE_var = exp(Type(2.0) * log_PE.array());
 
   // random effects contribution to likelihood
   for(int i = 1; i < nyrs; i++) {
@@ -101,7 +109,24 @@ Type objective_function<Type>::operator() ()
       jnll(0) -= dnorm(log_biomass_pred(i-1,j), log_biomass_pred(i,j), exp(log_PE(pointer_PE_biomass(j))), true);
     }
   }
-  biomass_pred = exp(log_biomass_pred.array());
+  switch(PE_penalty_type) {
+
+  case 0: // no penalty
+    jnll(1) = jnll(1);
+
+  case 1: // weight
+    jnll(1) = wt_PE * jnll(1);
+
+  case 2: // squared penalty
+    for(int k = 0; k < log_PE.size(); k++) {
+      jnll(1) += pow(log_PE(k) + squared_penalty_PE(k), 2);
+    }
+
+  case 3: // normal prior
+    for(int k = 0; k < log_PE.size(); k++) {
+      jnll(1) -= dnorm(log_PE(k), pmu_log_PE(k), psig_log_PE(k), 1);
+    }
+  }
 
   // data likelihood for biomass survey observations
   for(int i = 0; i < nyrs; i++) {
@@ -112,6 +137,8 @@ Type objective_function<Type>::operator() ()
     }
   }
   jnll(1) = jnll(1) * wt_biomass;
+
+  biomass_pred = exp(log_biomass_pred.array());
 
   // If in multi-survey mode (1=on, 0=off), calculate predicted cpue and data
   // likelihood for cpue survey observations
@@ -140,8 +167,21 @@ Type objective_function<Type>::operator() ()
     }
     log_cpue_pred = log(cpue_pred.array());
     jnll(2) = jnll(2) * wt_cpue;
+
+    // optional penalty or prior on log_q
+    switch(q_penalty_type) {
+
+    case 0: // no penalty
+      jnll(2) = jnll(2);
+
+    case 1: // normal prior
+      for(int k = 0; k < log_q.size(); k++) {
+        jnll(2) -= dnorm(log_q(k), pmu_log_q(k), psig_log_q(k), 1);
+      }
+    }
   }
 
+  // report section
   vector<Type> tot_biomass_pred;
   tot_biomass_pred = biomass_pred.rowwise().sum();
 
