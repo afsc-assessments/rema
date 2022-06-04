@@ -36,19 +36,19 @@ Type objective_function<Type>::operator() ()
   // survey biomass (absolute biomass gives scale to the model)
   DATA_MATRIX(biomass_obs);
   DATA_MATRIX(biomass_cv);
-  // DATA_SCALAR(wt_biomass);
-  DATA_IVECTOR(pointer_PE_biomass); // length = ncol biomass obs (# strata), unique values = number of PE parameters
-  DATA_IVECTOR(pointer_q_biomass);  // length = ncol biomass obs (# strata), unique values = number of q parameters
 
   // survey cpue (relative index that can inform trend in the model)
   DATA_MATRIX(cpue_obs);
   DATA_MATRIX(cpue_cv);
-  // DATA_SCALAR(wt_cpue);
+
+  DATA_IVECTOR(pointer_PE_biomass); // length = ncol biomass obs (# strata), unique values = number of PE parameters
+  DATA_IVECTOR(pointer_q_biomass);  // length = ncol biomass obs (# strata), unique values = number of q parameters
   DATA_IVECTOR(pointer_q_cpue);
 
-  // process error penalty/prior options
   DATA_SCALAR(wt_biomass); // weight for biomass data likelihood (default = 1)
   DATA_SCALAR(wt_cpue); // weight for cpue data likelihood (default = 1)
+
+  // process error penalty/prior options
   DATA_INTEGER(PE_penalty_type); // 0 = "none", 1 = "wt", 2 = "squared_penalty", 3 = "normal_prior"
   DATA_SCALAR(wt_PE); // weight for the random effects and process error likelihood (default = 1)
   DATA_VECTOR(squared_penalty_PE); // prevents process error from shrinking to zero
@@ -61,7 +61,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(psig_log_q);
 
   // parameter section
-  PARAMETER(dummy);  // dummy var for troubleshooting
+  // PARAMETER(dummy);  // dummy var for troubleshooting
   PARAMETER_VECTOR(log_PE);
   PARAMETER_VECTOR(log_q);
   PARAMETER_MATRIX(log_biomass_pred);

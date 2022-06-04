@@ -6,6 +6,7 @@
 \usage{
 prepare_rema_input(
   multi_survey = NULL,
+  re_dat = NULL,
   biomass_dat = NULL,
   cpue_dat = NULL,
   start_year = NULL,
@@ -18,7 +19,11 @@ prepare_rema_input(
 }
 \arguments{
 \item{multi_survey}{logical; if equal to 1 (TRUE), the model will fit to an additional
-cpue survey index if provided in \code{cpue_dat}}
+cpue survey index if provided in \code{cpue_dat}. Default = FALSE}
+
+\item{re_dat}{list object returned from \code{\link{read_re_dat.R}}, which
+includes biomass_dat and optional cpue_dat in the correct format for input
+into REMA. If supplied, the user does not need enter biomass_dat or cpue_dat.}
 
 \item{biomass_dat}{data.frame of biomass survey data in long format with the
 following columns:
@@ -87,15 +92,14 @@ This function returns a named list with the following components:
   \item{\code{years}}{Numeric vector of years to fit REMA model} }
 }
 \description{
-After the data is read into R (either manually or by using
-\code{\link{read_re_dat}}, \code{\link{read_rem_dat}}, or
-\code{\link{read_rema_dat}}, this function prepares the data and parameter
-settings for \code{\link{fit_rema}}. The model can be set up to run in single
-survey mode with one or more strata, or in multi-survey mode, which uses an
-additional relative abundance index (i.e. cpue) to inform predicted biomass.
-The inputs and options described below related to the cpue survey data or
-scaling parameter $q$, such as \code{cpue_dat} and \code{options_q} are only
-needed when \code{multi_survey = 1}.
+After the data is read into R (either manually from a .csv or other data file
+or by using \code{\link{read_re_dat.R}}, this function prepares the data and
+parameter settings for \code{\link{fit_rema.R}}. The model can be set up to run
+in single survey mode with one or more strata, or in multi-survey mode, which
+uses an additional relative abundance index (i.e. cpue) to inform predicted
+biomass. The inputs and options described below related to the cpue survey
+data or scaling parameter $q$, such as \code{cpue_dat} and \code{options_q}
+are only needed when \code{multi_survey = 1}.
 }
 \details{
 \code{PE_options} allows the user to specify options for process error (PE) parameters. If
@@ -104,18 +108,13 @@ estimated for each biomass survey strata, initial values for \code{log_PE}
 are set to 1, and no penalties or priors are added. The user can modify the
 default \code{PE_options} using the following list of entries:
 \describe{
-    \item{$PE_model}{Options for defining PE parameters by biomass survey strata, where:
-    \describe{
-        \item{"strata-specific"}{(default) one PE for each biomass strata}
-        \item{"custom"}{user-defined PE, where \code{pointer_PE_biomass} must be specified}
-     }
-     }
     \item{$pointer_PE_biomass}{An index to customize the assignment of PE
     parameters to individual biomass strata. Vector with length = number of
     biomass strata, starting with an index of 1 and ending with the number of
     unique PE estimated. For example, if there are three biomass survey
     strata and the user wants to estimate only one PE, they would specify
-    \code{pointer_PE_biomass = c(1, 1, 1)}}
+    \code{pointer_PE_biomass = c(1, 1, 1). By default there is one unique
+    log_PE estimated for each unique biomass survey stratum}}
     \item{$initial_pars}{A vector of initial values for log_PE. The
     default initial value for each log_PE is 1.}
     \item{$fix_pars}{Option to fix PE parameters, where the user specifies
@@ -164,16 +163,16 @@ default \code{PE_options} using the following list of entries:
         }
 }}
 
-\code{q_options} allows the user to specify options for the CPUE survey scaling parameters
-(q). If \code{multi_survey = 0}, no q parameters are estimated regardless of
-what the user defines in \code{q_options}. \code{multi_survey = 0} and
-\code{q_options = NULL}, default q specifications are used: one q parameter
-is estimated for each CPUE survey strata, biomass and CPUE surveys are
-assumed to share strata definitions (i.e., \code{biomass_dat} and
-\code{cpue_dat} have the same number of columns and the columns represent the
-same strata), initial values for \code{log_q} are set to 1, and no penalties
-or priors are added. The user can modify the default \code{q_options} using
-the following list of entries:
+\code{q_options} allows the user to specify options for the CPUE survey
+scaling parameters (q). If \code{multi_survey = 0} (default), no q parameters
+are estimated regardless of what the user defines in \code{q_options}.
+\code{multi_survey = 0} and \code{q_options = NULL}, default q specifications
+are used: one q parameter is estimated for each CPUE survey strata, biomass
+and CPUE surveys are assumed to share strata definitions (i.e.,
+\code{biomass_dat} and \code{cpue_dat} have the same number of columns and
+the columns represent the same strata), initial values for \code{log_q} are
+set to 1, and no penalties or priors are added. The user can modify the
+default \code{q_options} using the following list of entries:
 \describe{
     \item{$q_model}{Options for defining q parameters by CPUE survey strata, where:
     \describe{
