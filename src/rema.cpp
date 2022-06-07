@@ -132,7 +132,7 @@ Type objective_function<Type>::operator() ()
   for(int i = 0; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
       if(biomass_obs(i,j) >= 0) {
-        jnll(1) -= dnorm(log_biomass_pred(i,j), log(biomass_obs(i,j) + 0.0001), biomass_sd(i,j), true);
+        jnll(1) -= dnorm(log_biomass_pred(i,j), log(biomass_obs(i,j)), biomass_sd(i,j), true);
       }
     }
   }
@@ -150,7 +150,7 @@ Type objective_function<Type>::operator() ()
     // you cannot have a scenario where cpue has more strata than biomass)
     for(int i = 0; i < nyrs; i++) {
       for(int j = 0; j < n_strata_biomass; j++) {
-        biomass_pred_cpue_strata(i,pointer_q_biomass(j)) += exp(log_biomass_pred(i,j) + 0.0001);
+        biomass_pred_cpue_strata(i,pointer_q_biomass(j)) += exp(log_biomass_pred(i,j));
       }
 
       // get predicted cpue
@@ -161,7 +161,7 @@ Type objective_function<Type>::operator() ()
       // get data likelihood for cpue survey
       for(int j = 0; j < n_strata_cpue; j++) {
         if(cpue_obs(i,j) >= 0) {
-          jnll(2) -= dnorm(log(cpue_pred(i,j)), log(cpue_obs(i,j) + 0.0001), cpue_sd(i,j), true);
+          jnll(2) -= dnorm(log(cpue_pred(i,j)), log(cpue_obs(i,j)), cpue_sd(i,j), true);
         }
       }
     }

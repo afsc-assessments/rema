@@ -19,10 +19,12 @@ as the columns of srv_est_LL in rwout.rep in the version of the ADMB RE
 model that accepts an additional survey index}
 }
 \value{
-object of type "list" with biomass and optional cpue survey data in long format, ready for input into REMA
+object of type "list" with biomass optional cpue survey data in
+  long format, and initial parameter values for log_biomass_pred (the random
+  effects matrix), ready for input into REMA
 }
 \description{
 Read the report file from the ADMB version of the RE model (rwout.rep) and
 convert it into long format survey data estimates with CVs for input into
-REMA
+REMA.
 }

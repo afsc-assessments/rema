@@ -2,7 +2,7 @@
 #'
 #' Read the report file from the ADMB version of the RE model (rwout.rep) and
 #' convert it into long format survey data estimates with CVs for input into
-#' REMA
+#' REMA.
 #'
 #' @param filename name of ADMB output file to be read (e.g. rwout.rep)
 #' @param biomass_strata_names (optional) a vector of character names
@@ -12,19 +12,22 @@
 #'   to the names of the CPUE survey strata. Vector should be in the same order
 #'   as the columns of srv_est_LL in rwout.rep in the version of the ADMB RE
 #'   model that accepts an additional survey index
-#' @return object of type "list" with biomass and optional cpue survey data in long format, ready for input into REMA
+#' @return object of type "list" with biomass optional cpue survey data in
+#'   long format, and initial parameter values for log_biomass_pred (the random
+#'   effects matrix), ready for input into REMA
 #' @export
 read_re_dat <- function(filename,
-                          biomass_strata_names = NULL,
-                          cpue_strata_names = NULL) {
+                        biomass_strata_names = NULL,
+                        cpue_strata_names = NULL) {
 
-  # rema_ex <- 'goasst.rep'
-  # rem_ex <- 'bsaisst.dat'
-  # re_ex <- 'aisr.dat'
+  # ex <- 'goasst.rep' # rema example
+  # ex <- 'bsaisst.rep' # rem example
+  ex <- 'aisr.rep' # re example
   # biomass_strata_names <- c('CGOA1', 'CGOA2', 'CGOA3',
   #                           'EGOA1', 'EGOA2', 'EGOA3',
   #                           'WGOA1', 'WGOA2', 'WGOA3')
   # cpue_strata_names <- c('CGOA', 'EGOA', 'WGOA')
+  # filename <- re_ex
 
   x <- read_rep(fn = filename)
 
@@ -36,7 +39,7 @@ read_re_dat <- function(filename,
   } else {
     re_version <- 're'
   }
-  re_version
+  # re_version
 
   # for multivariate models, assign strata names and check dimensions
   if(re_version %in% c('rem', 'rema')) {
@@ -62,7 +65,7 @@ read_re_dat <- function(filename,
 
   } else {
     biomass_est <- data.frame(strata = 'biomass_strata_1', year = x$yrs_srv, biomass = x$srv_est)
-    biomass_cv <- data.frame(strata = 'biomass_strata_1', year = x$yrs_srv, biomass = x$srv_sd)
+    biomass_cv <- data.frame(strata = 'biomass_strata_1', year = x$yrs_srv, cv = x$srv_sd)
   }
 
   # check for NAs, unique srv_yrs, number of strata
@@ -103,7 +106,14 @@ read_re_dat <- function(filename,
     cpue_dat <- NULL
   }
 
+  # initial values for log_biomass_pred
+  init_log_biomass_pred <- x$biomsd
+  if(is.vector(init_log_biomass_pred)) {
+    init_log_biomass_pred <- as.matrix(init_log_biomass_pred)
+  }
   re_dat <- list(biomass_dat = biomass_dat,
-                    cpue_dat = cpue_dat)
+                 cpue_dat = cpue_dat,
+                 init_log_biomass_pred = init_log_biomass_pred)
+
   return(re_dat)
 }

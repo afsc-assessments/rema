@@ -5,6 +5,7 @@
 \title{Prepare input data and parameters for REMA model}
 \usage{
 prepare_rema_input(
+  model_name = "REMA for unnamed stock",
   multi_survey = NULL,
   re_dat = NULL,
   biomass_dat = NULL,
@@ -18,12 +19,15 @@ prepare_rema_input(
 )
 }
 \arguments{
+\item{model_name}{character, name of stock/model}
+
 \item{multi_survey}{logical; if equal to 1 (TRUE), the model will fit to an additional
 cpue survey index if provided in \code{cpue_dat}. Default = FALSE}
 
 \item{re_dat}{list object returned from \code{\link{read_re_dat.R}}, which
-includes biomass_dat and optional cpue_dat in the correct format for input
-into REMA. If supplied, the user does not need enter biomass_dat or cpue_dat.}
+includes biomass_dat, optional cpue_dat, and model predictions of log
+biomass by strata in the correct format for input into REMA. If supplied,
+the user does not need enter biomass_dat or cpue_dat.}
 
 \item{biomass_dat}{data.frame of biomass survey data in long format with the
 following columns:
@@ -34,7 +38,12 @@ there is only one survey strata}
 \item{\code{year}}{integer; survey year. Note that the user only needs to
 include years for which there are observations (i.e. there is no need to
 supply \code{NULL} or \code{NA} values for missing survey years)}
-\item{\code{biomass}}{numeric; the biomass estimate/observation (e.g. bottom trawl survey biomass in mt)}
+\item{\code{biomass}}{numeric; the biomass estimate/observation (e.g.
+bottom trawl survey biomass in mt). By default, if \code{biomass == 0}, a
+small constant (0.0001) will be added to this value, because biomass is
+estimated in log space and cannot equal zero. If the user wants to treat
+this value as an NA
+(i.e., a failed survey), they must define it as an NA prior to input.}
 \item{\code{cv}}{numeric; the coefficient of variation (CV) of the biomass
 estimate (i.e. sd(biomass)/biomass)}
 }}
@@ -49,7 +58,10 @@ there is only one survey strata)}
 include years for which there are observations (i.e. there is no need to
 supply \code{NULL} or \code{NA} values for missing survey years)}
 \item{\code{cpue}}{numeric; the cpue estimate/observation (e.g. longline
-survey cpue or relative population number)}
+survey cpue or relative population number); by default, if \code{cpue ==
+0}, a small constant (0.0001) will be added to this value, because CPUE is
+estimated in log space. If the user wants to treat this value as an NA
+(i.e., a failed survey), they must define it as an NA prior to input.}
 \item{\code{cv}}{numeric; the coefficient of variation (CV) of the cpue
 estimate (i.e. sd(cpue)/cpue)}
 }}
@@ -149,7 +161,7 @@ default \code{PE_options} using the following list of entries:
         \item{"wt"}{a single numeric value. For example,
         \code{penalty_values = 1.5}}
         \item{"squared_penalty"}{a vector of numeric values with length =
-        number of estimated PE parameters. For example, if three PE
+        number of PE parameters. For example, if three PE
         parameters are being estimated and the user wants them to have the
         same penalty for each one, they would use \code{penalty_values =
         c(1.5, 1.5, 1.5)}}
@@ -174,22 +186,16 @@ the columns represent the same strata), initial values for \code{log_q} are
 set to 1, and no penalties or priors are added. The user can modify the
 default \code{q_options} using the following list of entries:
 \describe{
-    \item{$q_model}{Options for defining q parameters by CPUE survey strata, where:
-    \describe{
-        \item{"strata-specific"}{(default) one q for each CPUE strata}
-        \item{"custom"}{user-defined q, where \code{pointer_q_cpue} must be
-        specified}
-     }
-     }
     \item{$pointer_q_cpue}{An index to customize the assignment of q
     parameters to individual CPUE survey strata. Vector with length = number
     of CPUE strata, starting with an index of 1 and ending with the number of
     unique q parameters estimated. For example, if there are three CPUE
     survey strata and the user wanted to estimate only one q, they would
-    specify \code{pointer_q_cpue = c(1, 1, 1)}}
+    specify \code{pointer_q_cpue = c(1, 1, 1)}. The recommended model
+    configuration is to estimate one log_q for each CPUE survey stratum.}
     \item{$pointer_q_biomass}{An index to customize the assignment of q
     parameters to individual biomass survey strata. Vector with length =
-    number of biomass survey strata, starting with an index of 1 and ending
+    the number of biomass survey strata, starting with an index of 1 and ending
     with the number of unique q parameters estimated. This pointer only needs
     to be defined if the number of biomass and CPUE strata are not equal. The
     \code{pointer_q_biomass} option allows the user to calculate predicted
@@ -201,7 +207,9 @@ default \code{q_options} using the following list of entries:
     the first 2 biomass strata to the first q, and the third biomass stratum
     to the second q. NOTE: there cannot be a scenario where there are more
     CPUE survey strata than biomass survey strata because the CPUE survey is
-    used to inform the biomass survey trend.}
+    used to inform the biomass survey trend. An error will be thrown if
+    \code{q_options$pointer_q_biomass} is not defined and the biomass and CPUE survey
+    strata definitions are not the same.}
     \item{$initial_pars}{A vector of initial values for \code{log_q}. The
     default initial value for each log_q is 1.}
     \item{$fix_pars}{Option to fix q parameters, where

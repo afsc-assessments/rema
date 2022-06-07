@@ -56,7 +56,7 @@
 #'         \item{"wt"}{a single numeric value. For example,
 #'         \code{penalty_values = 1.5}}
 #'         \item{"squared_penalty"}{a vector of numeric values with length =
-#'         number of estimated PE parameters. For example, if three PE
+#'         number of PE parameters. For example, if three PE
 #'         parameters are being estimated and the user wants them to have the
 #'         same penalty for each one, they would use \code{penalty_values =
 #'         c(1.5, 1.5, 1.5)}}
@@ -81,22 +81,16 @@
 #' set to 1, and no penalties or priors are added. The user can modify the
 #' default \code{q_options} using the following list of entries:
 #' \describe{
-#'     \item{$q_model}{Options for defining q parameters by CPUE survey strata, where:
-#'     \describe{
-#'         \item{"strata-specific"}{(default) one q for each CPUE strata}
-#'         \item{"custom"}{user-defined q, where \code{pointer_q_cpue} must be
-#'         specified}
-#'      }
-#'      }
 #'     \item{$pointer_q_cpue}{An index to customize the assignment of q
 #'     parameters to individual CPUE survey strata. Vector with length = number
 #'     of CPUE strata, starting with an index of 1 and ending with the number of
 #'     unique q parameters estimated. For example, if there are three CPUE
 #'     survey strata and the user wanted to estimate only one q, they would
-#'     specify \code{pointer_q_cpue = c(1, 1, 1)}}
+#'     specify \code{pointer_q_cpue = c(1, 1, 1)}. The recommended model
+#'     configuration is to estimate one log_q for each CPUE survey stratum.}
 #'     \item{$pointer_q_biomass}{An index to customize the assignment of q
 #'     parameters to individual biomass survey strata. Vector with length =
-#'     number of biomass survey strata, starting with an index of 1 and ending
+#'     the number of biomass survey strata, starting with an index of 1 and ending
 #'     with the number of unique q parameters estimated. This pointer only needs
 #'     to be defined if the number of biomass and CPUE strata are not equal. The
 #'     \code{pointer_q_biomass} option allows the user to calculate predicted
@@ -108,7 +102,9 @@
 #'     the first 2 biomass strata to the first q, and the third biomass stratum
 #'     to the second q. NOTE: there cannot be a scenario where there are more
 #'     CPUE survey strata than biomass survey strata because the CPUE survey is
-#'     used to inform the biomass survey trend.}
+#'     used to inform the biomass survey trend. An error will be thrown if
+#'     \code{q_options$pointer_q_biomass} is not defined and the biomass and CPUE survey
+#'     strata definitions are not the same.}
 #'     \item{$initial_pars}{A vector of initial values for \code{log_q}. The
 #'     default initial value for each log_q is 1.}
 #'     \item{$fix_pars}{Option to fix q parameters, where
@@ -142,11 +138,13 @@
 #'         }
 #' }}
 #'
+#' @param model_name character, name of stock/model
 #' @param multi_survey logical; if equal to 1 (TRUE), the model will fit to an additional
 #'   cpue survey index if provided in \code{cpue_dat}. Default = FALSE
 #' @param re_dat list object returned from \code{\link{read_re_dat.R}}, which
-#'   includes biomass_dat and optional cpue_dat in the correct format for input
-#'   into REMA. If supplied, the user does not need enter biomass_dat or cpue_dat.
+#'   includes biomass_dat, optional cpue_dat, and model predictions of log
+#'   biomass by strata in the correct format for input into REMA. If supplied,
+#'   the user does not need enter biomass_dat or cpue_dat.
 #' @param biomass_dat data.frame of biomass survey data in long format with the
 #'   following columns:
 #'   \describe{
@@ -156,7 +154,12 @@
 #'   \item{\code{year}}{integer; survey year. Note that the user only needs to
 #'   include years for which there are observations (i.e. there is no need to
 #'   supply \code{NULL} or \code{NA} values for missing survey years)}
-#'   \item{\code{biomass}}{numeric; the biomass estimate/observation (e.g. bottom trawl survey biomass in mt)}
+#'   \item{\code{biomass}}{numeric; the biomass estimate/observation (e.g.
+#'   bottom trawl survey biomass in mt). By default, if \code{biomass == 0}, a
+#'   small constant (0.0001) will be added to this value, because biomass is
+#'   estimated in log space and cannot equal zero. If the user wants to treat
+#'   this value as an NA
+#'   (i.e., a failed survey), they must define it as an NA prior to input.}
 #'   \item{\code{cv}}{numeric; the coefficient of variation (CV) of the biomass
 #'   estimate (i.e. sd(biomass)/biomass)}
 #'   }
@@ -170,7 +173,10 @@
 #'   include years for which there are observations (i.e. there is no need to
 #'   supply \code{NULL} or \code{NA} values for missing survey years)}
 #'   \item{\code{cpue}}{numeric; the cpue estimate/observation (e.g. longline
-#'   survey cpue or relative population number)}
+#'   survey cpue or relative population number); by default, if \code{cpue ==
+#'   0}, a small constant (0.0001) will be added to this value, because CPUE is
+#'   estimated in log space. If the user wants to treat this value as an NA
+#'   (i.e., a failed survey), they must define it as an NA prior to input.}
 #'   \item{\code{cv}}{numeric; the coefficient of variation (CV) of the cpue
 #'   estimate (i.e. sd(cpue)/cpue)}
 #'   }
@@ -205,7 +211,8 @@
 #'   effects, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
 #'   \item{\code{years}}{Numeric vector of years to fit REMA model} }
 #' @export
-prepare_rema_input <- function(multi_survey = NULL,
+prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
+                               multi_survey = NULL,
                                re_dat = NULL,
                                biomass_dat = NULL,
                                cpue_dat = NULL,
@@ -222,13 +229,13 @@ prepare_rema_input <- function(multi_survey = NULL,
   input = list(data = data,
                par = par,
                map = map,
-               random = random)
+               random = random,
+               model_name = model_name)
 
   # Fitting to more than one survey? default = no
   if(is.null(multi_survey)) {
     input$data$multi_survey = 0
-  }
-  if(isTRUE(multi_survey)) {
+  } else if (isTRUE(multi_survey) | multi_survey == 1) {
     input$data$multi_survey = 1
   } else {
     input$data$multi_survey = 0
@@ -255,6 +262,12 @@ prepare_rema_input <- function(multi_survey = NULL,
     tidyr::expand(year = model_yrs, strata) %>%
     dplyr::left_join(biomass_dat)
 
+  if(any(biom$biomass == 0, na.rm = TRUE)) {
+    warning("The user has entered a zero observation for the biomass survey data. By default, a small constant (0.0001) is added to this value, because biomass is estimated in log space and cannot equal zero. If the user wants to treat this zero as an NA (i.e., a failed survey), they must excplicitly define it as an NA prior to running prepare_rema_input().")
+    biom <- biom %>%
+      dplyr::mutate(biomass = ifelse(biomass == 0, 0.0001, biomass))
+  }
+
   biom_input <- biom %>%
     tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
                 values_from = "biomass", values_fill = NA) %>%
@@ -265,12 +278,19 @@ prepare_rema_input <- function(multi_survey = NULL,
                 dplyr::mutate(value = "cv")) %>%
     dplyr::arrange(value, year)
 
-  if(multi_survey == 1 & !is.null(cpue_dat)) {
+  # CPUE survey observations
+  if((input$data$multi_survey == 1) & !is.null(cpue_dat)) {
     cpue <- cpue_dat %>%
       tidyr::expand(year = model_yrs, strata) %>%
       dplyr::left_join(cpue_dat)
 
-  } else if (multi_survey == 1 & is.null(cpue_dat)){
+    if(any(cpue$cpue == 0, na.rm = TRUE)) {
+      warning("The user has entered a zero observation for the CPUE survey data. By default, a small constant (0.0001) is added to this value, because CPUE is estimated in log space. If the user wants to treat this zero as an NA (i.e., a failed survey), they must excplicitly define it as an NA prior to running prepare_rema_input().")
+      cpue <- cpue %>%
+        dplyr::mutate(cpue = ifelse(cpue == 0, 0.0001, cpue))
+    }
+
+  } else if ((input$data$multi_survey == 1) & is.null(cpue_dat)){
     stop(paste("user defined multi_survey as TRUE but did not provide CPUE survey data in the re_dat list or as a dataframe in the cpue_dat argument."))
 
     } else {
@@ -280,8 +300,8 @@ prepare_rema_input <- function(multi_survey = NULL,
              cv = NA)
     }
 
-  if(multi_survey == 0 & !is.null(cpue_dat)) {
-    warning(paste('user defined multi_survey as FALSE but provided CPUE survey data. REMA will run in single survey mode and will not fit to the CPUE data. change to multi_survey = TRUE if you want to fit to survey CPUE data.'))
+  if((input$data$multi_survey == 0) & !is.null(cpue_dat)) {
+    warning(paste('user defined multi_survey as FALSE but provided CPUE survey data. REMA will run in single survey (i.e. RE) mode and will not fit to the CPUE data. change to multi_survey = TRUE if you want to fit to survey CPUE data.'))
   }
 
   cpue_input <- cpue %>%
@@ -290,7 +310,7 @@ prepare_rema_input <- function(multi_survey = NULL,
     dplyr::mutate(value = "mu") %>%
     dplyr::bind_rows(cpue %>%
                        tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
-                                          values_from = "cv", values_fill = 0) %>%
+                                          values_from = "cv", values_fill = NA) %>%
                        dplyr::mutate(value = "cv")) %>%
     dplyr::arrange(value, year)
 
@@ -319,55 +339,12 @@ prepare_rema_input <- function(multi_survey = NULL,
   # define default values for remaining data, par, and map list objects for TMB
   input <- set_defaults(input)
 
-  # user-defined process error options, either to default values or settings specified by
-  # user
-  set_PE_options <- function(input, PE_options) {
+  # user-defined process error (PE) options
+  input <- set_PE_options(input, PE_options)
 
-    data = input$data
-    par = input$par
-    map = input$map
-
-    # user defined index for PE estimation (e.g. there are 3 strata but user
-    # only wants to estimate 1 PE, pointer_PE_biomass = c(1, 1, 1))
-    if(!is.null(PE_options$pointer_PE_biomass)) {
-      if(length(PE_options$pointer_PE_biomass) != ncol(data$biomass_obs)) stop("Length of PE_options$pointer_PE_biomass must equal the number of biomass survey strata (e.g. length(unique(re_dat$biomass_dat$strata))")
-      PE_options$pointer_PE_biomass <- as.integer(PE_options$pointer_PE_biomass)
-      if(!any(is.integer(PE_options$pointer_PE_biomass))) stop("PE_options$pointer_PE_biomass must be a vector of integer values starting at 1 with a vector length equal the number of biomass survey strata (e.g. length(unique(re_dat$biomass_dat$strata))")
-      data$pointer_PE_biomass <- (PE_options$pointer_PE_biomass)-1 # TMB started indexing at 0
-      par$log_PE <- rep(1, length(unique(data$pointer_PE_biomass)))
-      map$log_PE <- fill_vals(par$log_PE, NA)
-    }
-
-    # user defined initial values for log_PE parameters
-    if(!is.null(PE_options$initial_pars)) {
-      if(length(PE_options$initial_pars) != length(par$log_PE)) stop("PE_options$initial_pars must be a vector with length equal to the number of PE parameters in the model. Input values must be numeric and greater than zero, because log_PE parameters are estimated in log space.")
-      if(any(PE_options$initial_pars <= 0)) stop("PE_options$initial_pars must be a vector with length equal to the number of PE parameters in the model. Input values must be numeric and greater than zero, because log_PE parameters are estimated in log space.")
-      if(!any(is.numeric(PE_options$initial_pars))) stop("PE_options$initial_pars must be a vector with length equal to the number of PE parameters in the model. Input values must be numeric and greater than zero, because log_PE parameters are estimated in log space.")
-      par$log_PE <- PE_options$initial_pars
-      map$log_PE <- fill_vals(par$log_PE, NA)
-    }
-
-    # user defined fixed values of log_PE. note that this is not recommended.
-    if(!is.null(PE_options$fix_pars)) {
-      warning("Are you sure you want to fix process error parameters? This is not recommended but may be useful for sensitivity analysis or troubleshooting. User can fix log_PE value to something other than the default of log_PE = 1 using the PE_options$initial_pars setting.")
-
-      PE_options$fix_pars <- as.integer(PE_options$fix_pars)
-      if(!any(is.integer(PE_options$fix_pars))) stop("PE_options$fix_pars must be a vector of integer value(s) with the index value (starting at 1) of the log_PE to be fixed.")
-
-      # Next - figure out how to map off certain parameters in the log_PE vector.
-      par$log_PE[PE_options$fix_pars]
-    }
-  }
-  # test values - remove when fxn is complete
-  PE_options = list(pointer_PE_biomass = c(1, 1, 1, 2, 2, 2, 3, 3, 3),
-                    initial_pars = c(1.1, 1.1, 1.1),
-                    fix_pars = c(2, 3),
-                    penalty_options = 'none',
-                    penalty_values = NULL)
-
-  pointer_q_biomass
+  # user-defined scaling parameter (q) options
+  input <- set_q_options(input, q_options)
 
   return(input)
-
 }
 
