@@ -65,8 +65,7 @@ set_defaults <- function(input) {
 
   # FLAG I don't think the parameter factor order level matters here but if it
   # does do I need a byrow = TRUE
-  map$log_biomass_pred <- matrix(data = as.factor(1:length(map$log_biomass_pred)),
-                                 ncol = ncol(par$log_biomass_pred))
+  map$log_biomass_pred <- as.factor(1:length(map$log_biomass_pred))
 
   # by default random = log_pred_biomass
   random = 'log_biomass_pred'

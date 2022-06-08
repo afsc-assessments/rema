@@ -12,7 +12,7 @@
 // biomass and apportionment estimation of Alaska groundfish stocks. U.S. Dep. Commer., NOAA
 // Tech. Memo. NMFS-AFSC-414, 28 p.
 
-#define TMB_LIB_INIT R_init_wham
+#define TMB_LIB_INIT R_init_rema
 #include <TMB.hpp>
 #include <iostream>
 
@@ -28,7 +28,7 @@ template<class Type>
 Type objective_function<Type>::operator() ()
 {
   // 0 = no, 1 = yes (estimate scaling parameters)
-  DATA_INTEGER(multi_survey_mode);
+  DATA_INTEGER(multi_survey);
 
   // model dimensions
   DATA_IVECTOR(model_yrs);
@@ -43,7 +43,7 @@ Type objective_function<Type>::operator() ()
 
   DATA_IVECTOR(pointer_PE_biomass); // length = ncol biomass obs (# strata), unique values = number of PE parameters
   DATA_IVECTOR(pointer_q_biomass);  // length = ncol biomass obs (# strata), unique values = number of q parameters
-  DATA_IVECTOR(pointer_q_cpue);
+  DATA_IVECTOR(pointer_q_cpue); // length = ncol cpue obs (# strata), unique values = number of q parameters
 
   DATA_SCALAR(wt_biomass); // weight for biomass data likelihood (default = 1)
   DATA_SCALAR(wt_cpue); // weight for cpue data likelihood (default = 1)
@@ -132,7 +132,7 @@ Type objective_function<Type>::operator() ()
   for(int i = 0; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
       if(biomass_obs(i,j) >= 0) {
-        jnll(1) -= dnorm(log_biomass_pred(i,j), log(biomass_obs(i,j)), biomass_sd(i,j), true);
+        jnll(1) -= dnorm(log_biomass_pred(i,j), log(biomass_obs(i,j) + 0.0001), biomass_sd(i,j), true);
       }
     }
   }
@@ -142,7 +142,7 @@ Type objective_function<Type>::operator() ()
 
   // If in multi-survey mode (1=on, 0=off), calculate predicted cpue and data
   // likelihood for cpue survey observations
-  if(multi_survey_mode == 1) {
+  if(multi_survey == 1) {
 
     // get predicted biomass at the strata level for cpue (i.e. account for the
     // scenario when you may have biomass at a higher resolution than cpue; e.g.
@@ -161,7 +161,7 @@ Type objective_function<Type>::operator() ()
       // get data likelihood for cpue survey
       for(int j = 0; j < n_strata_cpue; j++) {
         if(cpue_obs(i,j) >= 0) {
-          jnll(2) -= dnorm(log(cpue_pred(i,j)), log(cpue_obs(i,j)), cpue_sd(i,j), true);
+          jnll(2) -= dnorm(log(cpue_pred(i,j)), log(cpue_obs(i,j) + 0.0001), cpue_sd(i,j), true);
         }
       }
     }
@@ -184,16 +184,17 @@ Type objective_function<Type>::operator() ()
   // report section
   vector<Type> tot_biomass_pred;
   tot_biomass_pred = biomass_pred.rowwise().sum();
-
-  vector<Type> tot_cpue_pred;
-  tot_cpue_pred = cpue_pred.rowwise().sum();
-
   ADREPORT(biomass_pred);
   ADREPORT(tot_biomass_pred);
-  ADREPORT(cpue_pred);
-  ADREPORT(tot_cpue_pred);
 
-  REPORT(nll);
+  if(multi_survey == 1) {
+    vector<Type> tot_cpue_pred;
+    tot_cpue_pred = cpue_pred.rowwise().sum();
+    ADREPORT(cpue_pred);
+    ADREPORT(tot_cpue_pred);
+  }
+
+  REPORT(jnll);
 
   // jnll = dummy * dummy;        // Uncomment when debugging code
   nll = jnll.sum();

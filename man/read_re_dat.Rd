@@ -28,3 +28,8 @@ Read the report file from the ADMB version of the RE model (rwout.rep) and
 convert it into long format survey data estimates with CVs for input into
 REMA.
 }
+\examples{
+\dontrun{
+# place holder for example code
+}
+}

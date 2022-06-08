@@ -211,6 +211,11 @@
 #'   effects, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
 #'   \item{\code{years}}{Numeric vector of years to fit REMA model} }
 #' @export
+#'
+#' @examples
+#' \dontrun{
+#' # place holder for example code
+#' }
 prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                                multi_survey = NULL,
                                re_dat = NULL,
@@ -248,14 +253,19 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   }
 
   # model years
-  if(is.null(start_year)) {
-    start_year <- min(c(min(biomass_dat$year), min(cpue_dat$year)))
+  if(!is.null(cpue_dat)) {
+
+    if(is.null(start_year)) start_year <- min(c(min(biomass_dat$year), min(cpue_dat$year)))
+    if(is.null(end_year)) end_year <- max(c(max(biomass_dat$year), max(cpue_dat$year)))
+    model_yrs <- start_year:end_year
+    input$data$model_yrs <- model_yrs
+
+  } else {
+    if(is.null(start_year)) start_year <- min(biomass_dat$year)
+    if(is.null(end_year)) end_year <- max(biomass_dat$year)
+    model_yrs <- start_year:end_year
+    input$data$model_yrs <- model_yrs
   }
-  if(is.null(end_year)) {
-    end_year <- max(c(max(biomass_dat$year), max(cpue_dat$year)))
-  }
-  model_yrs <- start_year:end_year
-  input$data$model_yrs <- model_yrs
 
   # expand biomass and cpue survey data
   biom <- biomass_dat %>%
@@ -345,6 +355,9 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   # user-defined scaling parameter (q) options
   input <- set_q_options(input, q_options)
 
+  if(length(input$data$model_yrs) != nrow(input$par$log_biomass_pred)) {
+    stop("Incorrect model dimensions. The length or number of rows for the log_biomass_pred input (i.e. 'biomsd' in the rwout.rep file) and length of model years must match.")
+  }
   return(input)
 }
 

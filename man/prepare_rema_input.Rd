@@ -243,3 +243,8 @@ default \code{q_options} using the following list of entries:
         }
 }}
 }
+\examples{
+\dontrun{
+# place holder for example code
+}
+}

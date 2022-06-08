@@ -14,6 +14,13 @@ read_rep <- function(fn) {
   idx[inan] <- FALSE
   vnam <- repfile[idx] # list names
   nv <- length(vnam) # number of objects
+
+  # errors specific to rema
+  if(nv != length(unique(vnam))) {
+    dups <- vnam[duplicated(vnam)]
+    stop(paste0("The following variable(s) are duplicated in the rwout.rep file provided by the user: ", dups, ". The duplicate entries must be removed in order for read_re_dat() to function properly. Please check the re.tpl for a duplicate write_R() statement to fix future rwout.rep files."))
+  }
+
   A <- list()
   ir <- 0
   for (i in 1:nv) {

@@ -16,18 +16,23 @@
 #'   long format, and initial parameter values for log_biomass_pred (the random
 #'   effects matrix), ready for input into REMA
 #' @export
+#'
+#' @examples
+#' \dontrun{
+#' # place holder for example code
+#' }
 read_re_dat <- function(filename,
                         biomass_strata_names = NULL,
                         cpue_strata_names = NULL) {
 
-  # ex <- 'goasst.rep' # rema example
-  # ex <- 'bsaisst.rep' # rem example
-  ex <- 'aisr.rep' # re example
+  # ex <- 'inst/example_data/goasst.rep' # rema example
+  # ex <- 'inst/example_data/bsaisst.rep' # rem example
+  # ex <- 'inst/example_data/aisr.rep' # re example
   # biomass_strata_names <- c('CGOA1', 'CGOA2', 'CGOA3',
   #                           'EGOA1', 'EGOA2', 'EGOA3',
   #                           'WGOA1', 'WGOA2', 'WGOA3')
   # cpue_strata_names <- c('CGOA', 'EGOA', 'WGOA')
-  # filename <- re_ex
+  # filename <- ex
 
   x <- read_rep(fn = filename)
 
@@ -40,6 +45,22 @@ read_re_dat <- function(filename,
     re_version <- 're'
   }
   # re_version
+
+  # check that the variables needed exist in the rwout.rep file provided by the
+  # user
+  rem_names <- c('yrs_srv', 'srv_est', 'srv_sd', 'biomsd')
+  rema_names <- c('yrs_srv_LL', 'srv_est_LL', 'srv_sd_LL')
+  missing_names <- NULL
+  if(!all(rem_names %in% names(x))) {
+    missing_names <- c(missing_names, rem_names[!rem_names %in% names(x)])
+  }
+  if(re_version == 'rema' & !all(rema_names %in% names(x))) {
+    missing_names <- c(missing_names, rema_names[!rema_names %in% names(x)])
+  }
+  if(!is.null(missing_names)) {
+    stop(paste0("The following variable(s) are missing from the rwout.rep file provided by the user: ", missing_names, ". These variables must be added to the rwout report file in order for read_re_dat() to function properly. This can be achieved by adding another write_R() statement in the re.tpl file to include the missing variables to the rwout.rep file, or it could be added manually."))
+  }
+
 
   # for multivariate models, assign strata names and check dimensions
   if(re_version %in% c('rem', 'rema')) {

@@ -6,10 +6,48 @@
 # inst/example_data
 
 #
+library(rema)
+
+# univariate ----
 re_dat <- read_re_dat(filename = 'inst/example_data/aisr.rep')
 
-prepare_rema_input(model_name = 'AI_shortraker_RE',
+input <- prepare_rema_input(model_name = 'AI_shortraker_RE',
                    re_dat = re_dat)
+
+obj <- TMB::MakeADFun(data = input$data,
+                      parameters = input$par,
+                      random = input$random,
+                      dll = 'rema',
+                      map = input$map)
+opt <- with(obj, nlminb(par, fn, gr))
+adrep <- TMB::sdreport(obj)
+adrep$value
+obj$report()
+
+# REM ----
+
+re_dat <- read_re_dat(filename = 'inst/example_data/bsaisst.rep')
+
+input <- prepare_rema_input(model_name = 'BSAI_shortspine_thornyhead',
+                            re_dat = re_dat)
+
+obj <- TMB::MakeADFun(data = input$data,
+                      parameters = input$par,
+                      random = input$random,
+                      dll = 'rema',
+                      map = input$map)
+opt <- with(obj, nlminb(par, fn, gr))
+adrep <- TMB::sdreport(obj)
+adrep
+adrep$sd
+adrep$value
+adrep$par.random # biomass random effects
+
+best <- obj$env$last.par.best # maximum likelihood estimates
+adrep$gradient.fixed
+names(adrep)
+adrep$value[names(adrep$value) == 'biomass_pred']
+adrep$value
 
 # test values - remove when fxn is complete
 q_options = list(pointer_q_cpue = c(1, 2, 3),
