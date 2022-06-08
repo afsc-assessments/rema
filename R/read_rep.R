@@ -1,11 +1,18 @@
-# Read ADMB .rep file and return an R object of type 'list'
-#
-# Code from Steve Martell, D'Arcy N. Webbe
+#' Read ADMB .rep file and return an R object of type 'list'
+#'
+#' Code modified from original function provided by Steve Martell, D'Arcy N. Webber
 
-# called by read_re_dat.R
-# fn = name of ADMB output file to be read
-# returns object of type "list" with ADMB outputs therein
-
+#' called by \code{\link{read_re_dat}}
+#'
+#' @param fn full path and name of ADMB output file to be read
+#'
+#' @return object of type "list" with ADMB outputs therein
+#' @export
+#'
+#' @examples
+#' \dontrun{
+#' read_rep(fn = 'inst/example_data/goasr.rep')
+#' }
 read_rep <- function(fn) {
   options(warn = -1) # Suppress the NA message in the coercion to double
   repfile <- scan(fn, what = "character", flush = TRUE, blank.lines.skip = FALSE, quiet = TRUE, na.strings = c("nan","-nan"))

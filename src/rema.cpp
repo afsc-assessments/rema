@@ -27,7 +27,8 @@ bool isNA(Type x){return R_IsNA(asDouble(x));}
 template<class Type>
 Type objective_function<Type>::operator() ()
 {
-  // 0 = no, 1 = yes (estimate scaling parameters)
+  // 0 = no, 1 = yes; include cpue survey index and estimate scaling
+  // parameters?
   DATA_INTEGER(multi_survey);
 
   // model dimensions
@@ -40,6 +41,7 @@ Type objective_function<Type>::operator() ()
   // survey cpue (relative index that can inform trend in the model)
   DATA_MATRIX(cpue_obs);
   DATA_MATRIX(cpue_cv);
+  DATA_INTEGER(sum_cpue_index); // 0 = no, 1 = yes (default = 0); can the cpue index be summed across strata (e.g. Relative population numbers = 1, Numbers per hachi = 0)
 
   DATA_IVECTOR(pointer_PE_biomass); // length = ncol biomass obs (# strata), unique values = number of PE parameters
   DATA_IVECTOR(pointer_q_biomass);  // length = ncol biomass obs (# strata), unique values = number of q parameters
@@ -57,7 +59,7 @@ Type objective_function<Type>::operator() ()
   // scaling parameter penalty/prior options and likelihood weight for CPUE data
   // likelihood
   DATA_INTEGER(q_penalty_type); // 0 = "none", 1 = "normal_prior"
-  DATA_VECTOR(pmu_log_q);
+  DATA_VECTOR(pmu_log_q); // normal prior
   DATA_VECTOR(psig_log_q);
 
   // parameter section
@@ -77,62 +79,63 @@ Type objective_function<Type>::operator() ()
   int n_strata_cpue = cpue_obs.cols();
 
   // // model predictions
-  matrix<Type> biomass_pred(nyrs,n_strata_biomass);
-  matrix<Type> cpue_pred(nyrs,n_strata_cpue);
+  matrix<Type> biomass_pred(nyrs, n_strata_biomass);
+  matrix<Type> cpue_pred(nyrs, n_strata_cpue);
   // predicted biomass summed to the same strata level as the cpue strata
+  // (useful when n_strata_biomass > n_strata_cpue)
   matrix<Type> biomass_pred_cpue_strata(nyrs, n_strata_cpue);
   biomass_pred_cpue_strata.setZero();
 
   // derived quantities - biomass survey observations
-  matrix<Type> log_biomass_obs(nyrs,n_strata_biomass);
+  matrix<Type> log_biomass_obs(nyrs, n_strata_biomass);
   log_biomass_obs = log(biomass_obs.array());
-  matrix<Type> biomass_sd(nyrs,n_strata_biomass);
-  biomass_sd = biomass_cv.array() * biomass_cv.array() + Type(1.0);
-  biomass_sd = sqrt(log(biomass_sd.array()));
+  matrix<Type> log_biomass_sd(nyrs, n_strata_biomass);
+  log_biomass_sd = biomass_cv.array() * biomass_cv.array() + Type(1.0);
+  log_biomass_sd = sqrt(log(log_biomass_sd.array()));
 
   // derived quantities - cpue survey observations
-  matrix<Type> log_cpue_obs(nyrs,n_strata_cpue);
+  matrix<Type> log_cpue_obs(nyrs, n_strata_cpue);
   log_cpue_obs = log(cpue_obs.array());
-  matrix<Type> cpue_sd(nyrs,n_strata_cpue);
+  matrix<Type> cpue_sd(nyrs, n_strata_cpue);
   cpue_sd = cpue_cv.array() * cpue_cv.array() + Type(1.0);
   cpue_sd = sqrt(log(cpue_sd.array()));
-  matrix<Type> log_cpue_pred(nyrs,n_strata_cpue);
+  matrix<Type> log_cpue_pred(nyrs, n_strata_cpue);
   log_cpue_pred.setZero();
-
-  // process errors
-  vector<Type> PE_var(log_PE.size());
-  PE_var = exp(Type(2.0) * log_PE.array());
 
   // random effects contribution to likelihood
   for(int i = 1; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
-      jnll(0) -= dnorm(log_biomass_pred(i-1,j), log_biomass_pred(i,j), exp(log_PE(pointer_PE_biomass(j))), true);
+      jnll(0) -= dnorm(log_biomass_pred(i-1,j), log_biomass_pred(i,j), exp(log_PE(pointer_PE_biomass(j))), 1);
     }
   }
   switch(PE_penalty_type) {
 
   case 0: // no penalty
     jnll(1) = jnll(1);
+    break;
 
   case 1: // weight
     jnll(1) = wt_PE * jnll(1);
+    break;
 
   case 2: // squared penalty
     for(int k = 0; k < log_PE.size(); k++) {
       jnll(1) += pow(log_PE(k) + squared_penalty_PE(k), 2);
     }
+    break;
 
   case 3: // normal prior
     for(int k = 0; k < log_PE.size(); k++) {
       jnll(1) -= dnorm(log_PE(k), pmu_log_PE(k), psig_log_PE(k), 1);
     }
+    break;
   }
 
   // data likelihood for biomass survey observations
   for(int i = 0; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
-      if(biomass_obs(i,j) >= 0) {
-        jnll(1) -= dnorm(log_biomass_pred(i,j), log(biomass_obs(i,j) + 0.0001), biomass_sd(i,j), true);
+      if(biomass_obs(i,j) > 0) {
+        jnll(1) -= dnorm(log_biomass_pred(i,j), log(biomass_obs(i,j)), log_biomass_sd(i,j), 1);
       }
     }
   }
@@ -161,7 +164,7 @@ Type objective_function<Type>::operator() ()
       // get data likelihood for cpue survey
       for(int j = 0; j < n_strata_cpue; j++) {
         if(cpue_obs(i,j) >= 0) {
-          jnll(2) -= dnorm(log(cpue_pred(i,j)), log(cpue_obs(i,j) + 0.0001), cpue_sd(i,j), true);
+          jnll(2) -= dnorm(log(cpue_pred(i,j)), log(cpue_obs(i,j)), cpue_sd(i,j), 1);
         }
       }
     }
@@ -173,11 +176,13 @@ Type objective_function<Type>::operator() ()
 
     case 0: // no penalty
       jnll(2) = jnll(2);
+      break;
 
     case 1: // normal prior
       for(int k = 0; k < log_q.size(); k++) {
         jnll(2) -= dnorm(log_q(k), pmu_log_q(k), psig_log_q(k), 1);
       }
+      break;
     }
   }
 
@@ -188,10 +193,13 @@ Type objective_function<Type>::operator() ()
   ADREPORT(tot_biomass_pred);
 
   if(multi_survey == 1) {
-    vector<Type> tot_cpue_pred;
-    tot_cpue_pred = cpue_pred.rowwise().sum();
     ADREPORT(cpue_pred);
-    ADREPORT(tot_cpue_pred);
+    // only sum cpue index if its appropriate.
+    if(sum_cpue_index == 1){
+      vector<Type> tot_cpue_pred;
+      tot_cpue_pred = cpue_pred.rowwise().sum();
+      ADREPORT(tot_cpue_pred);
+    }
   }
 
   REPORT(jnll);

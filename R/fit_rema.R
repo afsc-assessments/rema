@@ -1,0 +1,164 @@
+#' Fit REMA model
+#'
+#' Fits the compiled REMA model using \code{\link[TMB:MakeADFun]{TMB::MakeADFun}} and
+#' \code{\link[stats:nlminb]{stats::nlminb}}. Function modified from
+#' \code{wham::fit_wham}.
+#'
+#' Future development: Implement one-step-ahead (OSA) residuals for evaluating
+#' model goodness-of-fit \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}).
+#' OSA residuals are more appropriate than standard residuals for models with
+#' random effects
+#' (\href{https://link.springer.com/article/10.1007/s10651-017-0372-4}{Thygeson
+#' et al. (2017)}. See
+#' \href{https://github.com/timjmiller/wham/blob/master/R/fit_wham.R}{WHAM} for
+#' an example of OSA implementation and additional OSA residual options (e.g.
+#' full Gaussian approximation instead of the (default) generic method using
+#' \code{osa.opts=list(method="fullGaussian")}.
+#'
+#' @param input Named list with components needed to fit model using \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}:
+#'   \describe{
+#'     \item{\code{$data}}{Data, a list of data objects for model fitting or
+#'     specification (e.g., user-defined pentalties, index pointers, etc.). A
+#'     required input to \code{\link[TMB]{MakeADFun}}.}
+#'     \item{\code{$par}}{Parameters, a list of all random and fixed effects
+#'     parameter objects.  A required input to \code{\link[TMB]{MakeADFun}}.}
+#'     \item{\code{$map}}{Map, a mechanism for collecting and fixing parameters
+#'     in TMB.  An input to \code{\link[TMB]{MakeADFun}}.}
+#'     \item{\code{$random}}{Character vector defining the parameters to treat
+#'     as random effects. An input to \code{\link[TMB]{MakeADFun}}.}
+#'     \item{\code{$model_name}}{Character, name of the model, e.g. \code{"GOA
+#'     shortraker with LLS by depth strata"}. Useful for model comparison.}
+#'   }
+#' @param n.newton integer, number of additional Newton steps after
+#'   optimization. Not an option that is currently needed, but is passed to
+#'   \code{\link{fit_tmb}}. Default = \code{0}.
+#' @param do.sdrep T/F, calculate standard deviations of model parameters? See
+#'   \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
+#' @param do.retro T/F, do retrospective analysis? Default = \code{FALSE}.
+#'   RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.
+#' @param n.peels integer, number of peels to use in retrospective analysis.
+#'   Default = \code{7}.RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.
+#' @param do.osa T/F, calculate one-step-ahead (OSA) residuals? Default =
+#'   \code{FALSE}. See details. Returned as \code{mod$osa$residual}. OSA
+#'   RESIDUALS NOT IMPLEMENTED.
+#' @param osa.opts list of options for calculating OSA residuals, passed to
+#'   \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}. Default:
+#'   \code{osa.opts = list(method = "cdf", parallel = TRUE)}. OSA RESIDUALS NOT
+#'   IMPLEMENTED.
+#' @param model (optional), a previously fit rema model.
+#' @param do.check T/F, check if model parameters are identifiable? Passed to
+#'   \code{\link{fit_tmb}}. Runs internal function \code{check_estimability},
+#'   originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper.
+#'   Default = \code{TRUE}.
+#' @param MakeADFun.silent T/F, Passed to silent argument of
+#'   \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
+#' @param retro.silent T/F, Passed to argument of internal retro function.
+#'   Determines whether peel number is printed to screen. Default =
+#'   \code{FALSE}.
+#' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}.
+#' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object?
+#'   If \code{FALSE}, only save
+#'   \code{\link[TMB:summary.sdreport]{summary.sdreport}} to reduce model object
+#'   file size. Default = \code{TRUE}.
+#'
+#' @return a fit TMB model with additional output if specified:
+#'   \describe{
+#'     \item{\code{$rep}}{List of derived quantity estimates (e.g. estimated
+#'     biomass)}
+#'     \item{\code{$sdrep}}{Parameter estimates (and standard errors if
+#'     \code{do.sdrep = TRUE})}
+#'     \item{\code{$peels}}{Retrospective analysis (if \code{do.retro = TRUE}).
+#'     RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.}
+#'     \item{\code{$osa}}{One-step-ahead residuals (if \code{do.osa = TRUE}).
+#'     OSA RESIDUALS NOT IMPLEMENTED.}
+#'   }
+#'
+#' @useDynLib rema
+#' @export
+#'
+#' @seealso \code{\link{fit_tmb}},
+#'          \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}
+#'
+#' @examples
+#' \dontrun{
+#' # place holder for example code
+#' }
+fit_rema <- function(input,
+                     n.newton = 0,
+                     do.sdrep = TRUE,
+                     do.retro = FALSE,
+                     n.peels = 7,
+                     do.osa = FALSE,
+                     osa.opts = list(method = "cdf", parallel = TRUE),
+                     model = NULL,
+                     do.check = FALSE,
+                     MakeADFun.silent = FALSE,
+                     retro.silent = FALSE,
+                     do.fit = TRUE,
+                     save.sdrep = TRUE) {
+  # DELETE ME
+  # n.newton = 1
+  # do.sdrep = TRUE
+  # do.retro = FALSE
+  # n.peels = 7
+  # do.osa = FALSE
+  # osa.opts = list(method = "cdf", parallel = TRUE)
+  # model = NULL
+  # do.check = FALSE
+  # MakeADFun.silent = FALSE
+  # retro.silent = FALSE
+  # do.fit = TRUE
+  # save.sdrep = TRUE
+
+  # fit model
+  if(is.null(model)){
+    mod <- TMB::MakeADFun(input$data, input$par, DLL = "rema", random = input$random, map = input$map, silent = MakeADFun.silent)
+  } else {mod = model}
+
+  mod$years <- input$data$model_yrs
+  mod$model_name <- input$model_name
+  mod$input <- input
+  ver <- sessioninfo::package_info() %>% as.data.frame %>% dplyr::filter(package == "rema") %>% dplyr::select(loadedversion, source) %>% unname
+  mod$rema_version <- paste0(ver, collapse=" / ")
+  if(do.fit){
+    btime <- Sys.time()
+    mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep)
+    mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"), 2)
+
+    # Get report of standard deviations of derived variables in a TMB model.
+    # These are variables which have been defined using ADREPORT() in the .cpp
+    # file. Variance calculations use the delta method.
+    if(do.sdrep) {
+      # mod <- do_sdrep(mod, save.sdrep = save.sdrep)
+      mod$sdrep <- try(TMB::sdreport(mod))
+      mod$is_sdrep <- !is.character(mod$sdrep)
+      if(mod$is_sdrep) mod$na_sdrep <- any(is.na(summary(mod$sdrep,"fixed")[,2])) else mod$na_sdrep = NA
+      if(!save.sdrep) mod$sdrep <- summary(mod$sdrep) # only save summary to reduce model object size
+    }
+
+    # retrospective analysis
+    if(do.retro){
+      warning("Retrospective analysis not currently implemented for REMA.")
+      # placeholder for future development. check wham code for good example.
+    }
+
+    # one-step-ahead residuals
+    if(do.osa){
+      warning("One-step-ahead (OSA) residuals not currently implemented for REMA.")
+      # placeholder for future development. check wham code for good example.
+    }
+
+    # error message reporting
+    if(!is.null(mod$err)) warning(paste("","** Error during model fit. **",
+                                        "Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
+    # if(!is.null(mod$err_retro)) warning(paste("","** Error during retrospective analysis. **",
+    #                                           paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
+  }
+  else { # model not fit, but generate report and parList without fitted model. potential use for future development (e.g. projections?)
+    mod$rep = mod$report() # par values don't matter because function has not been evaluated
+    mod$parList = mod$env$parList()
+    warning("Model not fit. Report and parList not valid because objective function has not been evaluated. Try do.fit = TRUE.")
+  }
+
+  return(mod)
+}

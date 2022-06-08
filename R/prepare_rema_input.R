@@ -142,9 +142,12 @@
 #' @param multi_survey logical; if equal to 1 (TRUE), the model will fit to an additional
 #'   cpue survey index if provided in \code{cpue_dat}. Default = FALSE
 #' @param re_dat list object returned from \code{\link{read_re_dat.R}}, which
-#'   includes biomass_dat, optional cpue_dat, and model predictions of log
-#'   biomass by strata in the correct format for input into REMA. If supplied,
-#'   the user does not need enter biomass_dat or cpue_dat.
+#'   includes biomass survey data (\code{re_dat$biomass_dat}), optional cpue
+#'   survey data (\code{re_dat$cpue_dat}), years for model predictions
+#'   (\code{re_dat$model_yrs}), and model predictions of log biomass by strata
+#'   in the correct format for input into REMA
+#'   (\code{re_dat$init_log_biomass_pred}). If supplied, the user does not need
+#'   enter biomass_dat or cpue_dat.
 #' @param biomass_dat data.frame of biomass survey data in long format with the
 #'   following columns:
 #'   \describe{
@@ -181,11 +184,19 @@
 #'   estimate (i.e. sd(cpue)/cpue)}
 #'   }
 #' @param start_year (optional) integer value specifying the start year for
-#'   estimation in the model; defaults to the first year of data in either
+#'   estimation in the model; if \code{re_dat} is supplied, this value defaults
+#'   to \code{start_year = min(re_dat$model_yrs)}; if \code{re_dat} is not
+#'   supplied, this value defaults to the first year in either
 #'   \code{biomass_dat} or \code{cpue_dat}
 #' @param end_year (optional) integer value specifying the last year for
-#'   estimation in the model; defaults to the last year of data in either
-#'   \code{biomass_dat} or \code{cpue_dat}
+#'   estimation in the model; if \code{re_dat} is supplied, this value defaults
+#'   to \code{end_year = max(re_dat$model_yrs)}; if \code{re_dat} is not
+#'   supplied, this value defaults to the last year in either \code{biomass_dat}
+#'   or \code{cpue_dat}
+#' @param sum_cpue_index T/F, is the CPUE survey index able to be summed across
+#'   strata to get a total CPUE survey index? For example, Longline survey
+#'   relative population numbers (RPNs) are summable but longline survey numbers
+#'   per hachi (CPUE) are not. Default = \code{FALSE}.
 #' @param wt_biomass (optional) a multiplier on the biomass survey data
 #'   component of the negative log likelihood. For example, \code{nll =
 #'   wt_biomass * nll}. Defaults to \code{wt_biomass = 1}
@@ -221,6 +232,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                                re_dat = NULL,
                                biomass_dat = NULL,
                                cpue_dat = NULL,
+                               sum_cpue_index = FALSE,
                                start_year = NULL,
                                end_year = NULL,
                                wt_biomass = NULL,
@@ -252,8 +264,13 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     cpue_dat <- re_dat$cpue_dat
   }
 
-  # model years
-  if(!is.null(cpue_dat)) {
+  # model years (years for predictions)
+  if(!is.null(re_dat)) {
+
+    model_yrs <- re_dat$model_yrs
+    input$data$model_yrs <- model_yrs
+
+  } else if(!is.null(cpue_dat)) {
 
     if(is.null(start_year)) start_year <- min(c(min(biomass_dat$year), min(cpue_dat$year)))
     if(is.null(end_year)) end_year <- max(c(max(biomass_dat$year), max(cpue_dat$year)))
@@ -346,6 +363,13 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     dplyr::select(-year, -value) %>%
     as.matrix()
 
+  # cpue index summable across strata?
+  if(isTRUE(sum_cpue_index)){
+    input$data$sum_cpue_index <- 1
+  } else {
+    input$data$sum_cpue_index <- 0 # default
+  }
+
   # define default values for remaining data, par, and map list objects for TMB
   input <- set_defaults(input)
 
@@ -356,7 +380,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   input <- set_q_options(input, q_options)
 
   if(length(input$data$model_yrs) != nrow(input$par$log_biomass_pred)) {
-    stop("Incorrect model dimensions. The length or number of rows for the log_biomass_pred input (i.e. 'biomsd' in the rwout.rep file) and length of model years must match.")
+    stop(paste0("Incorrect model dimensions! The number of rows for the log_biomass_pred input (nrow = ", nrow(input$par$log_biomass_pred), ") starting values (i.e. 'biomsd' in the rwout.rep file) and length of model years (", length(input$data$model_yrs), ") must match. The user can adjust the model 'start_year' and 'end_year' as needed."))
   }
   return(input)
 }

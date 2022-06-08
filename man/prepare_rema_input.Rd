@@ -10,6 +10,7 @@ prepare_rema_input(
   re_dat = NULL,
   biomass_dat = NULL,
   cpue_dat = NULL,
+  sum_cpue_index = FALSE,
   start_year = NULL,
   end_year = NULL,
   wt_biomass = NULL,
@@ -25,9 +26,12 @@ prepare_rema_input(
 cpue survey index if provided in \code{cpue_dat}. Default = FALSE}
 
 \item{re_dat}{list object returned from \code{\link{read_re_dat.R}}, which
-includes biomass_dat, optional cpue_dat, and model predictions of log
-biomass by strata in the correct format for input into REMA. If supplied,
-the user does not need enter biomass_dat or cpue_dat.}
+includes biomass survey data (\code{re_dat$biomass_dat}), optional cpue
+survey data (\code{re_dat$cpue_dat}), years for model predictions
+(\code{re_dat$model_yrs}), and model predictions of log biomass by strata
+in the correct format for input into REMA
+(\code{re_dat$init_log_biomass_pred}). If supplied, the user does not need
+enter biomass_dat or cpue_dat.}
 
 \item{biomass_dat}{data.frame of biomass survey data in long format with the
 following columns:
@@ -66,13 +70,22 @@ estimated in log space. If the user wants to treat this value as an NA
 estimate (i.e. sd(cpue)/cpue)}
 }}
 
+\item{sum_cpue_index}{T/F, is the CPUE survey index able to be summed across
+strata to get a total CPUE survey index? For example, Longline survey
+relative population numbers (RPNs) are summable but longline survey numbers
+per hachi (CPUE) are not. Default = \code{FALSE}.}
+
 \item{start_year}{(optional) integer value specifying the start year for
-estimation in the model; defaults to the first year of data in either
+estimation in the model; if \code{re_dat} is supplied, this value defaults
+to \code{start_year = min(re_dat$model_yrs)}; if \code{re_dat} is not
+supplied, this value defaults to the first year in either
 \code{biomass_dat} or \code{cpue_dat}}
 
 \item{end_year}{(optional) integer value specifying the last year for
-estimation in the model; defaults to the last year of data in either
-\code{biomass_dat} or \code{cpue_dat}}
+estimation in the model; if \code{re_dat} is supplied, this value defaults
+to \code{end_year = max(re_dat$model_yrs)}; if \code{re_dat} is not
+supplied, this value defaults to the last year in either \code{biomass_dat}
+or \code{cpue_dat}}
 
 \item{wt_biomass}{(optional) a multiplier on the biomass survey data
 component of the negative log likelihood. For example, \code{nll =

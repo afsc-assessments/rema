@@ -48,7 +48,7 @@ read_re_dat <- function(filename,
 
   # check that the variables needed exist in the rwout.rep file provided by the
   # user
-  rem_names <- c('yrs_srv', 'srv_est', 'srv_sd', 'biomsd')
+  rem_names <- c('yrs_srv', 'srv_est', 'srv_sd', 'biomsd', 'yrs')
   rema_names <- c('yrs_srv_LL', 'srv_est_LL', 'srv_sd_LL')
   missing_names <- NULL
   if(!all(rem_names %in% names(x))) {
@@ -65,7 +65,8 @@ read_re_dat <- function(filename,
   # for multivariate models, assign strata names and check dimensions
   if(re_version %in% c('rem', 'rema')) {
 
-    if(is.null(biomass_strata_names)) { biomass_strata_names <- paste('biomass_strata', 1:ncol(x$srv_est), sep = '_')
+    if(is.null(biomass_strata_names)) {
+      biomass_strata_names <- paste('biomass_strata', 1:ncol(x$srv_est), sep = '_')
     }
 
     if(length(biomass_strata_names) != ncol(x$srv_est)) {
@@ -98,7 +99,8 @@ read_re_dat <- function(filename,
 
   if(re_version == 'rema') {
 
-    if(is.null(cpue_strata_names)) { cpue_strata_names <- paste('cpue_strata', 1:ncol(x$srv_est_LL), sep = '_')
+    if(is.null(cpue_strata_names)) {
+      cpue_strata_names <- paste('cpue_strata', 1:ncol(x$srv_est_LL), sep = '_')
     }
 
     if(length(cpue_strata_names) != ncol(x$srv_est_LL)) {
@@ -132,8 +134,13 @@ read_re_dat <- function(filename,
   if(is.vector(init_log_biomass_pred)) {
     init_log_biomass_pred <- as.matrix(init_log_biomass_pred)
   }
+
+  # years for predictions
+  model_yrs <- x$yrs
+
   re_dat <- list(biomass_dat = biomass_dat,
                  cpue_dat = cpue_dat,
+                 model_yrs = model_yrs,
                  init_log_biomass_pred = init_log_biomass_pred)
 
   return(re_dat)
