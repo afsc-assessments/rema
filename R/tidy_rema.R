@@ -15,12 +15,6 @@
 #'   if \code{save = TRUE}. NOT YET IMPLEMENTED.
 #' @param alpha_ci (optional) the significance level for generating confidence
 #'   intervals. Default = 0.05
-#' @param biomass_survey_name (optional) user-defined description of the biomass
-#'   survey (e.g. 'GOA bottom trawl survey'). Defaults to the generic label
-#'   'Biomass survey index'
-#' @param cpue_survey_name (optional) user-defined description of the optional
-#'   CPUE survey (e.g. 'NMFS longline survey'). Defaults to the generic label
-#'   'CPUE survey index'
 #'
 #' @return a list with the following items:
 #'   \describe{
@@ -64,15 +58,9 @@
 tidy_rema <- function(rema_model,
                       save = FALSE, # NOT IMPLEMENTED
                       path = NULL, # NOT IMPLEMENTED
-                      alpha_ci = 0.05,
-                      biomass_survey_name = 'Biomass survey index',
-                      cpue_survey_name = 'CPUE survey index') {
+                      alpha_ci = 0.05) {
 
-  # DELETE ME
-  # alpha_ci = 0.05
-  # rema_model = m3
-  # biomass_index_description = 'GOA bottom trawl survey'
-  # cpue_index_description = 'NMFS Longline Survey'
+  # rema_model = m
 
   if(isFALSE(rema_model$is_sdrep)) {
     stop("Please run fit_rema() with 'do.sdrep = TRUE' in order to get tidied output of estimated and derived variables with standard errors and confidence intervals. See ?fit_rema for details.")
@@ -161,7 +149,6 @@ tidy_rema <- function(rema_model,
   # available and appropriate to sum
   ts_totals <- NULL
   ts_totals <- data.frame(model_name = input$model_name,
-                          survey_description = c(biomass_index_description, cpue_index_description),
                           variable = c('tot_biomass_pred', 'tot_cpue_pred')) %>%
     dplyr::right_join(tidyr::expand_grid(variable = unique(names(sdrep$value)[grepl('tot_', names(sdrep$value))]),
                                          year = data$model_yrs) %>%
@@ -173,7 +160,6 @@ tidy_rema <- function(rema_model,
   # Model estimates of biomass by strata
   ts_biomass_strata <- NULL
   ts_biomass_strata <- tidyr::expand_grid(model_name = input$model_name,
-                                          survey_description = biomass_index_description,
                                           strata = colnames(data$biomass_obs),
                                           variable = unique(names(sdrep$value)[!grepl(c('tot_|cpue'), names(sdrep$value))]),
                                           year = data$model_yrs) %>%
@@ -200,7 +186,6 @@ tidy_rema <- function(rema_model,
 
   if(data$multi_survey == 1){
     ts_cpue_strata <- tidyr::expand_grid(model_name = input$model_name,
-                                         survey_description = cpue_index_description,
                                          strata = colnames(data$cpue_obs),
                                          variable = unique(names(sdrep$value)[names(sdrep$value) %in% c('cpue_pred', 'biomass_pred_cpue_strata')]),
                                          year = data$model_yrs) %>%
@@ -254,6 +239,11 @@ tidy_rema <- function(rema_model,
   }
 
   # Prepare final output
+
+  if(is.null(ts_totals)) {
+    stop("Something went wrong... Please review the ?prepare_rema_input, ?fit_rema, and make sure REMA converged by running check_convergence(my_rema_model).")
+  }
+
   if(is.null(parameter_estimates)) {
     stop("Something went wrong... Please review the ?prepare_rema_input, ?fit_rema, and make sure REMA converged by running check_convergence(my_rema_model).")
   }
@@ -273,37 +263,35 @@ tidy_rema <- function(rema_model,
   if(!is.null(biomass_by_cpue_strata)) {
     biomass_by_cpue_strata <- biomass_by_cpue_strata
   } else {
-    biomass_by_cpue_strata <- "This variable is reserved for scenarios where there are more biomass survey strata than CPUE survey strata, and the user wants predicted biomass at the same resolution as the CPUE survey index."
-  }
-
-  if(is.null(ts_totals)) {
-    stop("Something went wrong... Please review the ?prepare_rema_input, ?fit_rema, and make sure REMA converged by running check_convergence(my_rema_model).")
+    biomass_by_cpue_strata <- "'biomass_by_cpue_strata' is reserved for multi-survey scenarios when there are more biomass survey strata than CPUE survey strata, and the user wants predicted biomass at the same resolution as the CPUE survey index."
   }
 
   total_predicted_biomass <- ts_totals %>%
     dplyr::filter(variable == 'tot_biomass_pred')
 
   if(length(unique(biomass_by_strata$strata)) == 1) {
-    total_predicted_biomass <- "Only one biomass survey stratum was entered, therefore there was nothing to sum over. Please use $biomass_by_strata instead."
+    message("Just an fyi: only one biomass survey stratum was fit in REMA, therefore the predicted values in tidy_rema$biomass_by_strata and tidy_rema$total_predicted_biomass will be the same.")
   }
 
-  if(any(grepl('tot_cpue_pred', unique(names(sdrep$value)))) & length(unique(cpue_by_strata$strata)) > 1) {
+  if(data$multi_survey == 0) {
+    total_predicted_cpue <- "REMA was fit only to biomass survey data, therefore no CPUE predictions available. If the user has a CPUE survey index and wants to fit to it, please see ?prepare_rema_input() for details."
+  } else if (data$sum_cpue_index == 0) {
+    total_predicted_cpue <- "The CPUE survey index provided was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."
+  } else {
     total_predicted_cpue <- ts_totals %>%
       dplyr::filter(variable == 'tot_cpue_pred')
-  } else if(any(grepl('tot_cpue_pred', unique(names(sdrep$value)))) & length(unique(cpue_by_strata$strata)) == 1) {
-    total_predicted_cpue <- "Only one CPUE survey stratum was entered, therefore there was nothing to sum over. Please use $cpue_by_strata instead."
-  } else if (data$multi_survey == 0) {
-    total_predicted_cpue <- "REMA was fit only to biomass survey data, therefore no CPUE predictions available. If the user has a CPUE survey index and wants to fit to it, please see ?prepare_rema_input() for details."
-  } else {
-    total_predicted_cpue <- "The CPUE survey index provided was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."
+
+    if(length(unique(cpue_by_strata$strata == 1))) {
+      message("Just an fyi: only one CPUE survey stratum was fit in REMA, therefore the predicted values in tidy_rema$cpue_by_strata and tidy_rema$total_predicted_cpue will be the same.")
+    }
   }
 
   output <- list(parameter_estimates = parameter_estimates,
-                 biomass_by_strata = biomass_summary,
+                 biomass_by_strata = biomass_by_strata,
                  cpue_by_strata = cpue_by_strata,
                  biomass_by_cpue_strata = biomass_by_cpue_strata,
                  total_predicted_biomass = total_predicted_biomass,
-                 tot_predicted_cpue = total_predicted_cpue)
+                 total_predicted_cpue = total_predicted_cpue)
 
   return(output)
 }

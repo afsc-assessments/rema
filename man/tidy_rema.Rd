@@ -4,14 +4,7 @@
 \alias{tidy_rema}
 \title{Tidy REMA model output}
 \usage{
-tidy_rema(
-  rema_model,
-  save = FALSE,
-  path = NULL,
-  alpha_ci = 0.05,
-  biomass_survey_name = "Biomass survey index",
-  cpue_survey_name = "CPUE survey index"
-)
+tidy_rema(rema_model, save = FALSE, path = NULL, alpha_ci = 0.05)
 }
 \arguments{
 \item{rema_model}{list out output from \code{\link{fit_rema}}, which includes
@@ -25,14 +18,6 @@ if \code{save = TRUE}. NOT YET IMPLEMENTED.}
 
 \item{alpha_ci}{(optional) the significance level for generating confidence
 intervals. Default = 0.05}
-
-\item{biomass_survey_name}{(optional) user-defined description of the biomass
-survey (e.g. 'GOA bottom trawl survey'). Defaults to the generic label
-'Biomass survey index'}
-
-\item{cpue_survey_name}{(optional) user-defined description of the optional
-CPUE survey (e.g. 'NMFS longline survey'). Defaults to the generic label
-'CPUE survey index'}
 }
 \value{
 a list with the following items:
