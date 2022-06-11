@@ -58,8 +58,7 @@ read_re_dat <- function(filename,
     stop(paste0("The following variable(s) are missing from the rwout.rep file provided by the user: ", toString(missing_names), ". These variables must be added to the rwout report file in order for read_re_dat() to function properly. This can be achieved by adding another write_R() statement in the re.tpl file to include the missing variables to the rwout.rep file, or it could be added manually."))
   }
 
-
-  # for multivariate models, assign strata names and check dimensions
+  # assign strata names and check dimensions
   if(re_version %in% c('rem', 'rema')) {
 
     if(is.null(biomass_strata_names)) {
@@ -83,8 +82,18 @@ read_re_dat <- function(filename,
       dplyr::mutate(cv = ifelse(cv == -9, NA, cv))
 
   } else {
-    biomass_est <- data.frame(strata = 'biomass_strata_1', year = x$yrs_srv, biomass = x$srv_est)
-    biomass_cv <- data.frame(strata = 'biomass_strata_1', year = x$yrs_srv, cv = x$srv_sd)
+
+    if(is.null(biomass_strata_names)) {
+      biomass_est <- data.frame(strata = 'biomass_strata_1', year = x$yrs_srv, biomass = x$srv_est)
+      biomass_cv <- data.frame(strata = 'biomass_strata_1', year = x$yrs_srv, cv = x$srv_sd)
+    }
+
+    if(length(biomass_strata_names) > 1) {
+      stop(paste("the number of 'biomass_strata_names' provided by the user is greater than one but there is only one biomass survey (i.e. 'srv_est') in the rwout.rep. Please provide only one biomass survey stratum name."))
+    }
+
+    biomass_est <- data.frame(strata = biomass_strata_names, year = x$yrs_srv, biomass = x$srv_est)
+    biomass_cv <- data.frame(strata = biomass_strata_names, year = x$yrs_srv, cv = x$srv_sd)
   }
 
   # check for NAs, unique srv_yrs, number of strata

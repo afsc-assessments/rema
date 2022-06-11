@@ -95,9 +95,10 @@ a fit TMB model with additional output if specified:
   }
 }
 \description{
-Fits the compiled REMA model using \code{\link[TMB:MakeADFun]{TMB::MakeADFun}} and
-\code{\link[stats:nlminb]{stats::nlminb}}. Function modified from
-\code{wham::fit_wham}.
+Fits the compiled REMA model using
+\code{\link[TMB:MakeADFun]{TMB::MakeADFun}} and
+\code{\link[stats:nlminb]{stats::nlminb}}. Source code and documentation modified from
+\href{https://github.com/timjmiller/wham/blob/master/R/fit_wham.R}{wham::fit_wham}.
 }
 \details{
 Future development: Implement one-step-ahead (OSA) residuals for evaluating

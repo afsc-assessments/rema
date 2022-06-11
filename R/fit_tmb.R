@@ -3,7 +3,8 @@
 #' Runs optimization on the TMB model using
 #' \code{\link[stats:nlminb]{stats::nlminb}}. If specified, takes additional
 #' Newton steps and calculates standard deviations. Internal function called by
-#' \code{\link{fit_rema}}. Function modified from \code{wham::fit_tmb}.
+#' \code{\link{fit_rema}}. Source code and documentation modified from
+#' \href{https://github.com/timjmiller/wham/blob/master/R/fit_tmb.R}{wham::fit_tmb}.
 #'
 #' @param model Output from \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}.
 #' @param n.newton Integer, number of additional Newton steps after

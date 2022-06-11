@@ -146,11 +146,11 @@ or by using \code{\link{read_re_dat}}, this function prepares the data and
 parameter settings for \code{\link{fit_rema}}. The model can be set up to run
 in single survey mode with one or more strata, or in multi-survey mode, which
 uses an additional relative abundance index (i.e. cpue) to inform predicted
-biomass. The inputs and options described below related to the cpue survey
-data or scaling parameter $q$, such as \code{cpue_dat} and \code{options_q}
-are only needed when \code{multi_survey = 1}. The function structure and
+biomass. The optional inputs described below related to the CPUE survey data
+or scaling parameter \code{q}, such as \code{cpue_dat} and \code{options_q}
+are only used when \code{multi_survey = 1}. The function structure and
 documentation is modeled after
-\href{https://github.com/timjmiller/wham/blob/3a056359121bc1a911ed6a95c9203db4db456baa/R/prepare_wham_input.R}{wham}.
+\href{https://github.com/timjmiller/wham/blob/3a056359121bc1a911ed6a95c9203db4db456baa/R/prepare_wham_input.R}{wham::prepare_wham_input}.
 }
 \details{
 \code{PE_options} allows the user to specify options for process error (PE) parameters. If

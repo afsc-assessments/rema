@@ -2,10 +2,10 @@
 #'
 #' Takes outputs from \code{\link{fit_rema}}, and returns a named list of tidied
 #' data.frames that include parameter estimates and standard errors, and derived
-#' variables from the model. Code modified from
-#' \href{https://github.com/timjmiller/wham/blob/master/R/par_tables_fn.R}{\code{wham}}.
-#' For more information on "tidy" data, please see
-#' \href{https://vita.had.co.nz/papers/tidy-data.pdf}{Wickham 2014}.
+#' variables from the model. For more information on "tidy" data, please see
+#' \href{https://vita.had.co.nz/papers/tidy-data.pdf}{Wickham 2014}. Some code
+#' modified from
+#' \href{https://github.com/timjmiller/wham/blob/master/R/par_tables_fn.R}{\code{wham::par_tables_fun}}.
 #'
 #' @param rema_model list out output from \code{\link{fit_rema}}, which includes
 #'   model results but also inputs
@@ -187,10 +187,10 @@ tidy_rema <- function(rema_model,
   if(data$multi_survey == 1){
     ts_cpue_strata <- tidyr::expand_grid(model_name = input$model_name,
                                          strata = colnames(data$cpue_obs),
-                                         variable = unique(names(sdrep$value)[names(sdrep$value) %in% c('cpue_pred', 'biomass_pred_cpue_strata')]),
+                                         variable = unique(names(sdrep$value)[names(sdrep$value) %in% c('cpue_pred')]),
                                          year = data$model_yrs) %>%
-      dplyr::mutate(pred = sdrep$value[names(sdrep$value) %in% c('cpue_pred', 'biomass_pred_cpue_strata')],
-                    pred_sd = sdrep$sd[which(names(sdrep$value) %in% c('cpue_pred', 'biomass_pred_cpue_strata'))]) %>%
+      dplyr::mutate(pred = sdrep$value[names(sdrep$value) %in% c('cpue_pred')],
+                    pred_sd = sdrep$sd[which(names(sdrep$value) %in% c('cpue_pred'))]) %>%
       dplyr::mutate(pred_lci = pred - qnorm(1 - alpha_ci/2) * pred_sd,
                     pred_uci = pred + qnorm(1 - alpha_ci/2) * pred_sd) %>%
       plyr::mutate(pred_lci = ifelse(pred_lci < 0, 0, pred_lci))
@@ -206,7 +206,17 @@ tidy_rema <- function(rema_model,
 
     # if there are more biomass strata than cpue strata, get
     # predicted biomass by cpue strata for comparison at the same strata level
-    if(!all(ts_cpue_strata$variable == 'biomass_pred_cpue_strata')) {
+    if(any(grepl('biomass_pred_cpue_strata', unique(names(sdrep$value))))) {
+
+      biomass_by_cpue_strata <- tidyr::expand_grid(model_name = input$model_name,
+                                           strata = colnames(data$cpue_obs),
+                                           variable = unique(names(sdrep$value)[names(sdrep$value) %in% c('biomass_pred_cpue_strata')]),
+                                           year = data$model_yrs) %>%
+        dplyr::mutate(pred = sdrep$value[names(sdrep$value) %in% c('biomass_pred_cpue_strata')],
+                      pred_sd = sdrep$sd[which(names(sdrep$value) %in% c('biomass_pred_cpue_strata'))]) %>%
+        dplyr::mutate(pred_lci = pred - qnorm(1 - alpha_ci/2) * pred_sd,
+                      pred_uci = pred + qnorm(1 - alpha_ci/2) * pred_sd) %>%
+        plyr::mutate(pred_lci = ifelse(pred_lci < 0, 0, pred_lci))
 
       # join biomass and cpue strata definitions
 
@@ -215,7 +225,7 @@ tidy_rema <- function(rema_model,
       #   dplyr::left_join(data.frame(cpue_strata = unique(rema_model$input$cpue_dat$strata),
       #                               pointer = data$pointer_q_cpue + 1))
 
-      biomass_by_cpue_strata <- ts_cpue_strata %>%
+      biomass_by_cpue_strata <- biomass_by_cpue_strata %>%
         dplyr::filter(variable == 'biomass_pred_cpue_strata') # %>%
       # following code commented out because in most cases it is inappropriate
       # to sum the biomass observations because there could be a missing value
@@ -270,7 +280,7 @@ tidy_rema <- function(rema_model,
     dplyr::filter(variable == 'tot_biomass_pred')
 
   if(length(unique(biomass_by_strata$strata)) == 1) {
-    message("Just an fyi: only one biomass survey stratum was fit in REMA, therefore the predicted values in tidy_rema$biomass_by_strata and tidy_rema$total_predicted_biomass will be the same.")
+    message("Just an fyi: only one biomass survey stratum was fit in REMA, therefore the predicted values in output$biomass_by_strata and output$total_predicted_biomass will be the same.")
   }
 
   if(data$multi_survey == 0) {
@@ -281,8 +291,8 @@ tidy_rema <- function(rema_model,
     total_predicted_cpue <- ts_totals %>%
       dplyr::filter(variable == 'tot_cpue_pred')
 
-    if(length(unique(cpue_by_strata$strata == 1))) {
-      message("Just an fyi: only one CPUE survey stratum was fit in REMA, therefore the predicted values in tidy_rema$cpue_by_strata and tidy_rema$total_predicted_cpue will be the same.")
+    if(length(unique(cpue_by_strata$strata) == 1)) {
+      message("Just an fyi: only one CPUE survey stratum was fit in REMA, therefore the predicted values in output$cpue_by_strata and output$total_predicted_cpue will be the same.")
     }
   }
 

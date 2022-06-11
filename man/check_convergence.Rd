@@ -26,7 +26,7 @@ a list with at least the first three of these components: \describe{
 \description{
 Access quick convergence checks from `TMB` and `nlminb`. Function modified
 from
-\href{https://github.com/timjmiller/wham/blob/3a056359121bc1a911ed6a95c9203db4db456baa/R/check_convergence.R}{wham}.
+\href{https://github.com/timjmiller/wham/blob/3a056359121bc1a911ed6a95c9203db4db456baa/R/check_convergence.R}{wham::check_convergence}.
 }
 \examples{
 \dontrun{

@@ -57,10 +57,10 @@ a list with the following items:
 \description{
 Takes outputs from \code{\link{fit_rema}}, and returns a named list of tidied
 data.frames that include parameter estimates and standard errors, and derived
-variables from the model. Code modified from
-\href{https://github.com/timjmiller/wham/blob/master/R/par_tables_fn.R}{\code{wham}}.
-For more information on "tidy" data, please see
-\href{https://vita.had.co.nz/papers/tidy-data.pdf}{Wickham 2014}.
+variables from the model. For more information on "tidy" data, please see
+\href{https://vita.had.co.nz/papers/tidy-data.pdf}{Wickham 2014}. Some code
+modified from
+\href{https://github.com/timjmiller/wham/blob/master/R/par_tables_fn.R}{\code{wham::par_tables_fun}}.
 }
 \examples{
 \dontrun{

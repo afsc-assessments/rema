@@ -2,7 +2,7 @@
 #'
 #' Access quick convergence checks from `TMB` and `nlminb`. Function modified
 #' from
-#' \href{https://github.com/timjmiller/wham/blob/3a056359121bc1a911ed6a95c9203db4db456baa/R/check_convergence.R}{wham}.
+#' \href{https://github.com/timjmiller/wham/blob/3a056359121bc1a911ed6a95c9203db4db456baa/R/check_convergence.R}{wham::check_convergence}.
 #'
 #' @param mod output from \code{\link{fit_rema}}
 #' @param ret T/F, return list? Default = FALSE, just prints to console
