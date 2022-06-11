@@ -194,12 +194,18 @@ Type objective_function<Type>::operator() ()
 
   if(multi_survey == 1) {
     ADREPORT(cpue_pred);
-    // only sum cpue index if its appropriate.
+    // only sum cpue index if its appropriate for that index (e.g. appropriate
+    // for relative popn numbers, not appropriate for nominal cpue).
     if(sum_cpue_index == 1){
       vector<Type> tot_cpue_pred;
       tot_cpue_pred = cpue_pred.rowwise().sum();
       ADREPORT(tot_cpue_pred);
     }
+    // report biomass at the cpue strata level (and get SDs) if they have
+    // different strata definitions
+    if(n_strata_biomass > n_strata_cpue) {
+      ADREPORT(biomass_pred_cpue_strata);
+      }
   }
 
   REPORT(jnll);

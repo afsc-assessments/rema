@@ -1,13 +1,15 @@
 #' Prepare input data and parameters for REMA model
 #'
 #' After the data is read into R (either manually from a .csv or other data file
-#' or by using \code{\link{read_re_dat.R}}, this function prepares the data and
-#' parameter settings for \code{\link{fit_rema.R}}. The model can be set up to run
+#' or by using \code{\link{read_re_dat}}, this function prepares the data and
+#' parameter settings for \code{\link{fit_rema}}. The model can be set up to run
 #' in single survey mode with one or more strata, or in multi-survey mode, which
 #' uses an additional relative abundance index (i.e. cpue) to inform predicted
 #' biomass. The inputs and options described below related to the cpue survey
 #' data or scaling parameter $q$, such as \code{cpue_dat} and \code{options_q}
-#' are only needed when \code{multi_survey = 1}.
+#' are only needed when \code{multi_survey = 1}. The function structure and
+#' documentation is modeled after
+#' \href{https://github.com/timjmiller/wham/blob/3a056359121bc1a911ed6a95c9203db4db456baa/R/prepare_wham_input.R}{wham}.
 #'
 #' \code{PE_options} allows the user to specify options for process error (PE) parameters. If
 #' \code{NULL}, default PE specifications are used: one PE parameter is
@@ -213,14 +215,38 @@
 #'   details). only used when \code{multi_survey = 1}
 #'
 #' @return This function returns a named list with the following components:
-#'   \describe{ \item{\code{data}}{Named list of data, passed to
-#'   \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}} \item{\code{par}}{Named list
-#'   of parameters, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
+#'   \describe{
+#'   \item{\code{data}}{Named list of data, passed to
+#'   \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
+#'   \item{\code{par}}{Named list of parameters, passed to
+#'   \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
 #'   \item{\code{map}}{Named list defining how to optionally collect and fix
 #'   parameters, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
 #'   \item{\code{random}}{Character vector of parameters to treat as random
 #'   effects, passed to \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}}
-#'   \item{\code{years}}{Numeric vector of years to fit REMA model} }
+#'   \item{\code{model_name}}{Name of stock or other identifier for REMA model}
+#'   \item{\code{biomass_dat}}{A tidied long format data.frame of the biomass
+#'   survey observations and associated CVs by strata. This data.frame will be
+#'   'complete' in that it will include all modeled years, with missing values
+#'   treated as NAs. Note that this data.frame could differ from the
+#'   \code{re_dat$biomass_dat} or input \code{biomass} if zero biomass
+#'   observations were included. By default these zeros are converted to 0.0001
+#'   so that they can be fit in the likelihood. If the user wants to ignore
+#'   these zero values (i.e. treat them as a failed survey), they must manually
+#'   change the input data to reflect this assumption.}
+#'   \item{\code{cpue_dat}}{If optional CPUE survey data are provided and
+#'   \code{multi_survey = 1}, this will be a tidied long-format data.frame of
+#'   the CPUE survey observations and associated CVs by strata. This data.frame
+#'   will be 'complete' in that it will include all modeled years, with missing
+#'   values treated as NAs. Note that this data.frame could differ from the
+#'   \code{re_dat$biomass_dat} or input \code{biomass} if zero biomass
+#'   observations were included. By default these zeros are converted to 0.0001
+#'   so that they can be fit in the likelihood. If the user wants to ignore
+#'   these zero values (i.e. treat them as a failed survey), they must manually
+#'   change the input data to reflect this assumption. If optional CPUE survey
+#'   data are not provided or \code{multi_survey = 0}, this object will be
+#'   \code{NULL}.}
+#'   }
 #' @export
 #'
 #' @examples
@@ -243,11 +269,27 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   par = list()
   map = list()
   random = character()
+
+  # biomass_dat = if(!is.null(biomass_dat)) {
+  #   biomass_dat <- biomass_dat
+  # } else {
+  #   biomass_dat <- NULL
+  # }
+  # cpue_dat = if(!is.null(cpue_dat)) {
+  #   cpue_dat <- cpue_dat
+  # } else {
+  #   cpue_dat <- NULL
+  # }
+
   input = list(data = data,
                par = par,
                map = map,
                random = random,
                model_name = model_name)
+
+  # biomass_dat = biomass_dat,
+  # cpue_dat = cpue_dat
+
 
   # Fitting to more than one survey? default = no
   if(is.null(multi_survey)) {
@@ -378,6 +420,15 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
 
   # user-defined scaling parameter (q) options
   input <- set_q_options(input, q_options)
+
+  # output tidied version of the biomass and cpue data
+  input$biomass_dat <- biom %>%
+    dplyr::arrange(strata, year)
+  input$cpue_dat <- cpue %>%
+    dplyr::arrange(strata, year)
+  if(input$data$multi_survey == 0) {
+    input$cpue_dat <- NULL
+  }
 
   if(length(input$data$model_yrs) != nrow(input$par$log_biomass_pred)) {
     stop(paste0("Incorrect model dimensions! The number of rows for the log_biomass_pred input (nrow = ", nrow(input$par$log_biomass_pred), ") starting values (i.e. 'biomsd' in the rwout.rep file) and length of model years (", length(input$data$model_yrs), ") must match. The user can adjust the model 'start_year' and 'end_year' as needed."))

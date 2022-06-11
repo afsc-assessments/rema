@@ -22,10 +22,10 @@ read_rep <- function(fn) {
   vnam <- repfile[idx] # list names
   nv <- length(vnam) # number of objects
 
-  # errors specific to rema
+  # duplicated variable names will mess up this function
   if(nv != length(unique(vnam))) {
     dups <- vnam[duplicated(vnam)]
-    stop(paste0("The following variable(s) are duplicated in the rwout.rep file provided by the user: ", dups, ". The duplicate entries must be removed in order for read_re_dat() to function properly. Please check the re.tpl for a duplicate write_R() statement to fix future rwout.rep files."))
+    stop(paste0("The following variable(s) are duplicated in the rwout.rep file provided by the user: ", toString(dups), ". The duplicate entries must be removed in order for read_re_dat() and its internal function read_rep() to work properly. Please check the re.tpl for a duplicate write_R() statement to fix future rwout.rep files."))
   }
 
   A <- list()

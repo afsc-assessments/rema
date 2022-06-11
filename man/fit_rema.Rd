@@ -21,7 +21,9 @@ fit_rema(
 )
 }
 \arguments{
-\item{input}{Named list with components needed to fit model using \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}:
+\item{input}{Named list output from \code{\link{prepare_rema_input}}, which
+includes the following components needed to fit model using
+\code{\link[TMB:MakeADFun]{TMB::MakeADFun}}:
 \describe{
   \item{\code{$data}}{Data, a list of data objects for model fitting or
   specification (e.g., user-defined pentalties, index pointers, etc.). A
@@ -104,7 +106,7 @@ OSA residuals are more appropriate than standard residuals for models with
 random effects
 (\href{https://link.springer.com/article/10.1007/s10651-017-0372-4}{Thygeson
 et al. (2017)}. See
-\href{https://github.com/timjmiller/wham/blob/master/R/fit_wham.R}{WHAM} for
+\href{https://github.com/timjmiller/wham/blob/master/R/fit_wham.R}{wham} for
 an example of OSA implementation and additional OSA residual options (e.g.
 full Gaussian approximation instead of the (default) generic method using
 \code{osa.opts=list(method="fullGaussian")}.

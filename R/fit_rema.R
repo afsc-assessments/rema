@@ -10,12 +10,14 @@
 #' random effects
 #' (\href{https://link.springer.com/article/10.1007/s10651-017-0372-4}{Thygeson
 #' et al. (2017)}. See
-#' \href{https://github.com/timjmiller/wham/blob/master/R/fit_wham.R}{WHAM} for
+#' \href{https://github.com/timjmiller/wham/blob/master/R/fit_wham.R}{wham} for
 #' an example of OSA implementation and additional OSA residual options (e.g.
 #' full Gaussian approximation instead of the (default) generic method using
 #' \code{osa.opts=list(method="fullGaussian")}.
 #'
-#' @param input Named list with components needed to fit model using \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}:
+#' @param input Named list output from \code{\link{prepare_rema_input}}, which
+#'   includes the following components needed to fit model using
+#'   \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}:
 #'   \describe{
 #'     \item{\code{$data}}{Data, a list of data objects for model fitting or
 #'     specification (e.g., user-defined pentalties, index pointers, etc.). A
@@ -125,11 +127,8 @@ fit_rema <- function(input,
     mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep)
     mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"), 2)
 
-    # Get report of standard deviations of derived variables in a TMB model.
-    # These are variables which have been defined using ADREPORT() in the .cpp
-    # file. Variance calculations use the delta method.
+    # SEs for estimated parameters. Variance calculations use the delta method.
     if(do.sdrep) {
-      # mod <- do_sdrep(mod, save.sdrep = save.sdrep)
       mod$sdrep <- try(TMB::sdreport(mod))
       mod$is_sdrep <- !is.character(mod$sdrep)
       if(mod$is_sdrep) mod$na_sdrep <- any(is.na(summary(mod$sdrep,"fixed")[,2])) else mod$na_sdrep = NA

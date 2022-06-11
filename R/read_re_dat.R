@@ -25,13 +25,10 @@ read_re_dat <- function(filename,
                         biomass_strata_names = NULL,
                         cpue_strata_names = NULL) {
 
-  # ex <- 'inst/example_data/goasst.rep' # rema example
+  # ex <- 'inst/example_data/goasst.rep' # rema example 9 biomass strata, 3 cpue strata
+  # ex <- 'inst/example_data/goasr.rep' # rema example 3 biomass strata, 3 cpue strata
   # ex <- 'inst/example_data/bsaisst.rep' # rem example
   # ex <- 'inst/example_data/aisr.rep' # re example
-  # biomass_strata_names <- c('CGOA1', 'CGOA2', 'CGOA3',
-  #                           'EGOA1', 'EGOA2', 'EGOA3',
-  #                           'WGOA1', 'WGOA2', 'WGOA3')
-  # cpue_strata_names <- c('CGOA', 'EGOA', 'WGOA')
   # filename <- ex
 
   x <- read_rep(fn = filename)
@@ -58,7 +55,7 @@ read_re_dat <- function(filename,
     missing_names <- c(missing_names, rema_names[!rema_names %in% names(x)])
   }
   if(!is.null(missing_names)) {
-    stop(paste0("The following variable(s) are missing from the rwout.rep file provided by the user: ", missing_names, ". These variables must be added to the rwout report file in order for read_re_dat() to function properly. This can be achieved by adding another write_R() statement in the re.tpl file to include the missing variables to the rwout.rep file, or it could be added manually."))
+    stop(paste0("The following variable(s) are missing from the rwout.rep file provided by the user: ", toString(missing_names), ". These variables must be added to the rwout report file in order for read_re_dat() to function properly. This can be achieved by adding another write_R() statement in the re.tpl file to include the missing variables to the rwout.rep file, or it could be added manually."))
   }
 
 
