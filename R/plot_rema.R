@@ -18,6 +18,10 @@
 #' @param cpue_ylab (optional) label for y-axis of CPUE plots (e.g. 'Relative
 #'   Population Number'). Default = 'CPUE'.
 #'
+#' @return a list of ggplot2 plots or character string messages about the data.
+#'   Except for parameter estimates, the objects output from
+#'   \code{\link{tidy_rema}} are the same outputted from this function.
+#'
 #' @import ggplot2
 #' @export
 #' @seealso \code{\link{tidy_rema}}
@@ -99,7 +103,7 @@ plot_rema <- function(tidy_rema,
       geom_ribbon(aes(ymin = pred_lci, ymax = pred_uci),
                   col = 'grey', fill = 'grey') +
       geom_line() +
-      scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
+      scale_y_continuous(labels = scales::comma) + #, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = biomass_ylab)
   }
 
@@ -112,7 +116,7 @@ plot_rema <- function(tidy_rema,
       geom_ribbon(aes(ymin = pred_lci, ymax = pred_uci),
                   col = 'grey', fill = 'grey') +
       geom_line() +
-      scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
+      scale_y_continuous(labels = scales::comma) + #, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = cpue_ylab)
   }
 

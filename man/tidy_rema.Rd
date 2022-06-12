@@ -40,18 +40,17 @@ a list with the following items:
     survey strata, but the user wants to visualize predicted biomass at the
     same resolution as the CPUE predictions. In other scenarios, a character
     string is returned explaining the special use case for this object.}
-    \item{\code{$total_predicted_biomass}}{A tidy, long format data.frame of total
-    model predicted biomass summed across all biomass survey strata. If only one stratum is
-    used (i.e. the univariate RE), this will return a character string
-    directing the user to \code{output$biomass_by_strata}.}
+    \item{\code{$total_predicted_biomass}}{A tidy, long format data.frame of
+    total model predicted biomass summed across all biomass survey strata. If
+    only one stratum is used (i.e. the univariate RE), the predicted values
+    will be the same as \code{output$biomass_by_strata}.}
     \item{\code{$total_predicted_cpue}}{A tidy, long format data.frame of
     total model predicted CPUE summed across all CPUE survey strata. If only
-    one stratum is used (i.e. the univariate RE), this will return a
-    character string directing the user to \code{output$cpue_by_strata}. If
-    The CPUE survey index provided was defined as not summable in
-    prepare_rema_input(), an character string will be returned explaining how
-    to change this using the 'sum_cpue_index' in \code{?prepare_rema_input}
-    if appropriate.}
+    one stratum is used (i.e. the univariate RE), the predicted values will
+    be the same as \code{output$cpue_by_strata}. If The CPUE survey index
+    provided was defined as not summable in prepare_rema_input(), an
+    character string will be returned explaining how to change this using the
+    'sum_cpue_index' in \code{?prepare_rema_input} if appropriate.}
   }
 }
 \description{

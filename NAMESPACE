@@ -2,6 +2,7 @@
 
 export(check_convergence)
 export(check_estimability)
+export(compare_rema_models)
 export(fit_rema)
 export(plot_rema)
 export(prepare_rema_input)

@@ -36,18 +36,17 @@
 #'     survey strata, but the user wants to visualize predicted biomass at the
 #'     same resolution as the CPUE predictions. In other scenarios, a character
 #'     string is returned explaining the special use case for this object.}
-#'     \item{\code{$total_predicted_biomass}}{A tidy, long format data.frame of total
-#'     model predicted biomass summed across all biomass survey strata. If only one stratum is
-#'     used (i.e. the univariate RE), this will return a character string
-#'     directing the user to \code{output$biomass_by_strata}.}
+#'     \item{\code{$total_predicted_biomass}}{A tidy, long format data.frame of
+#'     total model predicted biomass summed across all biomass survey strata. If
+#'     only one stratum is used (i.e. the univariate RE), the predicted values
+#'     will be the same as \code{output$biomass_by_strata}.}
 #'     \item{\code{$total_predicted_cpue}}{A tidy, long format data.frame of
 #'     total model predicted CPUE summed across all CPUE survey strata. If only
-#'     one stratum is used (i.e. the univariate RE), this will return a
-#'     character string directing the user to \code{output$cpue_by_strata}. If
-#'     The CPUE survey index provided was defined as not summable in
-#'     prepare_rema_input(), an character string will be returned explaining how
-#'     to change this using the 'sum_cpue_index' in \code{?prepare_rema_input}
-#'     if appropriate.}
+#'     one stratum is used (i.e. the univariate RE), the predicted values will
+#'     be the same as \code{output$cpue_by_strata}. If The CPUE survey index
+#'     provided was defined as not summable in prepare_rema_input(), an
+#'     character string will be returned explaining how to change this using the
+#'     'sum_cpue_index' in \code{?prepare_rema_input} if appropriate.}
 #'   }
 #' @export
 #' @seealso \code{\link{fit_rema}}
@@ -100,7 +99,7 @@ tidy_rema <- function(rema_model,
     warning("No process error parameters were estimated for this model. Output is likely invalid.")
   } else {
 
-    pe_pars <- data.frame(model_name = input$model_name,
+    pe_pars <- data.frame(model_name = rema_model$input$model_name,
                           parameter = 'process_error',
                estimate = exp(pars$log_PE))
 
@@ -119,7 +118,7 @@ tidy_rema <- function(rema_model,
   # scaling parameters when available
   q_pars <- NULL
   if(data$multi_survey == 1 & length(pars$log_q) > 0) {
-    q_pars <- data.frame(model_name = input$model_name,
+    q_pars <- data.frame(model_name = rema_model$input$model_name,
                          parameter = 'scaling_parameter_q',
                          estimate = exp(pars$log_q))
 
@@ -148,7 +147,7 @@ tidy_rema <- function(rema_model,
   # Model estimates of summed total biomass across strata and summed total cpue across strata when
   # available and appropriate to sum
   ts_totals <- NULL
-  ts_totals <- data.frame(model_name = input$model_name,
+  ts_totals <- data.frame(model_name = rema_model$input$model_name,
                           variable = c('tot_biomass_pred', 'tot_cpue_pred')) %>%
     dplyr::right_join(tidyr::expand_grid(variable = unique(names(sdrep$value)[grepl('tot_', names(sdrep$value))]),
                                          year = data$model_yrs) %>%
@@ -159,7 +158,7 @@ tidy_rema <- function(rema_model,
 
   # Model estimates of biomass by strata
   ts_biomass_strata <- NULL
-  ts_biomass_strata <- tidyr::expand_grid(model_name = input$model_name,
+  ts_biomass_strata <- tidyr::expand_grid(model_name = rema_model$input$model_name,
                                           strata = colnames(data$biomass_obs),
                                           variable = unique(names(sdrep$value)[!grepl(c('tot_|cpue'), names(sdrep$value))]),
                                           year = data$model_yrs) %>%
@@ -185,7 +184,7 @@ tidy_rema <- function(rema_model,
   biomass_by_cpue_strata <- NULL
 
   if(data$multi_survey == 1){
-    ts_cpue_strata <- tidyr::expand_grid(model_name = input$model_name,
+    ts_cpue_strata <- tidyr::expand_grid(model_name = rema_model$input$model_name,
                                          strata = colnames(data$cpue_obs),
                                          variable = unique(names(sdrep$value)[names(sdrep$value) %in% c('cpue_pred')]),
                                          year = data$model_yrs) %>%
@@ -208,7 +207,7 @@ tidy_rema <- function(rema_model,
     # predicted biomass by cpue strata for comparison at the same strata level
     if(any(grepl('biomass_pred_cpue_strata', unique(names(sdrep$value))))) {
 
-      biomass_by_cpue_strata <- tidyr::expand_grid(model_name = input$model_name,
+      biomass_by_cpue_strata <- tidyr::expand_grid(model_name = rema_model$input$model_name,
                                            strata = colnames(data$cpue_obs),
                                            variable = unique(names(sdrep$value)[names(sdrep$value) %in% c('biomass_pred_cpue_strata')]),
                                            year = data$model_yrs) %>%

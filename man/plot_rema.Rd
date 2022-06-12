@@ -36,6 +36,11 @@ be saved if \code{save = TRUE}. NOT YET IMPLEMENTED.}
 \item{cpue_ylab}{(optional) label for y-axis of CPUE plots (e.g. 'Relative
 Population Number'). Default = 'CPUE'.}
 }
+\value{
+a list of ggplot2 plots or character string messages about the data.
+  Except for parameter estimates, the objects output from
+  \code{\link{tidy_rema}} are the same outputted from this function.
+}
 \description{
 Takes list output from \code{\link{tidy_rema}} and returns a list of
 \code{ggplot2} objects to be plotted or saved.
