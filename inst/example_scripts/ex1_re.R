@@ -83,6 +83,7 @@ plots <- plot_rema(tidy_rema = output,
                    biomass_ylab = 'Biomass (t)')
 
 plots$biomass_by_strata
+plots$biomass_by_strata + ggplot2::facet_wrap(~strata, ncol = 1, scales = 'free_y')
 plots$total_predicted_biomass
 plots$total_predicted_biomass + ggplot2::ggtitle('BSAI Shortspine thornyhead predicted biomass')
 
@@ -111,14 +112,18 @@ check_convergence(m)
 output <- tidy_rema(m)
 output$parameter_estimates
 
-plots <- plot_rema(output, biomass_ylab = 'Biomass (t)', cpue_ylab = 'Relative Population Weight')
+plots <- plot_rema(output, biomass_ylab = 'Biomass (t)', cpue_ylab = 'Relative Population Weights')
 plots$biomass_by_strata
 plots$cpue_by_strata
+cowplot::plot_grid(plots$biomass_by_strata,
+                   plots$cpue_by_strata,
+                   ncol = 1)
+
 plots$total_predicted_biomass
 plots$total_predicted_cpue
 plots$biomass_by_cpue_strata
 
-# Ex 3 REMA ----
+# Ex 4 REMA ----
 
 # Multi-survey and multi-strata version of the random effects model (REMA).
 # Example using GOA shortspine thornyhead, which has different strata
@@ -148,7 +153,7 @@ check_convergence(m)
 output <- tidy_rema(m)
 output$parameter_estimates
 plots <- plot_rema(output, biomass_ylab = 'Biomass (t)', cpue_ylab = 'Relative Population Weight')
-plots$biomass_by_strata + facet_wrap(~strata, nrow = 1)
+plots$biomass_by_strata
 plots$cpue_by_strata
 plots$biomass_by_cpue_strata
 plots$total_predicted_biomass

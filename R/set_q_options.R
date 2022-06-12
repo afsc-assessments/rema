@@ -7,7 +7,7 @@ set_q_options <- function(input, q_options) {
   map = input$map
 
   if((data$multi_survey == 1) &
-     (length(unique(input$data$pointer_q_biomass)) != length(unique(input$par$log_q))) &
+     (length(unique(input$data$pointer_q_biomass)) != length(input$par$log_q)) &
      is.null(q_options$pointer_q_biomass)) {
     stop("Strata definitions differ for the biomass and CPUE surveys. The user must define q_options$pointer_q_biomass, a vector with length = number of biomass survey strata and unique values = the number of log_q parameters. See q_options details in ?prepare_rema_input for examples of valid inputs.")
   }

@@ -104,7 +104,7 @@ plot_rema <- function(tidy_rema,
   }
 
   if(!is.data.frame(tidy_rema$total_predicted_cpue)) {
-    p5 <- "REMA was fit only to biomass survey data, therefore no CPUE predictions available. If the user has a CPUE survey index and wants to fit to it, please see ?prepare_rema_input() for details."
+    p5 <- "The CPUE survey index provided was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."
   } else {
 
     p5 <- ggplot(data = tidy_rema$total_predicted_cpue,

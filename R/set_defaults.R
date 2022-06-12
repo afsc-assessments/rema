@@ -10,7 +10,7 @@
 # 6) log_pred_biomass random effects: initial values determined using linear
 # approximation on biomass_dat observations
 
-set_defaults <- function(input) {
+set_defaults <- function(input, re_dat = NULL) {
 
   data = input$data
   par = input$par

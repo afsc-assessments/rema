@@ -254,7 +254,7 @@
 #' # place holder for example code
 #' }
 prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
-                               multi_survey = NULL,
+                               multi_survey = NULL, # should this be 0 or FALSE instead of null?
                                re_dat = NULL,
                                biomass_dat = NULL,
                                cpue_dat = NULL,
@@ -265,31 +265,30 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                                wt_cpue = NULL,
                                PE_options = NULL,
                                q_options = NULL) {
+
+  # model_name = 'REMA for unnamed stock'
+  # multi_survey = 1 # should this be 0 or FALSE instead of null?
+  # re_dat = NULL
+  # # biomass_dat = NULL
+  # # cpue_dat = NULL
+  # sum_cpue_index = FALSE
+  # start_year = NULL
+  # end_year = NULL
+  # wt_biomass = NULL
+  # wt_cpue = NULL
+  # PE_options = NULL
+  # q_options = NULL
+
   data = list()
   par = list()
   map = list()
   random = character()
-
-  # biomass_dat = if(!is.null(biomass_dat)) {
-  #   biomass_dat <- biomass_dat
-  # } else {
-  #   biomass_dat <- NULL
-  # }
-  # cpue_dat = if(!is.null(cpue_dat)) {
-  #   cpue_dat <- cpue_dat
-  # } else {
-  #   cpue_dat <- NULL
-  # }
 
   input = list(data = data,
                par = par,
                map = map,
                random = random,
                model_name = model_name)
-
-  # biomass_dat = biomass_dat,
-  # cpue_dat = cpue_dat
-
 
   # Fitting to more than one survey? default = no
   if(is.null(multi_survey)) {
@@ -413,7 +412,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   }
 
   # define default values for remaining data, par, and map list objects for TMB
-  input <- set_defaults(input)
+  input <- set_defaults(input, re_dat = re_dat)
 
   # user-defined process error (PE) options
   input <- set_PE_options(input, PE_options)

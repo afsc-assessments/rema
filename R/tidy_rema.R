@@ -279,9 +279,9 @@ tidy_rema <- function(rema_model,
   total_predicted_biomass <- ts_totals %>%
     dplyr::filter(variable == 'tot_biomass_pred')
 
-  if(length(unique(biomass_by_strata$strata)) == 1) {
-    message("Just an fyi: only one biomass survey stratum was fit in REMA, therefore the predicted values in output$biomass_by_strata and output$total_predicted_biomass will be the same.")
-  }
+  # if(length(unique(biomass_by_strata$strata)) == 1) {
+  #   message("Just an fyi: only one biomass survey stratum was fit in REMA, therefore the predicted values in output$biomass_by_strata and output$total_predicted_biomass will be the same.")
+  # }
 
   if(data$multi_survey == 0) {
     total_predicted_cpue <- "REMA was fit only to biomass survey data, therefore no CPUE predictions available. If the user has a CPUE survey index and wants to fit to it, please see ?prepare_rema_input() for details."
@@ -291,9 +291,9 @@ tidy_rema <- function(rema_model,
     total_predicted_cpue <- ts_totals %>%
       dplyr::filter(variable == 'tot_cpue_pred')
 
-    if(length(unique(cpue_by_strata$strata) == 1)) {
-      message("Just an fyi: only one CPUE survey stratum was fit in REMA, therefore the predicted values in output$cpue_by_strata and output$total_predicted_cpue will be the same.")
-    }
+    # if(length(unique(cpue_by_strata$strata) == 1)) {
+    #   message("Just an fyi: only one CPUE survey stratum was fit in REMA, therefore the predicted values in output$cpue_by_strata and output$total_predicted_cpue will be the same.")
+    # }
   }
 
   output <- list(parameter_estimates = parameter_estimates,
