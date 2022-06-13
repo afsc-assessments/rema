@@ -14,6 +14,23 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 10) +
                      cowplot::background_grid() +
                      cowplot::panel_border())
 
+# create directory for analysis: e.g., out_path <- "/path/to/save/output"
+if(!exists("out_path")) out_path = getwd()
+if(!dir.exists(out_path)) dir.create(out_path)
+setwd(out_path)
+
+# copy all data files to working directory
+rema_path <- find.package("rema")
+
+example_data_files <- list.files(path = file.path(rema_path, "inst/example_data"))
+file.copy(from = file.path(path = file.path(rema_path, "inst/example_data"),
+                           example_data_files),
+          to = out_path, overwrite = TRUE)
+
+# confirm you are in the working directory and it has the the example rwout.rep
+# and csv files
+list.files()
+
 # Ex 1 RE ----
 
 # Univariate version of the random effects model (i.e., single survey, single
@@ -23,10 +40,10 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 10) +
 # (1) Read in existing rwout.rep files, which is the report file generated from
 # the ADMB version of the random effects model
 ?read_admb_re
-admb_re <- read_admb_re(filename = 'inst/example_data/aisr_rwout.rep',
-                      # optional label for the single biomass survey stratum
-                      biomass_strata_names = 'Aleutians Islands',
-                      model_name = 'admb_re_aisr')
+admb_re <- read_admb_re(filename = 'aisr_rwout.rep',
+                        # optional label for the single biomass survey stratum
+                        biomass_strata_names = 'Aleutians Islands',
+                        model_name = 'admb_re_aisr')
 names(admb_re)
 
 # (2) Prepare REMA model inputs
@@ -74,7 +91,7 @@ compare$plots$total_predicted_biomass
 # and multiple strata. Example using Bering Sea and Aleutian Islands shortspine
 # thornyhead
 
-admb_re <- read_admb_re(filename = 'inst/example_data/bsaisst_rwout.rep',
+admb_re <- read_admb_re(filename = 'bsaisst_rwout.rep',
                       biomass_strata_names = c('AI survey', 'EBS slope survey', 'S. Bering Sea (AI survey)'),
                       model_name = 'admb_rem_bsaisst')
 
@@ -108,7 +125,7 @@ compare$plots$total_predicted_biomass
 # Multi-survey and multi-strata version of the random effects model (REMA).
 # Example using GOA shortraker rockfish, which uses the same strata definitions
 # for the biomass and CPUE survey.
-admb_re <- read_admb_re(filename = 'inst/example_data/goasr_rwout.rep',
+admb_re <- read_admb_re(filename = 'goasr_rwout.rep',
                         biomass_strata_names = c('CGOA', 'EGOA', 'WGOA'),
                         cpue_strata_names = c('CGOA', 'EGOA', 'WGOA'),
                         model_name = 'admb_rema_goasr')
@@ -154,7 +171,7 @@ compare$plots$total_predicted_cpue
 # Multi-survey and multi-strata version of the random effects model (REMA).
 # Example using GOA shortspine thornyhead, which has different strata
 # definitions for the biomass and CPUE surveys.
-admb_re <- read_admb_re(filename = 'inst/example_data/goasst_rwout.rep',
+admb_re <- read_admb_re(filename = 'goasst_rwout.rep',
                       biomass_strata_names = c('CGOA (0-500 m)', 'CGOA (501-700 m)', 'CGOA (701-1000 m)',
                                                'EGOA (0-500 m)', 'EGOA (501-700 m)', 'EGOA (701-1000 m)',
                                                'WGOA (0-500 m)', 'WGOA (501-700 m)', 'WGOA (701-1000 m)'),

@@ -18,6 +18,23 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 10) +
                      cowplot::background_grid() +
                      cowplot::panel_border())
 
+# create directory for analysis: e.g., out_path <- "/path/to/save/output"
+if(!exists("out_path")) out_path = getwd()
+if(!dir.exists(out_path)) dir.create(out_path)
+setwd(out_path)
+
+# copy all data files to working directory
+rema_path <- find.package("rema")
+
+example_data_files <- list.files(path = file.path(rema_path, "inst/example_data"))
+file.copy(from = file.path(path = file.path(rema_path, "inst/example_data"),
+                           example_data_files),
+          to = out_path, overwrite = TRUE)
+
+# confirm you are in the working directory and it has the the example rwout.rep
+# and csv files
+list.files()
+
 # (1) Read the biomass and cpue survey data from file. See ?prepare_rema_input
 # for information on required columns
 biomass_dat <- read.csv('inst/example_data/seo_ye_biomass.csv')
