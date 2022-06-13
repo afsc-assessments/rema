@@ -17,9 +17,9 @@ set_q_options <- function(input, q_options) {
   # FLAG - I can't actually think of a user scenario when this would be
   # desirable but thought I would build it in now instead of later
   if(!is.null(q_options$pointer_q_cpue)) {
-    if(length(q_options$pointer_q_cpue) != ncol(data$cpue_obs)) stop("Length of q_options$pointer_q_cpue must equal the number of CPUE survey strata (e.g. length(unique(re_dat$cpue_dat$strata)). Please see q_options details in ?prepare_rema_input.")
+    if(length(q_options$pointer_q_cpue) != ncol(data$cpue_obs)) stop("Length of q_options$pointer_q_cpue must equal the number of CPUE survey strata (e.g. length(unique(admb_re$cpue_dat$strata)). Please see q_options details in ?prepare_rema_input.")
     q_options$pointer_q_cpue <- as.integer(q_options$pointer_q_cpue)
-    if(!any(is.integer(q_options$pointer_q_cpue))) stop("q_options$pointer_q_cpue must be a vector of integer values starting at 1 with a vector length equal the number of CPUE survey strata (e.g. length(unique(re_dat$cpue_dat$strata)). Please see q_options details in ?prepare_rema_input.")
+    if(!any(is.integer(q_options$pointer_q_cpue))) stop("q_options$pointer_q_cpue must be a vector of integer values starting at 1 with a vector length equal the number of CPUE survey strata (e.g. length(unique(admb_re$cpue_dat$strata)). Please see q_options details in ?prepare_rema_input.")
     data$pointer_q_cpue <- (q_options$pointer_q_cpue)-1 # TMB started indexing at 0
     par$log_q <- rep(1, length(unique(data$pointer_q_cpue)))
     map$log_q <- par$log_q
@@ -33,10 +33,10 @@ set_q_options <- function(input, q_options) {
   # biomass strata correspond to the first log_q parameter,
   # and the third biomass strata corresponds to the second log_q parameter.
   if(!is.null(q_options$pointer_q_biomass)) {
-    if(length(q_options$pointer_q_biomass) != ncol(data$biomass_obs)) stop("Length of q_options$pointer_q_biomass must equal the number of biomass survey strata (e.g. length(unique(re_dat$biomass_dat$strata)). Please see q_options details in ?prepare_rema_input.")
-    if(length(unique(q_options$pointer_q_biomass)) != length(par$log_q)) stop("Length of unique values in q_options$pointer_q_biomass must equal the number of log_q parameters, usually length(unique(re_dat$cpue_dat$strata)). Please see q_options details in ?prepare_rema_input.")
+    if(length(q_options$pointer_q_biomass) != ncol(data$biomass_obs)) stop("Length of q_options$pointer_q_biomass must equal the number of biomass survey strata (e.g. length(unique(admb_re$biomass_dat$strata)). Please see q_options details in ?prepare_rema_input.")
+    if(length(unique(q_options$pointer_q_biomass)) != length(par$log_q)) stop("Length of unique values in q_options$pointer_q_biomass must equal the number of log_q parameters, usually length(unique(admb_re$cpue_dat$strata)). Please see q_options details in ?prepare_rema_input.")
     q_options$pointer_q_biomass <- as.integer(q_options$pointer_q_biomass)
-    if(!any(is.integer(q_options$pointer_q_biomass))) stop("q_options$pointer_q_biomass must be a vector of integer values starting at 1 with a vector length equal the number of biomass survey strata (e.g. length(unique(re_dat$biomass_dat$strata)). Please see q_options details in ?prepare_rema_input.")
+    if(!any(is.integer(q_options$pointer_q_biomass))) stop("q_options$pointer_q_biomass must be a vector of integer values starting at 1 with a vector length equal the number of biomass survey strata (e.g. length(unique(admb_re$biomass_dat$strata)). Please see q_options details in ?prepare_rema_input.")
     data$pointer_q_biomass <- (q_options$pointer_q_biomass)-1 # TMB started indexing at 0
   }
 

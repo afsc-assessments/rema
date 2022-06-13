@@ -14,7 +14,7 @@ object of type "list" with ADMB outputs therein
 }
 \description{
 Code modified from original function provided by Steve Martell, D'Arcy N. Webber
-called by \code{\link{read_re_dat}}
+called by \code{\link{read_admb_re}}
 }
 \examples{
 \dontrun{

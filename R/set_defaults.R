@@ -10,7 +10,7 @@
 # 6) log_pred_biomass random effects: initial values determined using linear
 # approximation on biomass_dat observations
 
-set_defaults <- function(input, re_dat = NULL) {
+set_defaults <- function(input, admb_re = NULL) {
 
   data = input$data
   par = input$par
@@ -37,14 +37,14 @@ set_defaults <- function(input, re_dat = NULL) {
   par$log_PE <- rep(1, length(unique(data$pointer_PE_biomass)))
   par$log_q <- rep(1, length(unique(data$pointer_q_cpue)))
 
-  # if re_dat is provided, use log biomass predictions as initial values for the
-  # model. if not, use linear interpolation to initiate starting values if none
-  # are supplied. rule = 2 means the value at the closest data extreme is used.
-  # for the purposes of linear interpolation, remove the very small values
-  # artificially generated for zero values
+  # if admb_re is provided using read_admb_re(), use log biomass predictions as
+  # initial values for the model. if not, use linear interpolation to initiate
+  # starting values if none are supplied. rule = 2 means the value at the
+  # closest data extreme is used. for the purposes of linear interpolation,
+  # remove the very small values artificially generated for zero values
 
-  if(!is.null(re_dat)) {
-    par$log_biomass_pred <- re_dat$init_log_biomass_pred
+  if(!is.null(admb_re)) {
+    par$log_biomass_pred <- admb_re$init_log_biomass_pred
   } else {
   tmp <- data$biomass_obs
   tmp[tmp < 0.0001] <- NA

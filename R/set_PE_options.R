@@ -9,9 +9,9 @@ set_PE_options <- function(input, PE_options) {
   # user defined index for PE estimation (e.g. there are 3 strata but user
   # only wants to estimate 1 PE, pointer_PE_biomass = c(1, 1, 1))
   if(!is.null(PE_options$pointer_PE_biomass)) {
-    if(length(PE_options$pointer_PE_biomass) != ncol(data$biomass_obs)) stop("Length of PE_options$pointer_PE_biomass must equal the number of biomass survey strata (e.g. length(unique(re_dat$biomass_dat$strata)). Please see PE_options details in ?prepare_rema_input.")
+    if(length(PE_options$pointer_PE_biomass) != ncol(data$biomass_obs)) stop("Length of PE_options$pointer_PE_biomass must equal the number of biomass survey strata (e.g. length(unique(admb_re$biomass_dat$strata)). Please see PE_options details in ?prepare_rema_input.")
     PE_options$pointer_PE_biomass <- as.integer(PE_options$pointer_PE_biomass)
-    if(!any(is.integer(PE_options$pointer_PE_biomass))) stop("PE_options$pointer_PE_biomass must be a vector of integer values starting at 1 with a vector length equal the number of biomass survey strata (e.g. length(unique(re_dat$biomass_dat$strata)). Please see PE_options details in ?prepare_rema_input.")
+    if(!any(is.integer(PE_options$pointer_PE_biomass))) stop("PE_options$pointer_PE_biomass must be a vector of integer values starting at 1 with a vector length equal the number of biomass survey strata (e.g. length(unique(admb_re$biomass_dat$strata)). Please see PE_options details in ?prepare_rema_input.")
     data$pointer_PE_biomass <- (PE_options$pointer_PE_biomass)-1 # TMB started indexing at 0
     par$log_PE <- rep(1, length(unique(data$pointer_PE_biomass)))
     map$log_PE <- par$log_PE

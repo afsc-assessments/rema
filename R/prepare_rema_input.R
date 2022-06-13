@@ -1,7 +1,7 @@
 #' Prepare input data and parameters for REMA model
 #'
 #' After the data is read into R (either manually from a .csv or other data file
-#' or by using \code{\link{read_re_dat}}, this function prepares the data and
+#' or by using \code{\link{read_admb_re}}, this function prepares the data and
 #' parameter settings for \code{\link{fit_rema}}. The model can be set up to run
 #' in single survey mode with one or more strata, or in multi-survey mode, which
 #' uses an additional relative abundance index (i.e. cpue) to inform predicted
@@ -140,15 +140,16 @@
 #'         }
 #' }}
 #'
-#' @param model_name character, name of stock/model
+#' @param model_name character, name of stock and identifier for REMA model used
+#'   for model comparison
 #' @param multi_survey logical; if equal to 1 (TRUE), the model will fit to an additional
 #'   cpue survey index if provided in \code{cpue_dat}. Default = FALSE
-#' @param re_dat list object returned from \code{\link{read_re_dat.R}}, which
-#'   includes biomass survey data (\code{re_dat$biomass_dat}), optional cpue
-#'   survey data (\code{re_dat$cpue_dat}), years for model predictions
-#'   (\code{re_dat$model_yrs}), and model predictions of log biomass by strata
+#' @param admb_re list object returned from \code{\link{read_admb_re.R}}, which
+#'   includes biomass survey data (\code{admb_re$biomass_dat}), optional cpue
+#'   survey data (\code{admb_re$cpue_dat}), years for model predictions
+#'   (\code{admb_re$model_yrs}), and model predictions of log biomass by strata
 #'   in the correct format for input into REMA
-#'   (\code{re_dat$init_log_biomass_pred}). If supplied, the user does not need
+#'   (\code{admb_re$init_log_biomass_pred}). If supplied, the user does not need
 #'   enter biomass_dat or cpue_dat.
 #' @param biomass_dat data.frame of biomass survey data in long format with the
 #'   following columns:
@@ -186,13 +187,13 @@
 #'   estimate (i.e. sd(cpue)/cpue)}
 #'   }
 #' @param start_year (optional) integer value specifying the start year for
-#'   estimation in the model; if \code{re_dat} is supplied, this value defaults
-#'   to \code{start_year = min(re_dat$model_yrs)}; if \code{re_dat} is not
+#'   estimation in the model; if \code{admb_re} is supplied, this value defaults
+#'   to \code{start_year = min(admb_re$model_yrs)}; if \code{admb_re} is not
 #'   supplied, this value defaults to the first year in either
 #'   \code{biomass_dat} or \code{cpue_dat}
 #' @param end_year (optional) integer value specifying the last year for
-#'   estimation in the model; if \code{re_dat} is supplied, this value defaults
-#'   to \code{end_year = max(re_dat$model_yrs)}; if \code{re_dat} is not
+#'   estimation in the model; if \code{admb_re} is supplied, this value defaults
+#'   to \code{end_year = max(admb_re$model_yrs)}; if \code{admb_re} is not
 #'   supplied, this value defaults to the last year in either \code{biomass_dat}
 #'   or \code{cpue_dat}
 #' @param sum_cpue_index T/F, is the CPUE survey index able to be summed across
@@ -229,7 +230,7 @@
 #'   survey observations and associated CVs by strata. This data.frame will be
 #'   'complete' in that it will include all modeled years, with missing values
 #'   treated as NAs. Note that this data.frame could differ from the
-#'   \code{re_dat$biomass_dat} or input \code{biomass} if zero biomass
+#'   \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
 #'   observations were included. By default these zeros are converted to 0.0001
 #'   so that they can be fit in the likelihood. If the user wants to ignore
 #'   these zero values (i.e. treat them as a failed survey), they must manually
@@ -239,7 +240,7 @@
 #'   the CPUE survey observations and associated CVs by strata. This data.frame
 #'   will be 'complete' in that it will include all modeled years, with missing
 #'   values treated as NAs. Note that this data.frame could differ from the
-#'   \code{re_dat$biomass_dat} or input \code{biomass} if zero biomass
+#'   \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
 #'   observations were included. By default these zeros are converted to 0.0001
 #'   so that they can be fit in the likelihood. If the user wants to ignore
 #'   these zero values (i.e. treat them as a failed survey), they must manually
@@ -255,7 +256,7 @@
 #' }
 prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                                multi_survey = NULL, # should this be 0 or FALSE instead of null?
-                               re_dat = NULL,
+                               admb_re = NULL,
                                biomass_dat = NULL,
                                cpue_dat = NULL,
                                sum_cpue_index = FALSE,
@@ -268,7 +269,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
 
   # model_name = 'REMA for unnamed stock'
   # multi_survey = 1 # should this be 0 or FALSE instead of null?
-  # re_dat = NULL
+  # admb_re = NULL
   # # biomass_dat = NULL
   # # cpue_dat = NULL
   # sum_cpue_index = FALSE
@@ -300,15 +301,15 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   }
 
   # biomass and cpue survey data
-  if(!is.null(re_dat)) {
-    biomass_dat <- re_dat$biomass_dat
-    cpue_dat <- re_dat$cpue_dat
+  if(!is.null(admb_re)) {
+    biomass_dat <- admb_re$biomass_dat
+    cpue_dat <- admb_re$cpue_dat
   }
 
   # model years (years for predictions)
-  if(!is.null(re_dat)) {
+  if(!is.null(admb_re)) {
 
-    model_yrs <- re_dat$model_yrs
+    model_yrs <- admb_re$model_yrs
     input$data$model_yrs <- model_yrs
 
   } else if(!is.null(cpue_dat)) {
@@ -359,7 +360,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     }
 
   } else if ((input$data$multi_survey == 1) & is.null(cpue_dat)){
-    stop(paste("user defined multi_survey as TRUE but did not provide CPUE survey data in the re_dat list or as a dataframe in the cpue_dat argument."))
+    stop(paste("user defined multi_survey as TRUE but did not provide CPUE survey data in the admb_re list or as a dataframe in the cpue_dat argument."))
 
     } else {
     cpue <- expand.grid(year = model_yrs,
@@ -412,7 +413,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   }
 
   # define default values for remaining data, par, and map list objects for TMB
-  input <- set_defaults(input, re_dat = re_dat)
+  input <- set_defaults(input, admb_re = admb_re)
 
   # user-defined process error (PE) options
   input <- set_PE_options(input, PE_options)

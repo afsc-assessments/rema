@@ -7,7 +7,7 @@
 prepare_rema_input(
   model_name = "REMA for unnamed stock",
   multi_survey = NULL,
-  re_dat = NULL,
+  admb_re = NULL,
   biomass_dat = NULL,
   cpue_dat = NULL,
   sum_cpue_index = FALSE,
@@ -20,17 +20,18 @@ prepare_rema_input(
 )
 }
 \arguments{
-\item{model_name}{character, name of stock/model}
+\item{model_name}{character, name of stock and identifier for REMA model used
+for model comparison}
 
 \item{multi_survey}{logical; if equal to 1 (TRUE), the model will fit to an additional
 cpue survey index if provided in \code{cpue_dat}. Default = FALSE}
 
-\item{re_dat}{list object returned from \code{\link{read_re_dat.R}}, which
-includes biomass survey data (\code{re_dat$biomass_dat}), optional cpue
-survey data (\code{re_dat$cpue_dat}), years for model predictions
-(\code{re_dat$model_yrs}), and model predictions of log biomass by strata
+\item{admb_re}{list object returned from \code{\link{read_admb_re.R}}, which
+includes biomass survey data (\code{admb_re$biomass_dat}), optional cpue
+survey data (\code{admb_re$cpue_dat}), years for model predictions
+(\code{admb_re$model_yrs}), and model predictions of log biomass by strata
 in the correct format for input into REMA
-(\code{re_dat$init_log_biomass_pred}). If supplied, the user does not need
+(\code{admb_re$init_log_biomass_pred}). If supplied, the user does not need
 enter biomass_dat or cpue_dat.}
 
 \item{biomass_dat}{data.frame of biomass survey data in long format with the
@@ -76,14 +77,14 @@ relative population numbers (RPNs) are summable but longline survey numbers
 per hachi (CPUE) are not. Default = \code{FALSE}.}
 
 \item{start_year}{(optional) integer value specifying the start year for
-estimation in the model; if \code{re_dat} is supplied, this value defaults
-to \code{start_year = min(re_dat$model_yrs)}; if \code{re_dat} is not
+estimation in the model; if \code{admb_re} is supplied, this value defaults
+to \code{start_year = min(admb_re$model_yrs)}; if \code{admb_re} is not
 supplied, this value defaults to the first year in either
 \code{biomass_dat} or \code{cpue_dat}}
 
 \item{end_year}{(optional) integer value specifying the last year for
-estimation in the model; if \code{re_dat} is supplied, this value defaults
-to \code{end_year = max(re_dat$model_yrs)}; if \code{re_dat} is not
+estimation in the model; if \code{admb_re} is supplied, this value defaults
+to \code{end_year = max(admb_re$model_yrs)}; if \code{admb_re} is not
 supplied, this value defaults to the last year in either \code{biomass_dat}
 or \code{cpue_dat}}
 
@@ -121,7 +122,7 @@ This function returns a named list with the following components:
   survey observations and associated CVs by strata. This data.frame will be
   'complete' in that it will include all modeled years, with missing values
   treated as NAs. Note that this data.frame could differ from the
-  \code{re_dat$biomass_dat} or input \code{biomass} if zero biomass
+  \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
   observations were included. By default these zeros are converted to 0.0001
   so that they can be fit in the likelihood. If the user wants to ignore
   these zero values (i.e. treat them as a failed survey), they must manually
@@ -131,7 +132,7 @@ This function returns a named list with the following components:
   the CPUE survey observations and associated CVs by strata. This data.frame
   will be 'complete' in that it will include all modeled years, with missing
   values treated as NAs. Note that this data.frame could differ from the
-  \code{re_dat$biomass_dat} or input \code{biomass} if zero biomass
+  \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
   observations were included. By default these zeros are converted to 0.0001
   so that they can be fit in the likelihood. If the user wants to ignore
   these zero values (i.e. treat them as a failed survey), they must manually
@@ -142,7 +143,7 @@ This function returns a named list with the following components:
 }
 \description{
 After the data is read into R (either manually from a .csv or other data file
-or by using \code{\link{read_re_dat}}, this function prepares the data and
+or by using \code{\link{read_admb_re}}, this function prepares the data and
 parameter settings for \code{\link{fit_rema}}. The model can be set up to run
 in single survey mode with one or more strata, or in multi-survey mode, which
 uses an additional relative abundance index (i.e. cpue) to inform predicted
