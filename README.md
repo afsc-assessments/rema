@@ -5,4 +5,16 @@ The random effects (RE) model was deveped by the North Pacific Fisheries Managem
 
 The structure, naming conventions, functions, and documentation in this library were inspired by and modeled after the Woods Hole Assessment Model ([WHAM](https://timjmiller.github.io/wham/); Miller and Stock 2020), an open-source, state-space age-structured assessment model and R package.
 
-This library is under development. How-to instructions are on the way.
+This library is under development and has not been vetted for use in stock assessments.
+
+## Installation
+
+Use the `devtools` package to install the `rema` package from github. If you do not have `devtools` installed, you must do that first.
+
+```
+
+# install.packages("devtools")
+devtools::install_github("JaneSullivan-NOAA/rema", dependencies = TRUE)
+
+```
+
