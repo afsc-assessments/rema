@@ -6,6 +6,10 @@
 #'
 #' @param rema_models list of REMA models to be compared. Each REMA model in the
 #'   list should be a list object output from \code{\link{fit_rema}}
+#' @param admb_re list of ADMB RE model input/output from
+#'   \code{\link{read_admb_re}}. Accepts a single list, not list of multiple
+#'   ADMB RE models. If admb_re is provided, no AIC calculations will be
+#'   conducted.
 #' @param save (optional) logical (T/F) save figures as \code{filetype} in
 #'   \code{path}. Default = FALSE. NOT YET IMPLEMENTED.
 #' @param filetype (optional) character string; type of figure file. Default =
@@ -41,13 +45,14 @@
 #' # placeholder for example
 #' }
 compare_rema_models <- function(rema_models,
+                                admb_re = NULL,
                                 save = FALSE,
                                 filetype = "png",
                                 path = NULL,
                                 xlab = NULL,
                                 biomass_ylab = 'Biomass',
                                 cpue_ylab = 'CPUE') {
-  # rema_models <- list(m1, m2)
+  # rema_models <- list(m)
   # biomass_ylab <- 'ROV biomass'
   # cpue_ylab <- 'IPHC setline survey CPUE'
   # xlab = NULL
@@ -62,6 +67,11 @@ compare_rema_models <- function(rema_models,
 
   # tidy out from all the selected models
   out <- lapply(rema_models, tidy_rema)
+
+  if(!is.null(admb_re)) {
+    warning("The biomass data in admb_re_results$biomass_by_strata assumes that any zero biomass observations were removed in the model fitting process (i.e. assumed to be NAs or failed surveys), which is the most common assumption across RE.tpls. Please check this assumption in the RE.tpl before using admb_re$admb_re_results to compare REMA model fits to the data.")
+    out[[length(out)+1]] <- admb_re$admb_re_results
+  }
 
   # pull unique variables from each model output list into its own list
   parameter_estimates <- lapply(out, `[[`, 1)
@@ -85,6 +95,8 @@ compare_rema_models <- function(rema_models,
   # output tidy parameter estimates
   if(tst_parameter_estimates) {
     out_parameter_estimates <- do.call('rbind', parameter_estimates)
+  } else if(!is.null(admb_re)){
+    out_parameter_estimates <- "Parameter estimates for the ADMB version of the RE model are not readily available for comparison with REMA models."
   } else {
     stop("Something went wrong... run check_convergence() and review output$parameter_estimates from tidy_rema() output for all REMA models you want to compare. All models should have should meet minimum convergence criteria and have valid parameter estimates.")
   }
@@ -99,6 +111,7 @@ compare_rema_models <- function(rema_models,
 
     if(isFALSE(tst_biomass_data)) {
       out_biomass_by_strata <- "The REMA models selected for comparison were fit to different biomass data, and therefore the fits to the biomass data by strata cannot be compared."
+      p1 <- "The REMA models selected for comparison were fit to different biomass data, and therefore the fits to the biomass data by strata cannot be compared."
     }
 
     if(isTRUE(tst_biomass_data)) {
@@ -114,10 +127,14 @@ compare_rema_models <- function(rema_models,
         geom_point(aes(x = year, y = obs), col = 'black') +
         geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
         scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
-        labs(x = xlab, y = biomass_ylab) +
+        labs(x = xlab, y = biomass_ylab,
+             fill = NULL, colour = NULL) +
         ggplot2::scale_fill_viridis_d() +
         ggplot2::scale_colour_viridis_d()
     }
+  } else if(!is.null(admb_re)) {
+    out_biomass_by_strata <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
+    p1 <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
   } else {
     stop("Something went wrong... run check_convergence() and review output$biomass_by_strata from tidy_rema() output for all REMA models you want to compare. All models should have should meet minimum convergence criteria and have valid biomass data and model predictions.")
   }
@@ -146,7 +163,8 @@ compare_rema_models <- function(rema_models,
         geom_point(aes(x = year, y = obs), col = 'black') +
         geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
         scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
-        labs(x = xlab, y = cpue_ylab) +
+        labs(x = xlab, y = cpue_ylab,
+             fill = NULL, colour = NULL) +
         ggplot2::scale_fill_viridis_d() +
         ggplot2::scale_colour_viridis_d()
     }
@@ -170,7 +188,8 @@ compare_rema_models <- function(rema_models,
       geom_point(aes(x = year, y = obs), col = 'black') +
       geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
       scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
-      labs(x = xlab, y = biomass_ylab) +
+      labs(x = xlab, y = biomass_ylab,
+           fill = NULL, colour = NULL) +
       ggplot2::scale_fill_viridis_d() +
       ggplot2::scale_colour_viridis_d()
 
@@ -191,10 +210,13 @@ compare_rema_models <- function(rema_models,
                   alpha = 0.25) +
       geom_line() +
       scale_y_continuous(labels = scales::comma) + #, expand = c(0, 0), limits = c(0, NA)) +
-      labs(x = xlab, y = biomass_ylab) +
+      labs(x = xlab, y = biomass_ylab,
+           fill = NULL, colour = NULL) +
       ggplot2::scale_fill_viridis_d() +
       ggplot2::scale_colour_viridis_d()
-
+  } else if(!is.null(admb_re)) {
+    out_total_predicted_biomass <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
+    p1 <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
   } else {
     stop("Something went wrong... run check_convergence() and review output$total_predicted_biomass from tidy_rema() output for all REMA models you want to compare. All models should have should meet minimum convergence criteria and have valid model predictions of total biomass.")
   }
@@ -211,7 +233,8 @@ compare_rema_models <- function(rema_models,
                   alpha = 0.25) +
       geom_line() +
       scale_y_continuous(labels = scales::comma) + #, expand = c(0, 0), limits = c(0, NA)) +
-      labs(x = xlab, y = cpue_ylab) +
+      labs(x = xlab, y = cpue_ylab,
+           fill = NULL, colour = NULL) +
       ggplot2::scale_fill_viridis_d() +
       ggplot2::scale_colour_viridis_d()
 
@@ -224,10 +247,15 @@ compare_rema_models <- function(rema_models,
   out_aic <- NULL
   run_aic <- NULL
 
-  # all models to be compared are run with multi_survey = 1, check that the
-  # biomass and survey data are equal before calculating AIC
-  if(all(sapply(rema_models, function(x) {isTRUE(x$input$data$multi_survey == 1)})) &
-     isTRUE(tst_biomass_data) & isTRUE(tst_cpue_data)
+  # no AIC for admb models
+  if(!is.null(admb_re)) {
+    run_aic <- FALSE
+    out_aic <- 'AIC calculations are not currently available for ADMB RE models.'
+
+    # all models to be compared are run with multi_survey = 1, check that the
+    # biomass and survey data are equal before calculating AIC
+  } else if(all(sapply(rema_models, function(x) {isTRUE(x$input$data$multi_survey == 1)})) &
+            isTRUE(tst_biomass_data) & isTRUE(tst_cpue_data)
   ) {
     run_aic <- TRUE
     # if all models are run with multi_survey = 0, check that biomass data are
@@ -256,7 +284,7 @@ compare_rema_models <- function(rema_models,
     out_aic <- data.frame(model_name = model_names,
                           aic = aic,
                           daic = daic) %>%
-      dplyr::arrange(-daic)
+      dplyr::arrange(daic)
 
   }
 

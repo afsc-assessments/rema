@@ -6,7 +6,7 @@
 \usage{
 prepare_rema_input(
   model_name = "REMA for unnamed stock",
-  multi_survey = NULL,
+  multi_survey = 0,
   admb_re = NULL,
   biomass_dat = NULL,
   cpue_dat = NULL,

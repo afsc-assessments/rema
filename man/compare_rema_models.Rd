@@ -6,6 +6,7 @@
 \usage{
 compare_rema_models(
   rema_models,
+  admb_re = NULL,
   save = FALSE,
   filetype = "png",
   path = NULL,
@@ -17,6 +18,11 @@ compare_rema_models(
 \arguments{
 \item{rema_models}{list of REMA models to be compared. Each REMA model in the
 list should be a list object output from \code{\link{fit_rema}}}
+
+\item{admb_re}{list of ADMB RE model input/output from
+\code{\link{read_admb_re}}. Accepts a single list, not list of multiple
+ADMB RE models. If admb_re is provided, no AIC calculations will be
+conducted.}
 
 \item{save}{(optional) logical (T/F) save figures as \code{filetype} in
 \code{path}. Default = FALSE. NOT YET IMPLEMENTED.}

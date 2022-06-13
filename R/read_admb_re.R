@@ -195,7 +195,8 @@ read_admb_re <- function(filename,
                                     x$biomA)
     names(biomass_by_strata) <- c('model_name', 'variable', 'year', unique(biomass_dat$strata))
     biomass_by_strata <- biomass_by_strata %>%
-      tidyr::pivot_longer(cols = -c(model_name, variable, year), names_to = 'strata', values_to = 'pred')
+      tidyr::pivot_longer(cols = -c(model_name, variable, year), names_to = 'strata', values_to = 'pred') %>%
+      dplyr::arrange(strata, year)
 
     # upper and lower model 95% CIs
     if(!is.null(x$LCI) & !is.null(x$UCI)) {
@@ -203,16 +204,19 @@ read_admb_re <- function(filename,
       tmplci <- cbind(data.frame(year = x$yrs), x$LCI)
       names(tmplci) <- c('year', unique(biomass_dat$strata))
       tmplci <- tmplci %>%
-        tidyr::pivot_longer(cols = -c(year), names_to = 'strata', values_to = 'pred_lci')
+        tidyr::pivot_longer(cols = -c(year), names_to = 'strata', values_to = 'pred_lci') %>%
+        dplyr::arrange(strata, year)
 
       tmpuci <- cbind(data.frame(year = x$yrs), x$UCI)
       names(tmpuci) <- c('year', unique(biomass_dat$strata))
       tmpuci <- tmpuci %>%
-        tidyr::pivot_longer(cols = -c(year), names_to = 'strata', values_to = 'pred_uci')
+        tidyr::pivot_longer(cols = -c(year), names_to = 'strata', values_to = 'pred_uci') %>%
+        dplyr::arrange(strata, year)
 
       biomass_by_strata <- biomass_by_strata %>%
         dplyr::left_join(tmplci) %>%
-        dplyr::left_join(tmpuci)
+        dplyr::left_join(tmpuci) %>%
+        dplyr::arrange(strata, year)
     }
   } else {
     biomass_by_strata <- "The rwout.rep file provided by the user did not have 'biomA', 'LCI', 'UCI', the analagous variables in the ADMB version of the RE model to biomass_by_strata."
@@ -226,7 +230,9 @@ read_admb_re <- function(filename,
   } else if(re_version == 're' & is.data.frame(biomass_by_strata)) {
     total_predicted_biomass <- biomass_by_strata  %>%
       dplyr::select(-strata) %>%
-      dplyr::mutate(variable = 'tot_biomass_pred')
+      dplyr::mutate(variable = 'tot_biomass_pred',
+                    pred_sd = NA) %>%
+      dplyr::select(model_name, variable, year, pred, pred_sd, pred_lci, pred_uci)
 
   } else if(!is.null(x$biom_TOT) & !is.null(x$biom_TOT_LCI) & !is.null(x$biom_TOT_UCI)) {
 
@@ -234,6 +240,7 @@ read_admb_re <- function(filename,
                                           variable = 'tot_biomass_pred',
                                           year = x$yrs,
                                           pred = x$biom_TOT,
+                                          pred_sd = NA,
                                           pred_lci = x$biom_TOT_LCI,
                                           pred_uci = x$biom_TOT_UCI)
   } else {
@@ -253,6 +260,7 @@ read_admb_re <- function(filename,
                                           variable = 'tot_cpue_pred',
                                           year = x$yrs,
                                           pred = x$biom_TOT_LL,
+                                          pred_sd = NA,
                                           pred_lci = x$biom_TOT_LCI_LL,
                                           pred_uci = x$biom_TOT_UCI_LL)
 
@@ -260,18 +268,40 @@ read_admb_re <- function(filename,
     total_predicted_cpue <- "The rwout.rep file provided by the user did not have 'biom_TOT_LL', 'biom_TOT_LCI_LL', or 'biom_TOT_UCI_LL', the analagous variables in the ADMB version of the RE model to total_predicted_cpue. Please check the rwout.rep file."
   }
 
-  admb_re_results <- list(biomass_by_strata = biomass_by_strata,
+  # Join to the ADMB RE data
+  if(is.data.frame(biomass_by_strata)){
+
+    alpha_ci <- 0.05
+    biomass_by_strata <- biomass_by_strata %>%
+      dplyr::mutate(pred_sd = NA) %>%
+      dplyr::select(model_name, strata, variable, year, pred, pred_sd, pred_lci, pred_uci) %>%
+      dplyr::left_join(biomass_dat %>%
+                         dplyr::rename(obs = biomass,
+                                       obs_cv = cv) %>%
+                         # most common assumption in RE.tpl is to treat zeros as NAs
+                         dplyr::mutate(obs = ifelse(obs == 0, NA, obs)) %>%
+                         dplyr::filter(!is.na(obs)) %>%
+                         dplyr::mutate(obs_sd = obs * obs_cv,
+                                       obs_lci = obs - qnorm(1 - alpha_ci/2) * obs_sd,
+                                       obs_uci = obs + qnorm(1 - alpha_ci/2) * obs_sd)) %>%
+      dplyr::mutate(obs_lci = ifelse(obs_lci < 0, 0, obs_lci)) %>%
+      dplyr::arrange(strata, year)
+
+  }
+  parameter_estimates <- "The rwout.rep file does not contain parameter estimates, therefore they are not readily available for comparison with REMA models. Please contact the author(s) of this package for more information."
+
+  admb_re_results <- list(parameter_estimates = parameter_estimates,
+                          biomass_by_strata = biomass_by_strata,
                           cpue_by_strata = cpue_by_strata,
                           biomass_by_cpue_strata = biomass_by_cpue_strata,
                           total_predicted_biomass = total_predicted_biomass,
                           total_predicted_cpue = total_predicted_cpue)
 
-  parameter_estimates <- "The rwout.rep file does not contain parameter estimates, therefore they are not readily available for comparison with REMA models. Please contact the author(s) of this package for more information."
   admb_re <- list(biomass_dat = biomass_dat,
-                 cpue_dat = cpue_dat,
-                 model_yrs = model_yrs,
-                 init_log_biomass_pred = init_log_biomass_pred,
-                 admb_re_results = admb_re_results)
+                  cpue_dat = cpue_dat,
+                  model_yrs = model_yrs,
+                  init_log_biomass_pred = init_log_biomass_pred,
+                  admb_re_results = admb_re_results)
 
   return(admb_re)
 }

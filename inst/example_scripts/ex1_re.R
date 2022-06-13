@@ -10,7 +10,9 @@ library(rema)
 # install.packages('cowplot')
 library(cowplot) # provides helpful plotting utilities
 
-ggplot2::theme_set(cowplot::theme_cowplot() + cowplot::background_grid())
+ggplot2::theme_set(cowplot::theme_cowplot(font_size = 10) +
+                     cowplot::background_grid() +
+                     cowplot::panel_border())
 
 # Ex 1 RE ----
 
@@ -23,12 +25,13 @@ ggplot2::theme_set(cowplot::theme_cowplot() + cowplot::background_grid())
 ?read_admb_re
 admb_re <- read_admb_re(filename = 'inst/example_data/aisr_rwout.rep',
                       # optional label for the single biomass survey stratum
-                      biomass_strata_names = 'Aleutians Islands')
+                      biomass_strata_names = 'Aleutians Islands',
+                      model_name = 'admb_re_aisr')
 names(admb_re)
 
 # (2) Prepare REMA model inputs
 ?prepare_rema_input # note alternative methods for bringing in survey data observations
-input <- prepare_rema_input(model_name = 'ai_shortraker_re',
+input <- prepare_rema_input(model_name = 'tmb_rema_aisr',
                             admb_re = admb_re)
 names(input)
 
@@ -59,6 +62,12 @@ plots$biomass_by_strata
 plots$total_predicted_biomass
 plots$biomass_by_cpue_strata
 
+compare <- compare_rema_models(rema_models = list(m),
+                               admb_re = admb_re,
+                               biomass_ylab = 'Biomass (t)')
+compare$plots$biomass_by_strata
+compare$plots$total_predicted_biomass
+
 # Ex 2 REM ----
 
 # Multivariate version of the random effects model (REM) with a single survey
@@ -66,9 +75,10 @@ plots$biomass_by_cpue_strata
 # thornyhead
 
 admb_re <- read_admb_re(filename = 'inst/example_data/bsaisst_rwout.rep',
-                      biomass_strata_names = c('AI survey', 'EBS slope survey', 'S. Bering Sea (AI survey)'))
+                      biomass_strata_names = c('AI survey', 'EBS slope survey', 'S. Bering Sea (AI survey)'),
+                      model_name = 'admb_rem_bsaisst')
 
-input <- prepare_rema_input(model_name = 'bsai_sst_rem',
+input <- prepare_rema_input(model_name = 'tmb_rema_bsaisst',
                             admb_re = admb_re)
 
 m <- fit_rema(input)
@@ -84,9 +94,14 @@ plots <- plot_rema(tidy_rema = output,
                    biomass_ylab = 'Biomass (t)')
 
 plots$biomass_by_strata
-plots$biomass_by_strata + ggplot2::facet_wrap(~strata, ncol = 1, scales = 'free_y')
 plots$total_predicted_biomass
 plots$total_predicted_biomass + ggplot2::ggtitle('BSAI Shortspine thornyhead predicted biomass')
+
+compare <- compare_rema_models(rema_models = list(m),
+                               admb_re = admb_re,
+                               biomass_ylab = 'Biomass (t)')
+compare$plots$biomass_by_strata + facet_wrap(~strata, ncol = 1)
+compare$plots$total_predicted_biomass
 
 # Ex 3 REMA ----
 
@@ -95,12 +110,14 @@ plots$total_predicted_biomass + ggplot2::ggtitle('BSAI Shortspine thornyhead pre
 # for the biomass and CPUE survey.
 admb_re <- read_admb_re(filename = 'inst/example_data/goasr_rwout.rep',
                         biomass_strata_names = c('CGOA', 'EGOA', 'WGOA'),
-                        cpue_strata_names = c('CGOA', 'EGOA', 'WGOA'))
+                        cpue_strata_names = c('CGOA', 'EGOA', 'WGOA'),
+                        model_name = 'admb_rema_goasr')
 
-input <- prepare_rema_input(model_name = 'GOA shortraker',
+input <- prepare_rema_input(model_name = 'tmb_rema_goasr',
                             multi_survey = 1,
                             admb_re = admb_re,
                             sum_cpue_index = TRUE,
+                            wt_cpue = 0.5,
                             # one process error parameters (log_PE) estimated
                             PE_options = list(pointer_PE_biomass = c(1, 1, 1)),
                             # three scaling parameters (log_q) estimated, indexed as
@@ -124,6 +141,14 @@ plots$total_predicted_biomass
 plots$total_predicted_cpue
 plots$biomass_by_cpue_strata
 
+compare <- compare_rema_models(rema_models = list(m),
+                               admb_re = admb_re,
+                               biomass_ylab = 'Biomass (t)',
+                               cpue_ylab = 'Relative Population Weights')
+compare$plots$biomass_by_strata
+compare$plots$total_predicted_biomass
+compare$plots$total_predicted_cpue
+
 # Ex 4 REMA ----
 
 # Multi-survey and multi-strata version of the random effects model (REMA).
@@ -133,11 +158,12 @@ admb_re <- read_admb_re(filename = 'inst/example_data/goasst_rwout.rep',
                       biomass_strata_names = c('CGOA (0-500 m)', 'CGOA (501-700 m)', 'CGOA (701-1000 m)',
                                                'EGOA (0-500 m)', 'EGOA (501-700 m)', 'EGOA (701-1000 m)',
                                                'WGOA (0-500 m)', 'WGOA (501-700 m)', 'WGOA (701-1000 m)'),
-                      cpue_strata_names = c('CGOA', 'EGOA', 'WGOA'))
+                      cpue_strata_names = c('CGOA', 'EGOA', 'WGOA'),
+                      model_name = 'admb_rema_goasst')
 admb_re$biomass_dat
 length(unique(admb_re$biomass_dat$strata))
 length(unique(admb_re$cpue_dat$strata))
-input <- prepare_rema_input(model_name = 'GOA shortspine thornyhead',
+input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
                             multi_survey = 1,
                             admb_re = admb_re,
                             sum_cpue_index = TRUE,
@@ -163,3 +189,11 @@ plots$total_predicted_cpue
 cowplot::plot_grid(plots$biomass_by_strata + facet_wrap(~strata, nrow = 1),
                    plots$cpue_by_strata, nrow = 2)
 cowplot::plot_grid(plots$biomass_by_cpue_strata, plots$cpue_by_strata, nrow = 2)
+
+compare <- compare_rema_models(rema_models = list(m),
+                               admb_re = admb_re,
+                               biomass_ylab = 'Biomass (t)',
+                               cpue_ylab = 'Relative Population Weights')
+compare$plots$biomass_by_strata
+compare$plots$total_predicted_biomass
+compare$plots$total_predicted_cpue

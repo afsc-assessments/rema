@@ -255,7 +255,7 @@
 #' # place holder for example code
 #' }
 prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
-                               multi_survey = NULL, # should this be 0 or FALSE instead of null?
+                               multi_survey = 0,
                                admb_re = NULL,
                                biomass_dat = NULL,
                                cpue_dat = NULL,
@@ -269,7 +269,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
 
   # model_name = 'REMA for unnamed stock'
   # multi_survey = 1 # should this be 0 or FALSE instead of null?
-  # admb_re = NULL
+  # admb_re = admb_re
   # # biomass_dat = NULL
   # # cpue_dat = NULL
   # sum_cpue_index = FALSE
@@ -326,16 +326,27 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     input$data$model_yrs <- model_yrs
   }
 
+  if(any(biomass_dat$biomass == 0, na.rm = TRUE)) {
+    warning("The user has entered a zero observation for the biomass survey data. By default, this observation will be removed (i.e. treated as an NA or failed survey). If the user wants to make another assumption (e.g. add a small constant), they must do so manually prior to running prepare_rema_input().")
+    biomass_dat <- biomass_dat %>%
+      dplyr::mutate(biomass = ifelse(biomass == 0, NA, biomass))
+  }
+
+  # remove NAs
+  biomass_dat <- biomass_dat %>%
+    dplyr::filter(!is.na(biomass))
+
   # expand biomass and cpue survey data
   biom <- biomass_dat %>%
     tidyr::expand(year = model_yrs, strata) %>%
     dplyr::left_join(biomass_dat)
 
-  if(any(biom$biomass == 0, na.rm = TRUE)) {
-    warning("The user has entered a zero observation for the biomass survey data. By default, a small constant (0.0001) is added to this value, because biomass is estimated in log space and cannot equal zero. If the user wants to treat this zero as an NA (i.e., a failed survey), they must excplicitly define it as an NA prior to running prepare_rema_input().")
-    biom <- biom %>%
-      dplyr::mutate(biomass = ifelse(biomass == 0, 0.0001, biomass))
-  }
+  # Original
+  # if(any(biom$biomass == 0, na.rm = TRUE)) {
+  #   warning("The user has entered a zero observation for the biomass survey data. By default, a small constant (0.0001) is added to this value, because biomass is estimated in log space and cannot equal zero. If the user wants to treat this zero as an NA (i.e., a failed survey), they must excplicitly define it as an NA prior to running prepare_rema_input().")
+  #   biom <- biom %>%
+  #     dplyr::mutate(biomass = ifelse(biomass == 0, 0.0001, biomass))
+  # }
 
   biom_input <- biom %>%
     tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",

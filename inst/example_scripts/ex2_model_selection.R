@@ -14,7 +14,9 @@ library(rema)
 # install.packages('cowplot')
 library(cowplot) # provides helpful plotting utilities like plot_grid() and nice ggplot2 themes
 
-ggplot2::theme_set(cowplot::theme_cowplot() + cowplot::background_grid())
+ggplot2::theme_set(cowplot::theme_cowplot(font_size = 10) +
+                     cowplot::background_grid() +
+                     cowplot::panel_border())
 
 # (1) Read the biomass and cpue survey data from file. See ?prepare_rema_input
 # for information on required columns
