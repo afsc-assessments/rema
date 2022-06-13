@@ -192,7 +192,7 @@ tidy_rema <- function(rema_model,
                     pred_sd = sdrep$sd[which(names(sdrep$value) %in% c('cpue_pred'))]) %>%
       dplyr::mutate(pred_lci = pred - qnorm(1 - alpha_ci/2) * pred_sd,
                     pred_uci = pred + qnorm(1 - alpha_ci/2) * pred_sd) %>%
-      plyr::mutate(pred_lci = ifelse(pred_lci < 0, 0, pred_lci))
+      dplyr::mutate(pred_lci = ifelse(pred_lci < 0, 0, pred_lci))
 
     cpue_summary <- ts_cpue_strata %>%
       dplyr::filter(variable == 'cpue_pred') %>%
@@ -215,7 +215,7 @@ tidy_rema <- function(rema_model,
                       pred_sd = sdrep$sd[which(names(sdrep$value) %in% c('biomass_pred_cpue_strata'))]) %>%
         dplyr::mutate(pred_lci = pred - qnorm(1 - alpha_ci/2) * pred_sd,
                       pred_uci = pred + qnorm(1 - alpha_ci/2) * pred_sd) %>%
-        plyr::mutate(pred_lci = ifelse(pred_lci < 0, 0, pred_lci))
+        dplyr::mutate(pred_lci = ifelse(pred_lci < 0, 0, pred_lci))
 
       # join biomass and cpue strata definitions
 

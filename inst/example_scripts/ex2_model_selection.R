@@ -26,10 +26,11 @@ setwd(out_path)
 # copy all data files to working directory
 rema_path <- find.package("rema")
 
-example_data_files <- list.files(path = file.path(rema_path, "inst/example_data"))
-file.copy(from = file.path(path = file.path(rema_path, "inst/example_data"),
+example_data_files <- list.files(path = file.path(rema_path, "example_data"))
+file.copy(from = file.path(path = file.path(rema_path, "example_data"),
                            example_data_files),
-          to = out_path, overwrite = TRUE)
+          to = file.path(out_path),
+          overwrite = TRUE)
 
 # confirm you are in the working directory and it has the the example rwout.rep
 # and csv files
