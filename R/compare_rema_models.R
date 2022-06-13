@@ -255,8 +255,8 @@ compare_rema_models <- function(rema_models,
     # all models to be compared are run with multi_survey = 1, check that the
     # biomass and survey data are equal before calculating AIC
   } else if(all(sapply(rema_models, function(x) {isTRUE(x$input$data$multi_survey == 1)})) &
-            isTRUE(tst_biomass_data) & isTRUE(tst_cpue_data)
-  ) {
+            isTRUE(tst_biomass_data) & !is.vector(p2)) # p2 = tst_cpue_data
+   {
     run_aic <- TRUE
     # if all models are run with multi_survey = 0, check that biomass data are
     # equal before calculating AIC

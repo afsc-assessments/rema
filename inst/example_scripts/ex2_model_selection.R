@@ -11,6 +11,7 @@
 # inst/example_data
 
 library(rema)
+library(ggplot2)
 # install.packages('cowplot')
 library(cowplot) # provides helpful plotting utilities like plot_grid() and nice ggplot2 themes
 

@@ -44,11 +44,10 @@ there is only one survey strata}
 include years for which there are observations (i.e. there is no need to
 supply \code{NULL} or \code{NA} values for missing survey years)}
 \item{\code{biomass}}{numeric; the biomass estimate/observation (e.g.
-bottom trawl survey biomass in mt). By default, if \code{biomass == 0}, a
-small constant (0.0001) will be added to this value, because biomass is
-estimated in log space and cannot equal zero. If the user wants to treat
-this value as an NA
-(i.e., a failed survey), they must define it as an NA prior to input.}
+bottom trawl survey biomass in mt). By default, if \code{biomass == 0},
+this value will be treated as an NA (i.e., a failed survey). If the user
+wants to make other assumptions about zeros (e.g. adding a small constant),
+they must define it in the data manually.}
 \item{\code{cv}}{numeric; the coefficient of variation (CV) of the biomass
 estimate (i.e. sd(biomass)/biomass)}
 }}
@@ -63,10 +62,10 @@ there is only one survey strata)}
 include years for which there are observations (i.e. there is no need to
 supply \code{NULL} or \code{NA} values for missing survey years)}
 \item{\code{cpue}}{numeric; the cpue estimate/observation (e.g. longline
-survey cpue or relative population number); by default, if \code{cpue ==
-0}, a small constant (0.0001) will be added to this value, because CPUE is
-estimated in log space. If the user wants to treat this value as an NA
-(i.e., a failed survey), they must define it as an NA prior to input.}
+survey cpue or relative population number); By default, if \code{cpue == 0},
+this value will be treated as an NA (i.e., a failed survey). If the user
+wants to make other assumptions about zeros (e.g. adding a small constant),
+they must define it in the data manually.}
 \item{\code{cv}}{numeric; the coefficient of variation (CV) of the cpue
 estimate (i.e. sd(cpue)/cpue)}
 }}
@@ -123,22 +122,21 @@ This function returns a named list with the following components:
   'complete' in that it will include all modeled years, with missing values
   treated as NAs. Note that this data.frame could differ from the
   \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
-  observations were included. By default these zeros are converted to 0.0001
-  so that they can be fit in the likelihood. If the user wants to ignore
-  these zero values (i.e. treat them as a failed survey), they must manually
-  change the input data to reflect this assumption.}
+  observations were included. By default these zeros will be treated as NAs
+  (i.e., a failed survey). If the user wants to make other assumptions about
+  zeros (e.g. adding a small constant), they must manually change the input
+  data to reflect this assumption.}
   \item{\code{cpue_dat}}{If optional CPUE survey data are provided and
   \code{multi_survey = 1}, this will be a tidied long-format data.frame of
   the CPUE survey observations and associated CVs by strata. This data.frame
   will be 'complete' in that it will include all modeled years, with missing
   values treated as NAs. Note that this data.frame could differ from the
   \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
-  observations were included. By default these zeros are converted to 0.0001
-  so that they can be fit in the likelihood. If the user wants to ignore
-  these zero values (i.e. treat them as a failed survey), they must manually
-  change the input data to reflect this assumption. If optional CPUE survey
-  data are not provided or \code{multi_survey = 0}, this object will be
-  \code{NULL}.}
+  observations were included.By default these zeros will be treated as NAs
+  (i.e., a failed survey). If the user wants to make other assumptions about
+  zeros (e.g. adding a small constant), they must manually change the input
+  data to reflect this assumption. If optional CPUE survey data are not
+  provided or \code{multi_survey = 0}, this object will be \code{NULL}.}
   }
 }
 \description{

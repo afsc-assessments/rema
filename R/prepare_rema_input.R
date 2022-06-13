@@ -161,11 +161,10 @@
 #'   include years for which there are observations (i.e. there is no need to
 #'   supply \code{NULL} or \code{NA} values for missing survey years)}
 #'   \item{\code{biomass}}{numeric; the biomass estimate/observation (e.g.
-#'   bottom trawl survey biomass in mt). By default, if \code{biomass == 0}, a
-#'   small constant (0.0001) will be added to this value, because biomass is
-#'   estimated in log space and cannot equal zero. If the user wants to treat
-#'   this value as an NA
-#'   (i.e., a failed survey), they must define it as an NA prior to input.}
+#'   bottom trawl survey biomass in mt). By default, if \code{biomass == 0},
+#'   this value will be treated as an NA (i.e., a failed survey). If the user
+#'   wants to make other assumptions about zeros (e.g. adding a small constant),
+#'   they must define it in the data manually.}
 #'   \item{\code{cv}}{numeric; the coefficient of variation (CV) of the biomass
 #'   estimate (i.e. sd(biomass)/biomass)}
 #'   }
@@ -179,10 +178,10 @@
 #'   include years for which there are observations (i.e. there is no need to
 #'   supply \code{NULL} or \code{NA} values for missing survey years)}
 #'   \item{\code{cpue}}{numeric; the cpue estimate/observation (e.g. longline
-#'   survey cpue or relative population number); by default, if \code{cpue ==
-#'   0}, a small constant (0.0001) will be added to this value, because CPUE is
-#'   estimated in log space. If the user wants to treat this value as an NA
-#'   (i.e., a failed survey), they must define it as an NA prior to input.}
+#'   survey cpue or relative population number); By default, if \code{cpue == 0},
+#'   this value will be treated as an NA (i.e., a failed survey). If the user
+#'   wants to make other assumptions about zeros (e.g. adding a small constant),
+#'   they must define it in the data manually.}
 #'   \item{\code{cv}}{numeric; the coefficient of variation (CV) of the cpue
 #'   estimate (i.e. sd(cpue)/cpue)}
 #'   }
@@ -231,22 +230,21 @@
 #'   'complete' in that it will include all modeled years, with missing values
 #'   treated as NAs. Note that this data.frame could differ from the
 #'   \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
-#'   observations were included. By default these zeros are converted to 0.0001
-#'   so that they can be fit in the likelihood. If the user wants to ignore
-#'   these zero values (i.e. treat them as a failed survey), they must manually
-#'   change the input data to reflect this assumption.}
+#'   observations were included. By default these zeros will be treated as NAs
+#'   (i.e., a failed survey). If the user wants to make other assumptions about
+#'   zeros (e.g. adding a small constant), they must manually change the input
+#'   data to reflect this assumption.}
 #'   \item{\code{cpue_dat}}{If optional CPUE survey data are provided and
 #'   \code{multi_survey = 1}, this will be a tidied long-format data.frame of
 #'   the CPUE survey observations and associated CVs by strata. This data.frame
 #'   will be 'complete' in that it will include all modeled years, with missing
 #'   values treated as NAs. Note that this data.frame could differ from the
 #'   \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
-#'   observations were included. By default these zeros are converted to 0.0001
-#'   so that they can be fit in the likelihood. If the user wants to ignore
-#'   these zero values (i.e. treat them as a failed survey), they must manually
-#'   change the input data to reflect this assumption. If optional CPUE survey
-#'   data are not provided or \code{multi_survey = 0}, this object will be
-#'   \code{NULL}.}
+#'   observations were included.By default these zeros will be treated as NAs
+#'   (i.e., a failed survey). If the user wants to make other assumptions about
+#'   zeros (e.g. adding a small constant), they must manually change the input
+#'   data to reflect this assumption. If optional CPUE survey data are not
+#'   provided or \code{multi_survey = 0}, this object will be \code{NULL}.}
 #'   }
 #' @export
 #'
@@ -360,25 +358,31 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
 
   # CPUE survey observations
   if((input$data$multi_survey == 1) & !is.null(cpue_dat)) {
+
+    # remove NAs
+    cpue_dat <- cpue_dat %>%
+      dplyr::filter(!is.na(cpue))
+
     cpue <- cpue_dat %>%
       tidyr::expand(year = model_yrs, strata) %>%
       dplyr::left_join(cpue_dat)
 
-    if(any(cpue$cpue == 0, na.rm = TRUE)) {
-      warning("The user has entered a zero observation for the CPUE survey data. By default, a small constant (0.0001) is added to this value, because CPUE is estimated in log space. If the user wants to treat this zero as an NA (i.e., a failed survey), they must excplicitly define it as an NA prior to running prepare_rema_input().")
-      cpue <- cpue %>%
-        dplyr::mutate(cpue = ifelse(cpue == 0, 0.0001, cpue))
-    }
+    # if(any(cpue$cpue == 0, na.rm = TRUE)) {
+    #   warning("The user has entered a zero observation for the CPUE survey data. By default, a small constant (0.0001) is added to this value, because CPUE is estimated in log space. If the user wants to treat this zero as an NA (i.e., a failed survey), they must excplicitly define it as an NA prior to running prepare_rema_input().")
+    #   cpue <- cpue %>%
+    #     dplyr::mutate(cpue = ifelse(cpue == 0, 0.0001, cpue))
+    # }
 
   } else if ((input$data$multi_survey == 1) & is.null(cpue_dat)){
     stop(paste("user defined multi_survey as TRUE but did not provide CPUE survey data in the admb_re list or as a dataframe in the cpue_dat argument."))
 
-    } else {
+  } else {
+
     cpue <- expand.grid(year = model_yrs,
-             strata = unique(biomass_dat$strata),
-             cpue = NA,
-             cv = NA)
-    }
+                        strata = unique(biomass_dat$strata),
+                        cpue = NA,
+                        cv = NA)
+  }
 
   if((input$data$multi_survey == 0) & !is.null(cpue_dat)) {
     warning(paste('user defined multi_survey as FALSE but provided CPUE survey data. REMA will run in single survey (i.e. RE) mode and will not fit to the CPUE data. change to multi_survey = TRUE if you want to fit to survey CPUE data.'))
