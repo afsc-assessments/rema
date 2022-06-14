@@ -15,23 +15,21 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 10) +
                      cowplot::background_grid() +
                      cowplot::panel_border())
 
-# create directory for analysis: e.g., out_path <- "/path/to/save/output"
-# out_path <- "inst/example_data"
+# create directory for analysis
+# out_path <- "test_rema"
 if(!exists("out_path")) out_path = getwd()
 if(!dir.exists(out_path)) dir.create(out_path)
 
 # copy all data files to working directory
-rema_path <- find.package("rema")
-
+rema_path <- find.package('rema')
 example_data_files <- list.files(path = file.path(rema_path, "example_data"))
+example_data_files
 file.copy(from = file.path(path = file.path(rema_path, "example_data"),
                            example_data_files),
           to = file.path(file.path(out_path), example_data_files),
           overwrite = TRUE)
 
-# confirm you are in the working directory and it has the the example rwout.rep
-# and csv files
-list.files()
+setwd(out_path)
 
 # Ex 1 RE ----
 
