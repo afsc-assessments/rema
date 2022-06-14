@@ -44,7 +44,7 @@ Type objective_function<Type>::operator() ()
   DATA_INTEGER(sum_cpue_index); // 0 = no, 1 = yes (default = 0); can the cpue index be summed across strata (e.g. Relative population numbers = 1, Numbers per hachi = 0)
 
   DATA_IVECTOR(pointer_PE_biomass); // length = ncol biomass obs (# strata), unique values = number of PE parameters
-  DATA_IVECTOR(pointer_q_biomass);  // length = ncol biomass obs (# strata), unique values = number of q parameters
+  DATA_IVECTOR(pointer_biomass_cpue_strata);  // length = ncol biomass obs (# strata), unique values = number of cpue survey strata
   DATA_IVECTOR(pointer_q_cpue); // length = ncol cpue obs (# strata), unique values = number of q parameters
 
   DATA_SCALAR(wt_biomass); // weight for biomass data likelihood (default = 1)
@@ -78,13 +78,22 @@ Type objective_function<Type>::operator() ()
   int n_strata_biomass = biomass_obs.cols();
   int n_strata_cpue = cpue_obs.cols();
 
-  // // model predictions
+  // model predictions
+
+  // predicted biomass and cpue on the natural and log scale
   matrix<Type> biomass_pred(nyrs, n_strata_biomass);
+  biomass_pred.setZero();
   matrix<Type> cpue_pred(nyrs, n_strata_cpue);
+  cpue_pred.setZero();
+  matrix<Type> log_cpue_pred(nyrs, n_strata_cpue);
+  log_cpue_pred.setZero();
+
   // predicted biomass summed to the same strata level as the cpue strata
   // (useful when n_strata_biomass > n_strata_cpue)
   matrix<Type> biomass_pred_cpue_strata(nyrs, n_strata_cpue);
   biomass_pred_cpue_strata.setZero();
+  matrix<Type> log_biomass_pred_cpue_strata(nyrs, n_strata_cpue);
+  log_biomass_pred_cpue_strata.setZero();
 
   // derived quantities - biomass survey observations
   matrix<Type> log_biomass_obs(nyrs, n_strata_biomass);
@@ -96,11 +105,9 @@ Type objective_function<Type>::operator() ()
   // derived quantities - cpue survey observations
   matrix<Type> log_cpue_obs(nyrs, n_strata_cpue);
   log_cpue_obs = log(cpue_obs.array());
-  matrix<Type> cpue_sd(nyrs, n_strata_cpue);
-  cpue_sd = cpue_cv.array() * cpue_cv.array() + Type(1.0);
-  cpue_sd = sqrt(log(cpue_sd.array()));
-  matrix<Type> log_cpue_pred(nyrs, n_strata_cpue);
-  log_cpue_pred.setZero();
+  matrix<Type> log_cpue_sd(nyrs, n_strata_cpue);
+  log_cpue_sd = cpue_cv.array() * cpue_cv.array() + Type(1.0);
+  log_cpue_sd = sqrt(log(log_cpue_sd.array()));
 
   // random effects contribution to likelihood
   for(int i = 1; i < nyrs; i++) {
@@ -135,13 +142,12 @@ Type objective_function<Type>::operator() ()
   for(int i = 0; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
       if(biomass_obs(i,j) > 0) {
-        jnll(1) -= dnorm(log_biomass_pred(i,j), log(biomass_obs(i,j)), log_biomass_sd(i,j), 1);
+        jnll(1) -= dnorm(log_biomass_pred(i,j), log_biomass_obs(i,j), log_biomass_sd(i,j), 1);
       }
+      biomass_pred(i,j) = exp(log_biomass_pred(i,j));
     }
   }
   jnll(1) = jnll(1) * wt_biomass;
-
-  biomass_pred = exp(log_biomass_pred.array());
 
   // If in multi-survey mode (1=on, 0=off), calculate predicted cpue and data
   // likelihood for cpue survey observations
@@ -150,25 +156,28 @@ Type objective_function<Type>::operator() ()
     // get predicted biomass at the strata level for cpue (i.e. account for the
     // scenario when you may have biomass at a higher resolution than cpue; e.g.
     // 4 biomass strata that are represented by 2 cpue strata; note: currently
-    // you cannot have a scenario where cpue has more strata than biomass)
+    // you cannot have a scenario where survey cpue has more strata than biomass
+    // survey)
     for(int i = 0; i < nyrs; i++) {
+
       for(int j = 0; j < n_strata_biomass; j++) {
-        biomass_pred_cpue_strata(i,pointer_q_biomass(j)) += exp(log_biomass_pred(i,j));
+        biomass_pred_cpue_strata(i,pointer_biomass_cpue_strata(j)) += biomass_pred(i,j);
       }
 
-      // get predicted cpue
+      // get predicted cpue, log-transform for variance estimates
       for(int j = 0; j < n_strata_cpue; j++) {
         cpue_pred(i,j) = exp(log_q(pointer_q_cpue(j))) * biomass_pred_cpue_strata(i,j);
+        log_cpue_pred(i,j) = log(cpue_pred(i,j));
+        log_biomass_pred_cpue_strata(i,j) = log(biomass_pred_cpue_strata(i,j));
       }
 
       // get data likelihood for cpue survey
       for(int j = 0; j < n_strata_cpue; j++) {
-        if(cpue_obs(i,j) >= 0) {
-          jnll(2) -= dnorm(log(cpue_pred(i,j)), log(cpue_obs(i,j)), cpue_sd(i,j), 1);
+        if(cpue_obs(i,j) > 0) {
+          jnll(2) -= dnorm(log_cpue_pred(i,j), log_cpue_obs(i,j), log_cpue_sd(i,j), 1);
         }
       }
     }
-    log_cpue_pred = log(cpue_pred.array());
     jnll(2) = jnll(2) * wt_cpue;
 
     // optional penalty or prior on log_q
@@ -187,27 +196,41 @@ Type objective_function<Type>::operator() ()
   }
 
   // report section
-  vector<Type> tot_biomass_pred;
-  tot_biomass_pred = biomass_pred.rowwise().sum();
-  ADREPORT(biomass_pred);
-  ADREPORT(tot_biomass_pred);
+  ADREPORT(log_biomass_pred);
+
+  if(n_strata_biomass > 1) {
+    vector<Type> tot_biomass_pred;
+    tot_biomass_pred = biomass_pred.rowwise().sum();
+    vector<Type> log_tot_biomass_pred;
+    log_tot_biomass_pred = log(tot_biomass_pred);
+    ADREPORT(log_tot_biomass_pred);
+  }
 
   if(multi_survey == 1) {
     ADREPORT(cpue_pred);
+
     // only sum cpue index if its appropriate for that index (e.g. appropriate
     // for relative popn numbers, not appropriate for nominal cpue).
-    if(sum_cpue_index == 1){
+    if(sum_cpue_index == 1 & n_strata_cpue > 1){
+
       vector<Type> tot_cpue_pred;
       tot_cpue_pred = cpue_pred.rowwise().sum();
-      ADREPORT(tot_cpue_pred);
+      vector<Type> log_tot_cpue_pred;
+      log_tot_cpue_pred = log(tot_cpue_pred);
+      REPORT(log_tot_cpue_pred);
+      ADREPORT(log_tot_cpue_pred);
+
     }
     // report biomass at the cpue strata level (and get SDs) if they have
     // different strata definitions
     if(n_strata_biomass > n_strata_cpue) {
-      ADREPORT(biomass_pred_cpue_strata);
-      }
+      REPORT(log_biomass_pred_cpue_strata);
+      ADREPORT(log_biomass_pred_cpue_strata);
+    }
   }
 
+  REPORT(log_biomass_pred);
+  REPORT(log_cpue_pred);
   REPORT(jnll);
 
   // jnll = dummy * dummy;        // Uncomment when debugging code

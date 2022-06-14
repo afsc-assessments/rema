@@ -60,6 +60,7 @@ tidy_rema <- function(rema_model,
                       alpha_ci = 0.05) {
 
   # rema_model = m
+  # alpha_ci = 0.05
 
   if(isFALSE(rema_model$is_sdrep)) {
     stop("Please run fit_rema() with 'do.sdrep = TRUE' in order to get tidied output of estimated and derived variables with standard errors and confidence intervals. See ?fit_rema for details.")
@@ -146,6 +147,7 @@ tidy_rema <- function(rema_model,
 
   # Model estimates of summed total biomass across strata and summed total cpue across strata when
   # available and appropriate to sum
+  unique(names(sdrep$value))
   ts_totals <- NULL
   ts_totals <- data.frame(model_name = rema_model$input$model_name,
                           variable = c('tot_biomass_pred', 'tot_cpue_pred')) %>%

@@ -39,10 +39,10 @@ list.files()
 
 # (1) Read the biomass and cpue survey data from file. See ?prepare_rema_input
 # for information on required columns
-biomass_dat <- read.csv('inst/example_data/seo_ye_biomass.csv')
+biomass_dat <- read.csv('seo_ye_biomass.csv')
 str(biomass_dat)
 unique(biomass_dat$strata)
-cpue_dat <- read.csv('inst/example_data/seo_ye_cpue.csv')
+cpue_dat <- read.csv('seo_ye_cpue.csv')
 str(cpue_dat)
 unique(cpue_dat$strata)
 

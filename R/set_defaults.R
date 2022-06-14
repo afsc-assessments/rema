@@ -18,7 +18,7 @@ set_defaults <- function(input, admb_re = NULL) {
   random = input$random
 
   data$pointer_PE_biomass <- (1:ncol(data$biomass_obs))-1
-  data$pointer_q_biomass <- (1:ncol(data$biomass_obs))-1
+  data$pointer_biomass_cpue_strata <- (1:ncol(data$biomass_obs))-1
   data$pointer_q_cpue <- (1:ncol(data$cpue_obs))-1
 
   data$wt_biomass <- 1

@@ -7,9 +7,9 @@ set_q_options <- function(input, q_options) {
   map = input$map
 
   if((data$multi_survey == 1) &
-     (length(unique(input$data$pointer_q_biomass)) != length(input$par$log_q)) &
-     is.null(q_options$pointer_q_biomass)) {
-    stop("Strata definitions differ for the biomass and CPUE surveys. The user must define q_options$pointer_q_biomass, a vector with length = number of biomass survey strata and unique values = the number of log_q parameters. See q_options details in ?prepare_rema_input for examples of valid inputs.")
+     ncol(input$data$biomass_obs) != ncol(input$data$cpue_obs) &
+     is.null(q_options$pointer_biomass_cpue_strata)) {
+    stop("Strata definitions differ for the biomass and CPUE surveys. The user must define q_options$pointer_biomass_cpue_strata, a vector with length = number of biomass survey strata and unique values = the number of CPUE survey strata. See q_options details in ?prepare_rema_input for examples of valid inputs.")
   }
 
   # user defined index for q estimation by CPUE survey strata (e.g. there are
@@ -27,17 +27,17 @@ set_q_options <- function(input, q_options) {
     if(length(unique(q_options$pointer_q_cpue)) != ncol(data$cpue_obs)) warning(paste0("The recommended model configuration is to estimate one scaling parameter (log_q) for each CPUE survey stratum. Your inputs for q_options$pointer_q_cpue currently specify ", length(unique(q_options$pointer_q_cpue)), " log_q for ", ncol(data$cpue_obs), " CPUE survey strata."))
   }
 
-  # user defined index for q estimation by biomass strata (e.g. there are 3
-  # biomass strata but only two CPUE strata with corresponding 2 log_q
-  # parameters. if pointer_q_biomass = c(1, 1, 2)), this means the first two
-  # biomass strata correspond to the first log_q parameter,
-  # and the third biomass strata corresponds to the second log_q parameter.
-  if(!is.null(q_options$pointer_q_biomass)) {
-    if(length(q_options$pointer_q_biomass) != ncol(data$biomass_obs)) stop("Length of q_options$pointer_q_biomass must equal the number of biomass survey strata (e.g. length(unique(admb_re$biomass_dat$strata)). Please see q_options details in ?prepare_rema_input.")
-    if(length(unique(q_options$pointer_q_biomass)) != length(par$log_q)) stop("Length of unique values in q_options$pointer_q_biomass must equal the number of log_q parameters, usually length(unique(admb_re$cpue_dat$strata)). Please see q_options details in ?prepare_rema_input.")
-    q_options$pointer_q_biomass <- as.integer(q_options$pointer_q_biomass)
-    if(!any(is.integer(q_options$pointer_q_biomass))) stop("q_options$pointer_q_biomass must be a vector of integer values starting at 1 with a vector length equal the number of biomass survey strata (e.g. length(unique(admb_re$biomass_dat$strata)). Please see q_options details in ?prepare_rema_input.")
-    data$pointer_q_biomass <- (q_options$pointer_q_biomass)-1 # TMB started indexing at 0
+  # user defined index for biomass predictions by CPUE strata (e.g. there are 3
+  # biomass strata but only two CPUE strata. if pointer_biomass_cpue_strata =
+  # c(1, 1, 2)), this means the first two biomass strata correspond to the first
+  # CPUE survey stratum, and the third biomass strata corresponds to second CPUE
+  # survey stratum.
+  if(!is.null(q_options$pointer_biomass_cpue_strata)) {
+    if(length(q_options$pointer_biomass_cpue_strata) != ncol(data$biomass_obs)) stop("Length of q_options$pointer_biomass_cpue_strata must equal the number of biomass survey strata (e.g., length(unique(admb_re$biomass_dat$strata)). Please see q_options details in ?prepare_rema_input.")
+    if(length(unique(q_options$pointer_biomass_cpue_strata)) != ncol(data$cpue_obs)) stop("Length of unique values in q_options$pointer_biomass_cpue_strata must equal the number of CPUE survey strata (e.g., length(unique(admb_re$cpue_dat$strata)). Please see q_options details in ?prepare_rema_input.")
+    q_options$pointer_biomass_cpue_strata <- as.integer(q_options$pointer_biomass_cpue_strata)
+    if(!any(is.integer(q_options$pointer_biomass_cpue_strata))) stop("q_options$pointer_biomass_cpue_strata must be a vector of integer values starting at 1 with a vector length equal the number of biomass survey strata (e.g., length(unique(admb_re$biomass_dat$strata)). Please see q_options details in ?prepare_rema_input.")
+    data$pointer_biomass_cpue_strata <- (q_options$pointer_biomass_cpue_strata)-1 # TMB started indexing at 0
   }
 
   # user defined initial values for log_q parameters
@@ -82,10 +82,6 @@ set_q_options <- function(input, q_options) {
       data$pmu_log_q <- q_options$penalty_values[seq(1,length(q_options$penalty_values),2)]
       data$psig_log_q <- q_options$penalty_values[seq(0,length(q_options$penalty_values),2)]
     }
-  }
-
-  if(length(unique(data$pointer_q_cpue)) != length(unique(data$pointer_q_biomass))) {
-    stop("The indexing vectors pointer_q_cpue and pointer_q_biomass that point log_q parameters to CPUE and biomass survey strata have different numbers of unique values. See q_options details in ?prepare_rema_input for examples of valid inputs.")
   }
 
   input$data = data

@@ -16,9 +16,9 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 10) +
                      cowplot::panel_border())
 
 # create directory for analysis: e.g., out_path <- "/path/to/save/output"
+# out_path <- "inst/example_data"
 if(!exists("out_path")) out_path = getwd()
 if(!dir.exists(out_path)) dir.create(out_path)
-setwd(out_path)
 
 # copy all data files to working directory
 rema_path <- find.package("rema")
@@ -26,7 +26,7 @@ rema_path <- find.package("rema")
 example_data_files <- list.files(path = file.path(rema_path, "example_data"))
 file.copy(from = file.path(path = file.path(rema_path, "example_data"),
                            example_data_files),
-          to = file.path(out_path),
+          to = file.path(file.path(out_path), example_data_files),
           overwrite = TRUE)
 
 # confirm you are in the working directory and it has the the example rwout.rep
@@ -143,7 +143,7 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasr',
                             PE_options = list(pointer_PE_biomass = c(1, 1, 1)),
                             # three scaling parameters (log_q) estimated, indexed as
                             # follows for each biomass survey stratum:
-                            q_options = list(pointer_q_biomass = c(1, 2, 3)))
+                            q_options = list(pointer_biomass_cpue_strata = c(1, 2, 3)))
 
 m <- fit_rema(input)
 check_convergence(m)
@@ -193,14 +193,22 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
                             PE_options = list(pointer_PE_biomass = c(1, 1, 1, 2, 2, 2, 3, 3, 3)),
                             # three scaling parameters (log_q) estimated, indexed as
                             # follows for each biomass survey stratum:
-                            q_options = list(pointer_q_biomass = c(1, 1, 1, 2, 2, 2, 3, 3, 3),
-                                             pointer_q_cpue = c(1, 2, 3)))
+                            q_options = list(
+                              # pointer_q_biomass = c(1, 1, 1, 2, 2, 2, 3, 3, 3),
+                              # pointer_q_cpue = c(1, 2, 3)))
+                              pointer_biomass_cpue_strata = c(1, 1, 1, 2, 2, 2, 1, 1, 1),
+                              pointer_q_cpue = c(1, 1, 1)))
 
-m <- fit_rema(input)
+m <- fit_rema(input, do.fit = FALSE)
+names(m)
+m$report()
+input$data
+names
 check_convergence(m)
 output <- tidy_rema(m)
 output$parameter_estimates
-plots <- plot_rema(output, biomass_ylab = 'Biomass (t)', cpue_ylab = 'Relative Population Weight')
+plots <- plot_rema(output, biomass_ylab = 'Biomass (t)',
+                   cpue_ylab = 'Relative Population Weight')
 plots$biomass_by_strata
 plots$cpue_by_strata
 plots$biomass_by_cpue_strata

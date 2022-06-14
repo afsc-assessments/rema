@@ -90,23 +90,24 @@
 #'     survey strata and the user wanted to estimate only one q, they would
 #'     specify \code{pointer_q_cpue = c(1, 1, 1)}. The recommended model
 #'     configuration is to estimate one log_q for each CPUE survey stratum.}
-#'     \item{$pointer_q_biomass}{An index to customize the assignment of q
-#'     parameters to individual biomass survey strata. Vector with length =
-#'     the number of biomass survey strata, starting with an index of 1 and ending
-#'     with the number of unique q parameters estimated. This pointer only needs
-#'     to be defined if the number of biomass and CPUE strata are not equal. The
-#'     \code{pointer_q_biomass} option allows the user to calculate predicted
-#'     biomass at the CPUE survey strata level under the scenario where the
-#'     biomass survey strata is at a higher resolution than the CPUE survey
-#'     strata. For example, if there are 3 biomass survey strata that are
-#'     represented by only 2 CPUE survey strata, the user may specify
-#'     \code{pointer_q_biomass = c(1, 1, 2)}. This specification would assign
-#'     the first 2 biomass strata to the first q, and the third biomass stratum
-#'     to the second q. NOTE: there cannot be a scenario where there are more
-#'     CPUE survey strata than biomass survey strata because the CPUE survey is
-#'     used to inform the biomass survey trend. An error will be thrown if
-#'     \code{q_options$pointer_q_biomass} is not defined and the biomass and CPUE survey
-#'     strata definitions are not the same.}
+#'     \item{$pointer_biomass_cpue_strata}{An index to customize the assignment
+#'     of biomass predictions to individual CPUE survey strata. Vector with
+#'     length = the number of biomass survey strata, starting with an index of 1
+#'     and ending with the number of unique CPUE survey strata. This pointer
+#'     only needs to be defined if the number of biomass and CPUE strata are not
+#'     equal. The \code{pointer_biomass_cpue_strata} option allows the user to
+#'     calculate predicted biomass at the CPUE survey strata level under the
+#'     scenario where the biomass survey strata is at a higher resolution than
+#'     the CPUE survey strata. For example, if there are 3 biomass survey strata
+#'     that are represented by only 2 CPUE survey strata, the user may specify
+#'     \code{pointer_biomass_cpue_strata = c(1, 1, 2)}. This specification would
+#'     assign the first 2 biomass strata to the first CPUE strata, and the third
+#'     biomass stratum to the second CPUE stratum. NOTE: there cannot be a
+#'     scenario where there are more CPUE survey strata than biomass survey
+#'     strata because the CPUE survey is used to inform the biomass survey
+#'     trend. An error will be thrown if
+#'     \code{q_options$pointer_biomass_cpue_strata} is not defined and the
+#'     biomass and CPUE survey strata definitions are not the same.}
 #'     \item{$initial_pars}{A vector of initial values for \code{log_q}. The
 #'     default initial value for each log_q is 1.}
 #'     \item{$fix_pars}{Option to fix q parameters, where
