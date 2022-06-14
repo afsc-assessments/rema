@@ -143,117 +143,121 @@ tidy_rema <- function(rema_model,
     parameter_estimates <- pe_pars
   }
 
-  # Derived quantities:
-
-  # Model estimates of summed total biomass across strata and summed total cpue across strata when
-  # available and appropriate to sum
-  unique(names(sdrep$value))
-  ts_totals <- NULL
-  ts_totals <- data.frame(model_name = rema_model$input$model_name,
-                          variable = c('tot_biomass_pred', 'tot_cpue_pred')) %>%
-    dplyr::right_join(tidyr::expand_grid(variable = unique(names(sdrep$value)[grepl('tot_', names(sdrep$value))]),
-                                         year = data$model_yrs) %>%
-                        dplyr::mutate(pred = sdrep$value[grepl('tot_', names(sdrep$value))],
-                                      pred_sd = sdrep$sd[which(grepl('tot_', names(sdrep$value)))]) %>%
-                        dplyr::mutate(pred_lci = pred - qnorm(1 - alpha_ci/2) * pred_sd,
-                                      pred_uci = pred + qnorm(1 - alpha_ci/2) * pred_sd))
+  # Model predictions:
 
   # Model estimates of biomass by strata
   ts_biomass_strata <- NULL
   ts_biomass_strata <- tidyr::expand_grid(model_name = rema_model$input$model_name,
                                           strata = colnames(data$biomass_obs),
-                                          variable = unique(names(sdrep$value)[!grepl(c('tot_|cpue'), names(sdrep$value))]),
+                                          variable = 'biomass_pred',
                                           year = data$model_yrs) %>%
-    dplyr::mutate(pred = sdrep$value[!grepl(c('tot_|cpue'), names(sdrep$value))],
-                  pred_sd = sdrep$sd[which(!grepl(c('tot_|cpue'), names(sdrep$value)))]) %>%
-    dplyr::mutate(pred_lci = pred - qnorm(1 - alpha_ci/2) * pred_sd,
-                  pred_uci = pred + qnorm(1 - alpha_ci/2) * pred_sd) %>%
-    dplyr::mutate(pred_lci = ifelse(pred_lci < 0, 0, pred_lci))
+    dplyr::mutate(log_pred = sdrep$value[names(sdrep$value) == 'log_biomass_pred'],
+                  sd_log_pred = sdrep$sd[which(names(sdrep$value) == 'log_biomass_pred')],
+                  pred = exp(log_pred),
+                  pred_lci = exp(log_pred - qnorm(1 - alpha_ci/2) * sd_log_pred),
+                  pred_uci = exp(log_pred + qnorm(1 - alpha_ci/2) * sd_log_pred))
+
+  if(is.null(ts_biomass_strata)) {
+    stop("Something went wrong... Please review the ?prepare_rema_input, ?fit_rema, and make sure REMA converged by running check_convergence(my_rema_model).")
+  }
 
   biomass_summary <- NULL
+
   biomass_summary <- ts_biomass_strata %>%
     dplyr::filter(variable == 'biomass_pred') %>%
     dplyr::left_join(rema_model$input$biomass_dat %>%
                        dplyr::rename(obs = biomass, obs_cv = cv) %>%
-                       dplyr::mutate(obs_sd = obs_cv * obs,
-                                     obs_lci = obs - qnorm(1 - alpha_ci/2) * obs_sd,
-                                     obs_uci = obs + qnorm(1 - alpha_ci/2) * obs_sd) %>%
-                       dplyr::mutate(obs_lci = ifelse(obs_lci < 0, 0, obs_lci)))
+                       dplyr::mutate(log_obs = ifelse(obs > 0, log(obs), NA),
+                                     sd_log_obs = ifelse(obs > 0, sqrt(log(obs_cv + 1)), NA),
+                                     obs_lci = exp(log_obs - qnorm(1 - alpha_ci/2) * sd_log_obs),
+                                     obs_uci = exp(log_obs + qnorm(1 - alpha_ci/2) * sd_log_obs)))
 
   # Model estimates of cpue by strata when available
   ts_cpue_strata <- NULL
   cpue_summary <- NULL
   biomass_by_cpue_strata <- NULL
+  total_predicted_cpue <- NULL
 
   if(data$multi_survey == 1){
     ts_cpue_strata <- tidyr::expand_grid(model_name = rema_model$input$model_name,
                                          strata = colnames(data$cpue_obs),
-                                         variable = unique(names(sdrep$value)[names(sdrep$value) %in% c('cpue_pred')]),
+                                         variable = 'cpue_pred',
                                          year = data$model_yrs) %>%
-      dplyr::mutate(pred = sdrep$value[names(sdrep$value) %in% c('cpue_pred')],
-                    pred_sd = sdrep$sd[which(names(sdrep$value) %in% c('cpue_pred'))]) %>%
-      dplyr::mutate(pred_lci = pred - qnorm(1 - alpha_ci/2) * pred_sd,
-                    pred_uci = pred + qnorm(1 - alpha_ci/2) * pred_sd) %>%
-      dplyr::mutate(pred_lci = ifelse(pred_lci < 0, 0, pred_lci))
+      dplyr::mutate(log_pred = sdrep$value[names(sdrep$value) == 'log_cpue_pred'],
+                    sd_log_pred = sdrep$sd[which(names(sdrep$value) == 'log_cpue_pred')],
+                    pred = exp(log_pred),
+                    pred_lci = exp(log_pred - qnorm(1 - alpha_ci/2) * sd_log_pred),
+                    pred_uci = exp(log_pred + qnorm(1 - alpha_ci/2) * sd_log_pred))
 
     cpue_summary <- ts_cpue_strata %>%
       dplyr::filter(variable == 'cpue_pred') %>%
       dplyr::left_join(rema_model$input$cpue_dat %>%
                          dplyr::rename(obs = cpue, obs_cv = cv) %>%
-                         dplyr::mutate(obs_sd = obs_cv * obs,
-                                       obs_lci = obs - qnorm(1 - alpha_ci/2) * obs_sd,
-                                       obs_uci = obs + qnorm(1 - alpha_ci/2) * obs_sd) %>%
-                         dplyr::mutate(obs_lci = ifelse(obs_lci < 0, 0, obs_lci)))
+                         dplyr::mutate(log_obs = ifelse(obs > 0, log(obs), NA),
+                                       sd_log_obs = ifelse(obs > 0, sqrt(log(obs_cv + 1)), NA),
+                                       obs_lci = exp(log_obs - qnorm(1 - alpha_ci/2) * sd_log_obs),
+                                       obs_uci = exp(log_obs + qnorm(1 - alpha_ci/2) * sd_log_obs)))
+
+    # get total predicted cpue
+    if(ncol(data$cpue_obs) == 1) {
+
+      total_predicted_cpue <- ts_cpue_strata %>%
+        dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci) %>%
+        dplyr::mutate(variable = 'tot_cpue_pred')
+
+    } else {
+
+      total_predicted_cpue <- tidyr::expand_grid(model_name = rema_model$input$model_name,
+                                                    variable = 'tot_cpue_pred',
+                                                    year = data$model_yrs) %>%
+        dplyr::mutate(log_pred = sdrep$value[names(sdrep$value) == 'log_tot_cpue_pred'],
+                      sd_log_pred = sdrep$sd[which(names(sdrep$value) == 'log_tot_cpue_pred')],
+                      pred = exp(log_pred),
+                      pred_lci = exp(log_pred - qnorm(1 - alpha_ci/2) * sd_log_pred),
+                      pred_uci = exp(log_pred + qnorm(1 - alpha_ci/2) * sd_log_pred)) %>%
+        dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci)
+    }
 
     # if there are more biomass strata than cpue strata, get
     # predicted biomass by cpue strata for comparison at the same strata level
-    if(any(grepl('biomass_pred_cpue_strata', unique(names(sdrep$value))))) {
+    if(any(grepl('log_biomass_pred_cpue_strata', unique(names(sdrep$value))))) {
 
       biomass_by_cpue_strata <- tidyr::expand_grid(model_name = rema_model$input$model_name,
                                            strata = colnames(data$cpue_obs),
-                                           variable = unique(names(sdrep$value)[names(sdrep$value) %in% c('biomass_pred_cpue_strata')]),
+                                           variable = 'biomass_pred_cpue_strata',
                                            year = data$model_yrs) %>%
-        dplyr::mutate(pred = sdrep$value[names(sdrep$value) %in% c('biomass_pred_cpue_strata')],
-                      pred_sd = sdrep$sd[which(names(sdrep$value) %in% c('biomass_pred_cpue_strata'))]) %>%
-        dplyr::mutate(pred_lci = pred - qnorm(1 - alpha_ci/2) * pred_sd,
-                      pred_uci = pred + qnorm(1 - alpha_ci/2) * pred_sd) %>%
-        dplyr::mutate(pred_lci = ifelse(pred_lci < 0, 0, pred_lci))
-
-      # join biomass and cpue strata definitions
-
-      # strata_lkup <- data.frame(strata = unique(rema_model$input$biomass_dat$strata),
-      #                           pointer = data$pointer_q_biomass + 1) %>%
-      #   dplyr::left_join(data.frame(cpue_strata = unique(rema_model$input$cpue_dat$strata),
-      #                               pointer = data$pointer_q_cpue + 1))
-
-      biomass_by_cpue_strata <- biomass_by_cpue_strata %>%
-        dplyr::filter(variable == 'biomass_pred_cpue_strata') # %>%
-      # following code commented out because in most cases it is inappropriate
-      # to sum the biomass observations because there could be a missing value
-      # in one summed strata but not the other within a given year
-      # dplyr::left_join(rema_model$input$biomass_dat %>%
-      #                    dplyr::left_join(strata_lkup) %>%
-      #                    dplyr::mutate(strata = cpue_strata,
-      #                                  var = (cv * biomass)^2) %>%
-      #                    dplyr::select(-cpue_strata) %>%
-      #                    dplyr::group_by(strata, year) %>%
-      #                    dplyr::summarise(obs = sum(biomass),
-      #                                     var = sum(var)) %>%
-      #                    dplyr::ungroup() %>%
-      #                    dplyr::mutate(obs_cv = sqrt(var) / obs,
-      #                                  obs_sd = sqrt(var),
-      #                                  obs_lci = obs - qnorm(1 - alpha_ci/2) * obs_sd,
-      #                                  obs_uci = obs + qnorm(1 - alpha_ci/2) * obs_sd) %>%
-      #                    dplyr::mutate(obs_lci = ifelse(obs_lci < 0, 0, obs_lci)) %>%
-      #                    dplyr::select(-var))
+        dplyr::mutate(log_pred = sdrep$value[names(sdrep$value) == 'log_biomass_pred_cpue_strata'],
+                      sd_log_pred = sdrep$sd[which(names(sdrep$value) == 'log_biomass_pred_cpue_strata')],
+                      pred = exp(log_pred),
+                      pred_lci = exp(log_pred - qnorm(1 - alpha_ci/2) * sd_log_pred),
+                      pred_uci = exp(log_pred + qnorm(1 - alpha_ci/2) * sd_log_pred))
     }
   }
 
-  # Prepare final output
+  # Model estimates of summed total biomass across strata and summed total cpue across strata when
+  # available and appropriate to sum
+  total_predicted_biomass <- NULL
 
-  if(is.null(ts_totals)) {
-    stop("Something went wrong... Please review the ?prepare_rema_input, ?fit_rema, and make sure REMA converged by running check_convergence(my_rema_model).")
+  if(ncol(data$biomass_obs) == 1) {
+
+    total_predicted_biomass <- ts_biomass_strata %>%
+      dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci) %>%
+      dplyr::mutate(variable = 'tot_biomass_pred')
+
+  } else {
+
+    total_predicted_biomass <- tidyr::expand_grid(model_name = rema_model$input$model_name,
+                                                  variable = 'tot_biomass_pred',
+                                                  year = data$model_yrs) %>%
+      dplyr::mutate(log_pred = sdrep$value[names(sdrep$value) == 'log_tot_biomass_pred'],
+                    sd_log_pred = sdrep$sd[which(names(sdrep$value) == 'log_tot_biomass_pred')],
+                    pred = exp(log_pred),
+                    pred_lci = exp(log_pred - qnorm(1 - alpha_ci/2) * sd_log_pred),
+                    pred_uci = exp(log_pred + qnorm(1 - alpha_ci/2) * sd_log_pred)) %>%
+      dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci)
   }
+
+  # Prepare final output
 
   if(is.null(parameter_estimates)) {
     stop("Something went wrong... Please review the ?prepare_rema_input, ?fit_rema, and make sure REMA converged by running check_convergence(my_rema_model).")
@@ -277,24 +281,12 @@ tidy_rema <- function(rema_model,
     biomass_by_cpue_strata <- "'biomass_by_cpue_strata' is reserved for multi-survey scenarios when there are more biomass survey strata than CPUE survey strata, and the user wants predicted biomass at the same resolution as the CPUE survey index."
   }
 
-  total_predicted_biomass <- ts_totals %>%
-    dplyr::filter(variable == 'tot_biomass_pred')
-
-  # if(length(unique(biomass_by_strata$strata)) == 1) {
-  #   message("Just an fyi: only one biomass survey stratum was fit in REMA, therefore the predicted values in output$biomass_by_strata and output$total_predicted_biomass will be the same.")
-  # }
-
   if(data$multi_survey == 0) {
     total_predicted_cpue <- "REMA was fit only to biomass survey data, therefore no CPUE predictions available. If the user has a CPUE survey index and wants to fit to it, please see ?prepare_rema_input() for details."
   } else if (data$sum_cpue_index == 0) {
     total_predicted_cpue <- "The CPUE survey index provided was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."
   } else {
-    total_predicted_cpue <- ts_totals %>%
-      dplyr::filter(variable == 'tot_cpue_pred')
-
-    # if(length(unique(cpue_by_strata$strata) == 1)) {
-    #   message("Just an fyi: only one CPUE survey stratum was fit in REMA, therefore the predicted values in output$cpue_by_strata and output$total_predicted_cpue will be the same.")
-    # }
+    total_predicted_cpue <- total_predicted_cpue
   }
 
   output <- list(parameter_estimates = parameter_estimates,

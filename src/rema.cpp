@@ -207,7 +207,7 @@ Type objective_function<Type>::operator() ()
   }
 
   if(multi_survey == 1) {
-    ADREPORT(cpue_pred);
+    ADREPORT(log_cpue_pred);
 
     // only sum cpue index if its appropriate for that index (e.g. appropriate
     // for relative popn numbers, not appropriate for nominal cpue).

@@ -194,16 +194,11 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
                             # three scaling parameters (log_q) estimated, indexed as
                             # follows for each biomass survey stratum:
                             q_options = list(
-                              # pointer_q_biomass = c(1, 1, 1, 2, 2, 2, 3, 3, 3),
-                              # pointer_q_cpue = c(1, 2, 3)))
-                              pointer_biomass_cpue_strata = c(1, 1, 1, 2, 2, 2, 1, 1, 1),
-                              pointer_q_cpue = c(1, 1, 1)))
+                              pointer_biomass_cpue_strata = c(1, 1, 1, 2, 2, 2, 3, 3, 3),
+                              pointer_q_cpue = c(1, 1, 1))) # equivalent of admb model, but maybe consider c(1, 2, 3) as best practice? i.e. why would scaling pars be shared across strata?
 
-m <- fit_rema(input, do.fit = FALSE)
+m <- fit_rema(input) #, do.fit = FALSE)
 names(m)
-m$report()
-input$data
-names
 check_convergence(m)
 output <- tidy_rema(m)
 output$parameter_estimates
