@@ -78,15 +78,12 @@ plots <- plot_rema(tidy_rema = output,
                    biomass_ylab = 'Biomass (t)')
 
 plots$biomass_by_strata
-plots$total_predicted_biomass
-plots$biomass_by_cpue_strata
 
 # (7) Compare with ADMB RE model results
 compare <- compare_rema_models(rema_models = list(m),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)')
 compare$plots$biomass_by_strata
-compare$plots$total_predicted_biomass
 
 # Ex 2 REM ----
 
@@ -115,7 +112,6 @@ plots <- plot_rema(tidy_rema = output,
 
 plots$biomass_by_strata
 # Use ggplot2 functions to modify formatting of plots
-plots$biomass_by_strata + ggplot2::facet_wrap(~strata, ncol = 1)
 plots$total_predicted_biomass + ggplot2::ggtitle('BSAI Shortspine thornyhead predicted biomass')
 
 compare <- compare_rema_models(rema_models = list(m),
@@ -187,6 +183,7 @@ length(unique(admb_re$cpue_dat$strata))
 input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
                             multi_survey = 1,
                             admb_re = admb_re,
+                            wt_cpue = 0.5,
                             sum_cpue_index = TRUE,
                             # three process error parameters (log_PE) estimated, indexed
                             # as follows for each biomass survey stratum:
@@ -221,3 +218,4 @@ compare <- compare_rema_models(rema_models = list(m),
 compare$plots$biomass_by_strata
 compare$plots$total_predicted_biomass
 compare$plots$total_predicted_cpue
+

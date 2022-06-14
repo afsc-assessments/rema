@@ -281,11 +281,10 @@ read_admb_re <- function(filename,
                          # most common assumption in RE.tpl is to treat zeros as NAs
                          dplyr::mutate(obs = ifelse(obs == 0, NA, obs)) %>%
                          dplyr::filter(!is.na(obs)) %>%
-                         dplyr::mutate(obs_sd = obs * obs_cv,
-                                       obs_lci = obs - qnorm(1 - alpha_ci/2) * obs_sd,
-                                       obs_uci = obs + qnorm(1 - alpha_ci/2) * obs_sd)) %>%
-      dplyr::mutate(obs_lci = ifelse(obs_lci < 0, 0, obs_lci)) %>%
-      dplyr::arrange(strata, year)
+                         dplyr::mutate(log_obs = log(obs),
+                                       sd_log_obs = sqrt(log(obs_cv + 1)),
+                                       obs_lci = exp(log_obs - qnorm(1 - alpha_ci/2) * sd_log_obs),
+                                       obs_uci = exp(log_obs + qnorm(1 - alpha_ci/2) * sd_log_obs)))
 
   }
   parameter_estimates <- "The rwout.rep file does not contain parameter estimates, therefore they are not readily available for comparison with REMA models. Please contact the author(s) of this package for more information."

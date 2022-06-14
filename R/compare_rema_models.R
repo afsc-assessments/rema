@@ -103,10 +103,14 @@ compare_rema_models <- function(rema_models,
 
   # biomass by strata
   if(tst_biomass_by_strata) {
+
+    biomass_by_strata <- lapply(biomass_by_strata, function(x) {x %>%
+        dplyr::select(model_name, strata, variable, year, pred, pred_lci, pred_uci, obs, obs_cv, obs_lci, obs_uci)})
+
     out_biomass_by_strata <- do.call('rbind', biomass_by_strata)
 
     # test that biomass data are all equal
-    tst_biomass_data <- lapply(biomass_by_strata, `[`, 9:10) # 9:10 = obs and obs_cv
+    tst_biomass_data <- lapply(biomass_by_strata, `[`, 8:9) # 8:9 = obs and obs_cv
     tst_biomass_data <- all(sapply(tst_biomass_data, identical, tst_biomass_data[[1]]))
 
     if(isFALSE(tst_biomass_data)) {
@@ -141,10 +145,14 @@ compare_rema_models <- function(rema_models,
 
   # cpue by strata
   if(tst_cpue_by_strata) {
+
+    cpue_by_strata <- lapply(cpue_by_strata, function(x) {x %>%
+        dplyr::select(model_name, strata, variable, year, pred, pred_lci, pred_uci, obs, obs_cv, obs_lci, obs_uci)})
+
     out_cpue_by_strata <- do.call('rbind', cpue_by_strata)
 
     # test that cpue data are all equal
-    tst_cpue_data <- lapply(cpue_by_strata, `[`, 9:10) # 9:10 = obs and obs_cv
+    tst_cpue_data <- lapply(cpue_by_strata, `[`, 8:9) # 8:9 = obs and obs_cv
     tst_cpue_data <- all(sapply(tst_cpue_data, identical, tst_cpue_data[[1]]))
 
     if(isFALSE(tst_cpue_data)) {
@@ -200,6 +208,10 @@ compare_rema_models <- function(rema_models,
 
   # total predicted biomass
   if(tst_total_predicted_biomass) {
+
+    total_predicted_biomass <- lapply(total_predicted_biomass, function(x) {x %>%
+        dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci)})
+
     out_total_predicted_biomass <- do.call('rbind', total_predicted_biomass)
 
     p4 <- ggplot(data = out_total_predicted_biomass,
@@ -216,13 +228,17 @@ compare_rema_models <- function(rema_models,
       ggplot2::scale_colour_viridis_d()
   } else if(!is.null(admb_re)) {
     out_total_predicted_biomass <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
-    p1 <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
+    p4 <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
   } else {
     stop("Something went wrong... run check_convergence() and review output$total_predicted_biomass from tidy_rema() output for all REMA models you want to compare. All models should have should meet minimum convergence criteria and have valid model predictions of total biomass.")
   }
 
   # total predicted cpue
   if(tst_total_predicted_cpue) {
+
+    total_predicted_cpue <- lapply(total_predicted_cpue, function(x) {x %>%
+        dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci)})
+
     out_total_predicted_cpue <- do.call('rbind', total_predicted_cpue)
 
     p5 <- ggplot(data = out_total_predicted_cpue,

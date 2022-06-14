@@ -178,7 +178,11 @@ tidy_rema <- function(rema_model,
   biomass_by_cpue_strata <- NULL
   total_predicted_cpue <- NULL
 
-  if(data$multi_survey == 1){
+  if(data$multi_survey == 0) {
+    total_predicted_cpue <- "REMA was fit only to biomass survey data, therefore no CPUE predictions available. If the user has a CPUE survey index and wants to fit to it, please see ?prepare_rema_input() for details."
+  }
+
+  if(data$multi_survey == 1) {
     ts_cpue_strata <- tidyr::expand_grid(model_name = rema_model$input$model_name,
                                          strata = colnames(data$cpue_obs),
                                          variable = 'cpue_pred',
@@ -205,22 +209,26 @@ tidy_rema <- function(rema_model,
         dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci) %>%
         dplyr::mutate(variable = 'tot_cpue_pred')
 
-    } else {
 
-      total_predicted_cpue <- tidyr::expand_grid(model_name = rema_model$input$model_name,
+       } else if(data$sum_cpue_index == 0) {
+        total_predicted_cpue <- "The CPUE survey index provided was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."
+
+       } else {
+
+         total_predicted_cpue <- tidyr::expand_grid(model_name = rema_model$input$model_name,
                                                     variable = 'tot_cpue_pred',
                                                     year = data$model_yrs) %>%
-        dplyr::mutate(log_pred = sdrep$value[names(sdrep$value) == 'log_tot_cpue_pred'],
-                      sd_log_pred = sdrep$sd[which(names(sdrep$value) == 'log_tot_cpue_pred')],
-                      pred = exp(log_pred),
-                      pred_lci = exp(log_pred - qnorm(1 - alpha_ci/2) * sd_log_pred),
-                      pred_uci = exp(log_pred + qnorm(1 - alpha_ci/2) * sd_log_pred)) %>%
-        dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci)
-    }
+           dplyr::mutate(log_pred = sdrep$value[names(sdrep$value) == 'log_tot_cpue_pred'],
+                         sd_log_pred = sdrep$sd[which(names(sdrep$value) == 'log_tot_cpue_pred')],
+                         pred = exp(log_pred),
+                         pred_lci = exp(log_pred - qnorm(1 - alpha_ci/2) * sd_log_pred),
+                         pred_uci = exp(log_pred + qnorm(1 - alpha_ci/2) * sd_log_pred)) %>%
+           dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci)
+       }
 
-    # if there are more biomass strata than cpue strata, get
-    # predicted biomass by cpue strata for comparison at the same strata level
-    if(any(grepl('log_biomass_pred_cpue_strata', unique(names(sdrep$value))))) {
+      # if there are more biomass strata than cpue strata, get
+      # predicted biomass by cpue strata for comparison at the same strata level
+      if(any(grepl('log_biomass_pred_cpue_strata', unique(names(sdrep$value))))) {
 
       biomass_by_cpue_strata <- tidyr::expand_grid(model_name = rema_model$input$model_name,
                                            strata = colnames(data$cpue_obs),
@@ -279,14 +287,6 @@ tidy_rema <- function(rema_model,
     biomass_by_cpue_strata <- biomass_by_cpue_strata
   } else {
     biomass_by_cpue_strata <- "'biomass_by_cpue_strata' is reserved for multi-survey scenarios when there are more biomass survey strata than CPUE survey strata, and the user wants predicted biomass at the same resolution as the CPUE survey index."
-  }
-
-  if(data$multi_survey == 0) {
-    total_predicted_cpue <- "REMA was fit only to biomass survey data, therefore no CPUE predictions available. If the user has a CPUE survey index and wants to fit to it, please see ?prepare_rema_input() for details."
-  } else if (data$sum_cpue_index == 0) {
-    total_predicted_cpue <- "The CPUE survey index provided was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."
-  } else {
-    total_predicted_cpue <- total_predicted_cpue
   }
 
   output <- list(parameter_estimates = parameter_estimates,

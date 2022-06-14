@@ -449,6 +449,23 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   if(length(input$data$model_yrs) != nrow(input$par$log_biomass_pred)) {
     stop(paste0("Incorrect model dimensions! The number of rows for the log_biomass_pred input (nrow = ", nrow(input$par$log_biomass_pred), ") starting values (i.e. 'biomsd' in the rwout.rep file) and length of model years (", length(input$data$model_yrs), ") must match. The user can adjust the model 'start_year' and 'end_year' as needed."))
   }
+
+  tstzeros <- as.vector(input$data$biomass_cv)
+  if(any(tstzeros[!is.na(tstzeros)] <= 0)) {
+    stop('The user has supplied a CV <= 0 for at least one biomass survey estimate, which is an invalid input.')
+  }
+  tstzeros <- as.vector(input$data$cpue_cv)
+  if(any(tstzeros[!is.na(tstzeros)] <= 0)) {
+    stop('The user has supplied a CV <= 0 for at least one CPUE survey observation, which is an invalid input.')
+  }
+  tstnegs <- as.vector(input$data$biomass_obs)
+  if(any(tstnegs[!is.na(tstnegs)] < 0)) {
+    stop('The user has supplied a negative value for at least one biomass survey estimate, which is an invalid input.')
+  }
+  tstnegs <- as.vector(input$data$cpue_obs)
+  if(any(tstnegs[!is.na(tstnegs)] < 0)) {
+    stop('The user has supplied a negative value for at least one biomass survey estimate, which is an invalid input.')
+  }
   return(input)
 }
 
