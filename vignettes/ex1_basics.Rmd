@@ -1,0 +1,38 @@
+---
+title: "Example 1: REMA basics"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Example 1: REMA basics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+rema_path <- find.package("rema")
+knitr::opts_knit$set(root.dir = file.path(rema_path,"example_data"))
+```
+
+```{r setup}
+library(rema)
+```
+
+In this series of vignettes we walk through several examples of how to prepare and fit a suite of random effects (RE) models for biomass estimation and catch apportionment using the `rema` package. 
+
+The `rema` workflow:
+
+1.  Load `rema` and data. The user can read biomass or other abundance index data from file (e.g. .csv file), or they can use the `rwout.rep` report file from the ADMB version of the RE model using `read_admb_re()`.
+
+2.  Specify model structure and assumptions using `prepare_rema_input()`. This function allows users to quickly transition from a single to two survey model, specify alternative process error structures, add likelihood penalties or priors on parameters, and evaluate alternative assumptions about zero biomass observations.
+
+3.  Fit the specified REMA model using `fit_rema()` and determine whether the model has met basic convergence criteria (e.g., Hessian is positive definite, a maximum gradient component approximately equal to zero) using `check_convergence()`. 
+
+4.  Extract `rema` model output into clean, consistently formatted data frames using `tidy_rema()`. The user can visualize this model output using `plot_rema()`, or quickly format it into tables for a report.
+
+5.  Compare alternative REMA models and conduct model selection using `compare_rema_models()`. Output from this function includes a table of Akaike Information Criteria (AIC) when appropriate, figures, and tidied data frames. This function also accepts model output from the ADMB version of the RE model for easy comparison to past models.
+
+Taken together, these functions allow R users to quickly fit and interrogate a suite of simple statistical models in TMB without needing software-specific training or expertise.  
+

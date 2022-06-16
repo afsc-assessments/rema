@@ -12,9 +12,26 @@ This library is under development and has not been vetted for use in stock asses
 Use the `devtools` package to install the `rema` package from github. If you do not have `devtools` installed, you must do that first.
 
 ```
-
 # install.packages("devtools")
 devtools::install_github("JaneSullivan-NOAA/rema", dependencies = TRUE)
 
+# Example R scripts are downloaded when `rema` is installed. Locate them on your computer by running the following commands:
+(rema_path <- find.package('rema'))
+(rema_examples <- file.path(rema_path, 'example_scripts'))
+list.files(rema_examples)
+
 ```
 
+## The `rema` worflow
+
+1.  Load `rema` and data. The user can read biomass or other abundance index data from file (e.g. .csv file), or they can use the `rwout.rep` report file from the ADMB version of the RE model using `read_admb_re()`.
+
+2.  Specify model structure and assumptions using `prepare_rema_input()`. This function allows users to quickly transition from a single to two survey model, specify alternative process error structures, add likelihood penalties or priors on parameters, and evaluate alternative assumptions about zero biomass observations.
+
+3.  Fit the specified REMA model using `fit_rema()` and determine whether the model has met basic convergence criteria (e.g., Hessian is positive definite, a maximum gradient component approximately equal to zero) using `check_convergence()`. 
+
+4.  Extract `rema` model output into clean, consistently formatted data frames using `tidy_rema()`. The user can visualize this model output using `plot_rema()`, or quickly format it into tables for a report.
+
+5.  Compare alternative REMA models and conduct model selection using `compare_rema_models()`. Output from this function includes a table of Akaike Information Criteria (AIC) when appropriate, figures, and tidied data frames. This function also accepts model output from the ADMB version of the RE model for easy comparison to past models.
+
+Taken together, these functions allow R users to quickly fit and interrogate a suite of simple statistical models in TMB without needing software-specific training or expertise.
