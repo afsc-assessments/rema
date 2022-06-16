@@ -24,11 +24,11 @@ list.files(rema_examples)
 
 ## The `rema` worflow
 
-1.  Load `rema` and data. The user can read biomass or other abundance index data from file (e.g. .csv file), or they can use the `rwout.rep` report file from the ADMB version of the RE model using `read_admb_re()`.
+1.  Load `rema` and data. The user can read biomass or other abundance index data from file (e.g. csv files), or they can use the `rwout.rep` report file from the ADMB version of the RE model using `read_admb_re()`.
 
-2.  Specify model structure and assumptions using `prepare_rema_input()`. This function allows users to quickly transition from a single to two survey model, specify alternative process error structures, add likelihood penalties or priors on parameters, and evaluate alternative assumptions about zero biomass observations.
+2.  Define the model structure and assumptions using `prepare_rema_input()`. This function allows users to quickly transition from a single to two survey model, specify alternative process error structures, add likelihood penalties or priors on parameters, and evaluate alternative assumptions about zero biomass observations.
 
-3.  Fit the specified REMA model using `fit_rema()` and determine whether the model has met basic convergence criteria (e.g., Hessian is positive definite, a maximum gradient component approximately equal to zero) using `check_convergence()`. 
+3.  Fit the specified REMA model using `fit_rema()` and determine whether the model has met basic convergence criteria using `check_convergence()`. 
 
 4.  Extract `rema` model output into clean, consistently formatted data frames using `tidy_rema()`. The user can visualize this model output using `plot_rema()`, or quickly format it into tables for a report.
 
