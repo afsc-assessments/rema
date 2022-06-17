@@ -214,6 +214,8 @@
 #'   (q), including options to define q by biomass or cpue survey cpue strata,
 #'   change starting values, fix parameters, and add penalties or priors (see
 #'   details). only used when \code{multi_survey = 1}
+#' @param zeros (options) define assumptions about how to treat zero biomass or
+#'   CPUE observations (see details).
 #'
 #' @return This function returns a named list with the following components:
 #'   \describe{
@@ -230,21 +232,19 @@
 #'   survey observations and associated CVs by strata. This data.frame will be
 #'   'complete' in that it will include all modeled years, with missing values
 #'   treated as NAs. Note that this data.frame could differ from the
-#'   \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
-#'   observations were included. By default these zeros will be treated as NAs
-#'   (i.e., a failed survey). If the user wants to make other assumptions about
-#'   zeros (e.g. adding a small constant), they must manually change the input
-#'   data to reflect this assumption.}
+#'   \code{admb_re$biomass_dat} or input \code{biomass} if assumptions about
+#'   zero biomass observations are different between the ADMB model and what the
+#'   user specifies for REMA. The user can change their assumptions about zeros
+#'   using the \code{zeros} argument.}
 #'   \item{\code{cpue_dat}}{If optional CPUE survey data are provided and
 #'   \code{multi_survey = 1}, this will be a tidied long-format data.frame of
 #'   the CPUE survey observations and associated CVs by strata. This data.frame
 #'   will be 'complete' in that it will include all modeled years, with missing
 #'   values treated as NAs. Note that this data.frame could differ from the
-#'   \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
-#'   observations were included.By default these zeros will be treated as NAs
-#'   (i.e., a failed survey). If the user wants to make other assumptions about
-#'   zeros (e.g. adding a small constant), they must manually change the input
-#'   data to reflect this assumption. If optional CPUE survey data are not
+#'   \code{admb_re$biomass_dat} or input \code{biomass} if assumptions about
+#'   zero CPUE observations are different between the ADMB model and what the
+#'   user specifies for REMA. The user can change their assumptions about zeros
+#'   using the \code{zeros} argument. If optional CPUE survey data are not
 #'   provided or \code{multi_survey = 0}, this object will be \code{NULL}.}
 #'   }
 #' @export
@@ -264,7 +264,8 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                                wt_biomass = NULL,
                                wt_cpue = NULL,
                                PE_options = NULL,
-                               q_options = NULL) {
+                               q_options = NULL,
+                               zeros = NULL) {
 
   # model_name = 'REMA for unnamed stock'
   # multi_survey = 1 # should this be 0 or FALSE instead of null?
@@ -278,6 +279,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   # wt_cpue = NULL
   # PE_options = NULL
   # q_options = NULL
+  # zeros = NULL
 
   data = list()
   par = list()
@@ -325,27 +327,18 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     input$data$model_yrs <- model_yrs
   }
 
-  if(any(biomass_dat$biomass == 0, na.rm = TRUE)) {
-    warning("The user has entered a zero observation for the biomass survey data. By default, this observation will be removed (i.e. treated as an NA or failed survey). If the user wants to make another assumption (e.g. add a small constant), they must do so manually prior to running prepare_rema_input().")
-    biomass_dat <- biomass_dat %>%
-      dplyr::mutate(biomass = ifelse(biomass == 0, NA, biomass))
-  }
+  # see set_zeros.R
+  zeros <- set_zeros_default(zeros)
 
-  # remove NAs
+  biomass_dat = set_zeros(dat = biomass_dat)
+
+  # remove NAs, expand biomass survey data, and create biomass input for TMB
   biomass_dat <- biomass_dat %>%
     dplyr::filter(!is.na(biomass))
 
-  # expand biomass and cpue survey data
   biom <- biomass_dat %>%
     tidyr::expand(year = model_yrs, strata) %>%
     dplyr::left_join(biomass_dat)
-
-  # Original
-  # if(any(biom$biomass == 0, na.rm = TRUE)) {
-  #   warning("The user has entered a zero observation for the biomass survey data. By default, a small constant (0.0001) is added to this value, because biomass is estimated in log space and cannot equal zero. If the user wants to treat this zero as an NA (i.e., a failed survey), they must excplicitly define it as an NA prior to running prepare_rema_input().")
-  #   biom <- biom %>%
-  #     dplyr::mutate(biomass = ifelse(biomass == 0, 0.0001, biomass))
-  # }
 
   biom_input <- biom %>%
     tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
@@ -360,6 +353,9 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   # CPUE survey observations
   if((input$data$multi_survey == 1) & !is.null(cpue_dat)) {
 
+    # zero survey cpue specs
+    cpue_dat <- set_zeros(dat = cpue_dat)
+
     # remove NAs
     cpue_dat <- cpue_dat %>%
       dplyr::filter(!is.na(cpue))
@@ -367,12 +363,6 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     cpue <- cpue_dat %>%
       tidyr::expand(year = model_yrs, strata) %>%
       dplyr::left_join(cpue_dat)
-
-    # if(any(cpue$cpue == 0, na.rm = TRUE)) {
-    #   warning("The user has entered a zero observation for the CPUE survey data. By default, a small constant (0.0001) is added to this value, because CPUE is estimated in log space. If the user wants to treat this zero as an NA (i.e., a failed survey), they must excplicitly define it as an NA prior to running prepare_rema_input().")
-    #   cpue <- cpue %>%
-    #     dplyr::mutate(cpue = ifelse(cpue == 0, 0.0001, cpue))
-    # }
 
   } else if ((input$data$multi_survey == 1) & is.null(cpue_dat)){
     stop(paste("user defined multi_survey as TRUE but did not provide CPUE survey data in the admb_re list or as a dataframe in the cpue_dat argument."))
@@ -437,6 +427,15 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   # user-defined scaling parameter (q) options
   input <- set_q_options(input, q_options)
 
+  # user-defined Tweedie parameter (tweedie_phi, tweedie_p) options
+  # input <- set_tweedie_options(input, zeros$options_tweedie)
+
+  # zeros = list(assumption = 'tweedie', # c('NA', 'small_constant', 'tweedie'),
+  #              options_small_constant = c(0.0001, 5), # assumed mean, assumed CV
+  #              options_tweedie = list(initial_pars = c(1, 1.6, 1, 1.6), # biomass survey (phi, rho); cpue survey (phi, rho)
+  #                                     fix_pars = NULL)
+  # )
+  #
   # output tidied version of the biomass and cpue data
   input$biomass_dat <- biom %>%
     dplyr::arrange(strata, year)

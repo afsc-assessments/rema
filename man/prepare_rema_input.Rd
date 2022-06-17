@@ -16,7 +16,8 @@ prepare_rema_input(
   wt_biomass = NULL,
   wt_cpue = NULL,
   PE_options = NULL,
-  q_options = NULL
+  q_options = NULL,
+  zeros = NULL
 )
 }
 \arguments{
@@ -104,6 +105,9 @@ details)}
 (q), including options to define q by biomass or cpue survey cpue strata,
 change starting values, fix parameters, and add penalties or priors (see
 details). only used when \code{multi_survey = 1}}
+
+\item{zeros}{(options) define assumptions about how to treat zero biomass or
+CPUE observations (see details).}
 }
 \value{
 This function returns a named list with the following components:
@@ -121,21 +125,19 @@ This function returns a named list with the following components:
   survey observations and associated CVs by strata. This data.frame will be
   'complete' in that it will include all modeled years, with missing values
   treated as NAs. Note that this data.frame could differ from the
-  \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
-  observations were included. By default these zeros will be treated as NAs
-  (i.e., a failed survey). If the user wants to make other assumptions about
-  zeros (e.g. adding a small constant), they must manually change the input
-  data to reflect this assumption.}
+  \code{admb_re$biomass_dat} or input \code{biomass} if assumptions about
+  zero biomass observations are different between the ADMB model and what the
+  user specifies for REMA. The user can change their assumptions about zeros
+  using the \code{zeros} argument.}
   \item{\code{cpue_dat}}{If optional CPUE survey data are provided and
   \code{multi_survey = 1}, this will be a tidied long-format data.frame of
   the CPUE survey observations and associated CVs by strata. This data.frame
   will be 'complete' in that it will include all modeled years, with missing
   values treated as NAs. Note that this data.frame could differ from the
-  \code{admb_re$biomass_dat} or input \code{biomass} if zero biomass
-  observations were included.By default these zeros will be treated as NAs
-  (i.e., a failed survey). If the user wants to make other assumptions about
-  zeros (e.g. adding a small constant), they must manually change the input
-  data to reflect this assumption. If optional CPUE survey data are not
+  \code{admb_re$biomass_dat} or input \code{biomass} if assumptions about
+  zero CPUE observations are different between the ADMB model and what the
+  user specifies for REMA. The user can change their assumptions about zeros
+  using the \code{zeros} argument. If optional CPUE survey data are not
   provided or \code{multi_survey = 0}, this object will be \code{NULL}.}
   }
 }
