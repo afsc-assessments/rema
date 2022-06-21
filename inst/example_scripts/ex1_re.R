@@ -140,6 +140,9 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasr',
                             # follows for each biomass survey stratum:
                             q_options = list(pointer_biomass_cpue_strata = c(1, 2, 3)))
 
+input$data$wt_biomass
+input$data$wt_cpue
+
 m <- fit_rema(input)
 check_convergence(m)
 

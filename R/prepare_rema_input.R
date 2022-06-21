@@ -485,6 +485,14 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   # set tweedie starting values, user-defined options
   input <- set_tweedie(input, zeros)
 
+  if(!is.null(wt_biomass)) {
+    input$data$wt_biomass <- wt_biomass
+  }
+
+  if(!is.null(wt_cpue)) {
+    input$data$wt_cpue <- wt_cpue
+  }
+
   # output tidied version of the biomass and cpue data
   input$biomass_dat <- biom %>%
     dplyr::arrange(strata, year)
