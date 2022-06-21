@@ -1,0 +1,443 @@
+survey,year,area_code,species_code,biomass,var,area,common_name
+AI,1980,5699,30020,32.2,169.242791226435,Eastern AI,shortspine thornyhead
+AI,1980,799,30020,22.5,506.102565027453,SBS,shortspine thornyhead
+AI,1980,3499,30020,386.9,17505.9677004842,Central AI,shortspine thornyhead
+AI,1980,299,30020,489,10409.8630142438,Western AI,shortspine thornyhead
+AI,1983,3499,30020,1148.5,292767.001056764,Central AI,shortspine thornyhead
+AI,1983,5699,30020,705.3,115023.076796869,Eastern AI,shortspine thornyhead
+AI,1983,299,30020,1247.6,40779.0861634738,Western AI,shortspine thornyhead
+AI,1983,799,30020,566.2,16147.2818759784,SBS,shortspine thornyhead
+AI,1986,5699,30020,836.5,105043.451521379,Eastern AI,shortspine thornyhead
+AI,1986,799,30020,422.8,22612.7380088904,SBS,shortspine thornyhead
+AI,1986,299,30020,4097.5,1193503.84278862,Western AI,shortspine thornyhead
+AI,1986,3499,30020,1503.4,220685.336313578,Central AI,shortspine thornyhead
+AI,1991,299,30020,5131,2069034.28010818,Western AI,shortspine thornyhead
+AI,1991,5699,30020,114.7,3205.51734060512,Eastern AI,shortspine thornyhead
+AI,1991,799,30020,187.4,11725.0186851253,SBS,shortspine thornyhead
+AI,1991,3499,30020,907.6,97711.7648493467,Central AI,shortspine thornyhead
+AI,1994,3499,30020,1554.2,179230.288110913,Central AI,shortspine thornyhead
+AI,1994,799,30020,1070.8,309828.03468975,SBS,shortspine thornyhead
+AI,1994,299,30020,4503,817468.879610157,Western AI,shortspine thornyhead
+AI,1994,5699,30020,186.6,7239.8999682422,Eastern AI,shortspine thornyhead
+AI,1997,299,30020,6724.6,2504428.91664904,Western AI,shortspine thornyhead
+AI,1997,5699,30020,158.9,5227.17308740379,Eastern AI,shortspine thornyhead
+AI,1997,799,30020,1545.1,1120300.40034146,SBS,shortspine thornyhead
+AI,1997,3499,30020,2010.9,97835.7895789074,Central AI,shortspine thornyhead
+AI,2000,5699,30020,522.1,65707.2252975697,Eastern AI,shortspine thornyhead
+AI,2000,799,30020,1051.3,250561.284718872,SBS,shortspine thornyhead
+AI,2000,3499,30020,3815.2,1087761.32687967,Central AI,shortspine thornyhead
+AI,2000,299,30020,6311.2,2776863.33354385,Western AI,shortspine thornyhead
+AI,2002,5699,30020,543.3,75654.7748048728,Eastern AI,shortspine thornyhead
+AI,2002,799,30020,1012,168037.821458393,SBS,shortspine thornyhead
+AI,2002,299,30020,8246.6,7221810.36084877,Western AI,shortspine thornyhead
+AI,2002,3499,30020,5454.3,1143427.37679747,Central AI,shortspine thornyhead
+AI,2004,5699,30020,978.7,196060.760827139,Eastern AI,shortspine thornyhead
+AI,2004,799,30020,945.4,275954.786614506,SBS,shortspine thornyhead
+AI,2004,299,30020,12001.8,9776987.57200581,Western AI,shortspine thornyhead
+AI,2004,3499,30020,4354.2,985309.977114091,Central AI,shortspine thornyhead
+AI,2006,799,30020,967.9,281672.348213815,SBS,shortspine thornyhead
+AI,2006,299,30020,11117,3582056.54857405,Western AI,shortspine thornyhead
+AI,2006,5699,30020,773.6,215084.894265541,Eastern AI,shortspine thornyhead
+AI,2006,3499,30020,5987.2,922133.857194766,Central AI,shortspine thornyhead
+AI,2010,799,30020,1052.3,594280.794218763,SBS,shortspine thornyhead
+AI,2010,3499,30020,5107.6,408104.275707998,Central AI,shortspine thornyhead
+AI,2010,5699,30020,864.5,144559.414069553,Eastern AI,shortspine thornyhead
+AI,2010,299,30020,12102.5,7761429.89999125,Western AI,shortspine thornyhead
+AI,2012,299,30020,9419.2,3544175.43945617,Western AI,shortspine thornyhead
+AI,2012,799,30020,451.8,120304.904954001,SBS,shortspine thornyhead
+AI,2012,3499,30020,3519.2,666781.91002681,Central AI,shortspine thornyhead
+AI,2012,5699,30020,1505,582854.413364123,Eastern AI,shortspine thornyhead
+AI,2014,799,30020,2567.2,2951799.98144608,SBS,shortspine thornyhead
+AI,2014,3499,30020,4011.1,543586.509574763,Central AI,shortspine thornyhead
+AI,2014,5699,30020,649,76012.2016693087,Eastern AI,shortspine thornyhead
+AI,2014,299,30020,12950.8,17918442.6642613,Western AI,shortspine thornyhead
+AI,2016,5699,30020,2537.6,716628.140080234,Eastern AI,shortspine thornyhead
+AI,2016,3499,30020,5255.5,1949932.7557927,Central AI,shortspine thornyhead
+AI,2016,299,30020,8747.9,4508717.80425567,Western AI,shortspine thornyhead
+AI,2016,799,30020,1607.4,738928.625149851,SBS,shortspine thornyhead
+AI,2018,5699,30020,1914.8,1584093.27085346,Eastern AI,shortspine thornyhead
+AI,2018,3499,30020,3394.3,401008.765808965,Central AI,shortspine thornyhead
+AI,2018,799,30020,1604.8,1198170.50278621,SBS,shortspine thornyhead
+AI,2018,299,30020,7906.6,4965852.55616138,Western AI,shortspine thornyhead
+AI,1980,3499,30150,0,0,Central AI,dusky and dark rockfishes unid.
+AI,1980,799,30150,13.1,172.612557297085,SBS,dusky and dark rockfishes unid.
+AI,1980,299,30150,0,0,Western AI,dusky and dark rockfishes unid.
+AI,1980,5699,30150,21.7,255.993372165693,Eastern AI,dusky and dark rockfishes unid.
+AI,1983,3499,30150,22.2,158.028479524868,Central AI,dusky and dark rockfishes unid.
+AI,1983,799,30150,235.9,19281.1003775617,SBS,dusky and dark rockfishes unid.
+AI,1983,299,30150,13.5,60.4059208510233,Western AI,dusky and dark rockfishes unid.
+AI,1983,5699,30150,863.7,598.568458224672,Eastern AI,dusky and dark rockfishes unid.
+AI,1986,299,30150,1.6,2.68185369505454,Western AI,dusky and dark rockfishes unid.
+AI,1986,5699,30150,40.9,502.356431199494,Eastern AI,dusky and dark rockfishes unid.
+AI,1986,799,30150,2812.2,7780200.7598599,SBS,dusky and dark rockfishes unid.
+AI,1986,3499,30150,69.8,4276.27231679833,Central AI,dusky and dark rockfishes unid.
+AI,1991,5699,30150,127.2,11459.1680929434,Eastern AI,dusky and dark rockfishes unid.
+AI,1991,3499,30150,331.9,22982.0963758292,Central AI,dusky and dark rockfishes unid.
+AI,1991,799,30150,57.6,2567.07154876971,SBS,dusky and dark rockfishes unid.
+AI,1991,299,30150,12.5,157.186432142238,Western AI,dusky and dark rockfishes unid.
+AI,1994,799,30150,98.8,2415.3880845174,SBS,dusky and dark rockfishes unid.
+AI,1994,5699,30150,7,17.6878092293687,Eastern AI,dusky and dark rockfishes unid.
+AI,1994,299,30150,132.6,15748.0472531575,Western AI,dusky and dark rockfishes unid.
+AI,1994,3499,30150,53.5,803.584528500156,Central AI,dusky and dark rockfishes unid.
+AI,1997,799,30152,138.3,3990.14346927349,SBS,dusky rockfish
+AI,1997,5699,30152,442,185804.827277828,Eastern AI,dusky rockfish
+AI,1997,299,30152,54.4,2663.39111836759,Western AI,dusky rockfish
+AI,1997,3499,30152,77.5,1531.51611869991,Central AI,dusky rockfish
+AI,2000,3499,30152,579.4,105840.056607223,Central AI,dusky rockfish
+AI,2000,5699,30152,485.3,69919.7163954503,Eastern AI,dusky rockfish
+AI,2000,299,30152,185.5,4217.07399924157,Western AI,dusky rockfish
+AI,2000,799,30152,55.4,390.934224554423,SBS,dusky rockfish
+AI,2002,5699,30152,149,4060.4425400451,Eastern AI,dusky rockfish
+AI,2002,799,30152,96.9,1240.70153655396,SBS,dusky rockfish
+AI,2002,3499,30152,334.1,23867.2915142529,Central AI,dusky rockfish
+AI,2002,299,30152,47.8,961.370049949576,Western AI,dusky rockfish
+AI,2004,5699,30152,92.7,1309.94945627951,Eastern AI,dusky rockfish
+AI,2004,799,30152,1358.6,1517026.03100116,SBS,dusky rockfish
+AI,2004,3499,30152,389.2,58348.9654668064,Central AI,dusky rockfish
+AI,2004,299,30152,248.1,45020.9702169692,Western AI,dusky rockfish
+AI,2006,299,30152,33.4,441.135398214888,Western AI,dusky rockfish
+AI,2006,799,30152,730.9,495804.505043916,SBS,dusky rockfish
+AI,2006,5699,30152,343.2,24959.3343376913,Eastern AI,dusky rockfish
+AI,2006,3499,30152,5580.1,27830923.0841058,Central AI,dusky rockfish
+AI,2010,3499,30152,331.7,30429.113693662,Central AI,dusky rockfish
+AI,2010,5699,30152,221.6,5593.70230448901,Eastern AI,dusky rockfish
+AI,2010,299,30152,6.8,45.7507264208534,Western AI,dusky rockfish
+AI,2010,799,30152,120,2846.76277659356,SBS,dusky rockfish
+AI,2012,799,30152,134.6,5946.4042372885,SBS,dusky rockfish
+AI,2012,299,30152,3.8,14.3108816360697,Western AI,dusky rockfish
+AI,2012,3499,30152,114.6,2724.85947062891,Central AI,dusky rockfish
+AI,2012,5699,30152,118.1,2972.32875253039,Eastern AI,dusky rockfish
+AI,2014,799,30152,231.5,13584.5567684002,SBS,dusky rockfish
+AI,2014,299,30152,49.5,483.453022203437,Western AI,dusky rockfish
+AI,2014,3499,30152,4733.6,21015685.2106214,Central AI,dusky rockfish
+AI,2014,5699,30152,759,130203.031097034,Eastern AI,dusky rockfish
+AI,2016,799,30152,216.8,13815.3826882787,SBS,dusky rockfish
+AI,2016,299,30152,426.2,40301.9770196612,Western AI,dusky rockfish
+AI,2016,3499,30152,1061.1,279818.659615343,Central AI,dusky rockfish
+AI,2016,5699,30152,177.3,19386.3909205987,Eastern AI,dusky rockfish
+AI,2018,799,30152,1638.5,1604569.62673325,SBS,dusky rockfish
+AI,2018,5699,30152,238.3,16732.304470176,Eastern AI,dusky rockfish
+AI,2018,3499,30152,568.9,69139.1512462454,Central AI,dusky rockfish
+AI,2018,299,30152,88.6,972.508273629873,Western AI,dusky rockfish
+AI,1980,799,30475,0,0,SBS,redbanded rockfish
+AI,1980,299,30475,0,0,Western AI,redbanded rockfish
+AI,1980,3499,30475,0,0,Central AI,redbanded rockfish
+AI,1980,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,1983,799,30475,0,0,SBS,redbanded rockfish
+AI,1983,3499,30475,0,0,Central AI,redbanded rockfish
+AI,1983,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,1983,299,30475,4.7,11.2918839353422,Western AI,redbanded rockfish
+AI,1986,3499,30475,0,0,Central AI,redbanded rockfish
+AI,1986,799,30475,0,0,SBS,redbanded rockfish
+AI,1986,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,1986,299,30475,0,0,Western AI,redbanded rockfish
+AI,1991,299,30475,0,0,Western AI,redbanded rockfish
+AI,1991,799,30475,0.7,0.471600823758079,SBS,redbanded rockfish
+AI,1991,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,1991,3499,30475,0,0,Central AI,redbanded rockfish
+AI,1994,299,30475,0,0,Western AI,redbanded rockfish
+AI,1994,799,30475,0,0,SBS,redbanded rockfish
+AI,1994,3499,30475,0,0,Central AI,redbanded rockfish
+AI,1994,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,1997,299,30475,0.8,0.590564092828969,Western AI,redbanded rockfish
+AI,1997,3499,30475,0.8,0.598794794850927,Central AI,redbanded rockfish
+AI,1997,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,1997,799,30475,0,0,SBS,redbanded rockfish
+AI,2000,299,30475,0,0,Western AI,redbanded rockfish
+AI,2000,3499,30475,0,0,Central AI,redbanded rockfish
+AI,2000,799,30475,0,0,SBS,redbanded rockfish
+AI,2000,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,2002,3499,30475,0,0,Central AI,redbanded rockfish
+AI,2002,799,30475,0,0,SBS,redbanded rockfish
+AI,2002,299,30475,0.5,0.286452327520198,Western AI,redbanded rockfish
+AI,2002,5699,30475,0.5,0.276172433384997,Eastern AI,redbanded rockfish
+AI,2004,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,2004,799,30475,0,0,SBS,redbanded rockfish
+AI,2004,299,30475,1.1,1.25241831102181,Western AI,redbanded rockfish
+AI,2004,3499,30475,4.2,17.9007389879471,Central AI,redbanded rockfish
+AI,2006,299,30475,0.8,0.605188044260654,Western AI,redbanded rockfish
+AI,2006,799,30475,0,0,SBS,redbanded rockfish
+AI,2006,3499,30475,0,0,Central AI,redbanded rockfish
+AI,2006,5699,30475,4.7,21.6533420667671,Eastern AI,redbanded rockfish
+AI,2010,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,2010,3499,30475,3.1,9.45636169002998,Central AI,redbanded rockfish
+AI,2010,299,30475,0,0,Western AI,redbanded rockfish
+AI,2010,799,30475,0,0,SBS,redbanded rockfish
+AI,2012,3499,30475,1.5,2.38066110564746,Central AI,redbanded rockfish
+AI,2012,299,30475,1.2,1.38086267050364,Western AI,redbanded rockfish
+AI,2012,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,2012,799,30475,0,0,SBS,redbanded rockfish
+AI,2014,799,30475,0,0,SBS,redbanded rockfish
+AI,2014,3499,30475,0,0,Central AI,redbanded rockfish
+AI,2014,299,30475,1.1,1.2515927702129,Western AI,redbanded rockfish
+AI,2014,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,2016,299,30475,0,0,Western AI,redbanded rockfish
+AI,2016,5699,30475,7,48.5629278735483,Eastern AI,redbanded rockfish
+AI,2016,799,30475,0,0,SBS,redbanded rockfish
+AI,2016,3499,30475,9.9,98.5138024913173,Central AI,redbanded rockfish
+AI,2018,299,30475,0.8,0.722208879247543,Western AI,redbanded rockfish
+AI,2018,3499,30475,0,0,Central AI,redbanded rockfish
+AI,2018,5699,30475,0,0,Eastern AI,redbanded rockfish
+AI,2018,799,30475,0,0,SBS,redbanded rockfish
+AI,1980,299,30535,0,0,Western AI,harlequin rockfish
+AI,1980,5699,30535,0,0,Eastern AI,harlequin rockfish
+AI,1980,799,30535,0,0,SBS,harlequin rockfish
+AI,1980,3499,30535,0,0,Central AI,harlequin rockfish
+AI,1983,3499,30535,1.7,2.23446659163733,Central AI,harlequin rockfish
+AI,1983,799,30535,0,0,SBS,harlequin rockfish
+AI,1983,299,30535,2.1,1.21778786053026,Western AI,harlequin rockfish
+AI,1983,5699,30535,2.5,6.2309485029993,Eastern AI,harlequin rockfish
+AI,1986,3499,30535,0,0,Central AI,harlequin rockfish
+AI,1986,799,30535,18.2,315.385216029215,SBS,harlequin rockfish
+AI,1986,299,30535,0,0,Western AI,harlequin rockfish
+AI,1986,5699,30535,0,0,Eastern AI,harlequin rockfish
+AI,1991,799,30535,0,0,SBS,harlequin rockfish
+AI,1991,299,30535,7,20.009211991771,Western AI,harlequin rockfish
+AI,1991,3499,30535,12.9,122.470310451452,Central AI,harlequin rockfish
+AI,1991,5699,30535,2.1,2.56760549512775,Eastern AI,harlequin rockfish
+AI,1994,299,30535,1.2,1.4915523909542,Western AI,harlequin rockfish
+AI,1994,5699,30535,4.6,17.8352629930312,Eastern AI,harlequin rockfish
+AI,1994,799,30535,1.7,2.05850293320767,SBS,harlequin rockfish
+AI,1994,3499,30535,12.4,125.388167773119,Central AI,harlequin rockfish
+AI,1997,799,30535,0,0,SBS,harlequin rockfish
+AI,1997,299,30535,10,38.3928019638168,Western AI,harlequin rockfish
+AI,1997,3499,30535,52.5,839.928563185618,Central AI,harlequin rockfish
+AI,1997,5699,30535,5.4,14.7304059985855,Eastern AI,harlequin rockfish
+AI,2000,3499,30535,14.6,162.508276211924,Central AI,harlequin rockfish
+AI,2000,299,30535,2.9,8.38226680336486,Western AI,harlequin rockfish
+AI,2000,5699,30535,7.9,62.0999386107924,Eastern AI,harlequin rockfish
+AI,2000,799,30535,0,0,SBS,harlequin rockfish
+AI,2002,799,30535,2.2,4.98661660011341,SBS,harlequin rockfish
+AI,2002,5699,30535,9.4,30.1843695779003,Eastern AI,harlequin rockfish
+AI,2002,3499,30535,12.5,121.836007062255,Central AI,harlequin rockfish
+AI,2002,299,30535,0,0,Western AI,harlequin rockfish
+AI,2004,5699,30535,1.7,2.82776973184962,Eastern AI,harlequin rockfish
+AI,2004,3499,30535,90,6876.59137016581,Central AI,harlequin rockfish
+AI,2004,799,30535,4166.7,17155555.6267975,SBS,harlequin rockfish
+AI,2004,299,30535,404.2,147619.3571314,Western AI,harlequin rockfish
+AI,2006,299,30535,2.8,3.8664127235642,Western AI,harlequin rockfish
+AI,2006,3499,30535,23,432.801967062549,Central AI,harlequin rockfish
+AI,2006,799,30535,7.4,14.1019028203008,SBS,harlequin rockfish
+AI,2006,5699,30535,15.3,235.151430343498,Eastern AI,harlequin rockfish
+AI,2010,299,30535,3.4,9.79779214735375,Western AI,harlequin rockfish
+AI,2010,5699,30535,10.4,37.2437373372447,Eastern AI,harlequin rockfish
+AI,2010,799,30535,0,0,SBS,harlequin rockfish
+AI,2010,3499,30535,8.3,20.8534471167678,Central AI,harlequin rockfish
+AI,2012,799,30535,0,0,SBS,harlequin rockfish
+AI,2012,299,30535,11,28.8621799529537,Western AI,harlequin rockfish
+AI,2012,5699,30535,0,0,Eastern AI,harlequin rockfish
+AI,2012,3499,30535,0,0,Central AI,harlequin rockfish
+AI,2014,299,30535,71.3,2395.83826188834,Western AI,harlequin rockfish
+AI,2014,3499,30535,21,142.357310295601,Central AI,harlequin rockfish
+AI,2014,5699,30535,3.2,10.0242823780896,Eastern AI,harlequin rockfish
+AI,2014,799,30535,0.7,0.524676041384986,SBS,harlequin rockfish
+AI,2016,3499,30535,43.4,650.984922130721,Central AI,harlequin rockfish
+AI,2016,5699,30535,0,0,Eastern AI,harlequin rockfish
+AI,2016,799,30535,1,1.09960975677721,SBS,harlequin rockfish
+AI,2016,299,30535,36.3,651.863068503542,Western AI,harlequin rockfish
+AI,2018,5699,30535,2.2,4.87659565420261,Eastern AI,harlequin rockfish
+AI,2018,3499,30535,8.2,67.6290726905784,Central AI,harlequin rockfish
+AI,2018,299,30535,7.4,10.4982167830695,Western AI,harlequin rockfish
+AI,2018,799,30535,0,0,SBS,harlequin rockfish
+AI,1980,3499,30560,0.5,0.246328246020348,Central AI,sharpchin rockfish
+AI,1980,799,30560,0,0,SBS,sharpchin rockfish
+AI,1980,5699,30560,0,0,Eastern AI,sharpchin rockfish
+AI,1980,299,30560,0,0,Western AI,sharpchin rockfish
+AI,1983,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,1983,299,30560,0,0,Western AI,sharpchin rockfish
+AI,1983,799,30560,0,0,SBS,sharpchin rockfish
+AI,1983,5699,30560,0,0,Eastern AI,sharpchin rockfish
+AI,1986,799,30560,0,0,SBS,sharpchin rockfish
+AI,1986,5699,30560,0,0,Eastern AI,sharpchin rockfish
+AI,1986,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,1986,299,30560,0,0,Western AI,sharpchin rockfish
+AI,1991,299,30560,0,0,Western AI,sharpchin rockfish
+AI,1991,5699,30560,0,0,Eastern AI,sharpchin rockfish
+AI,1991,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,1991,799,30560,2.6,6.40109213971494,SBS,sharpchin rockfish
+AI,1994,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,1994,799,30560,0.7,0.517977865039249,SBS,sharpchin rockfish
+AI,1994,299,30560,0,0,Western AI,sharpchin rockfish
+AI,1994,5699,30560,1.3,1.80705640746099,Eastern AI,sharpchin rockfish
+AI,1997,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,1997,799,30560,0,0,SBS,sharpchin rockfish
+AI,1997,5699,30560,0,0,Eastern AI,sharpchin rockfish
+AI,1997,299,30560,0,0,Western AI,sharpchin rockfish
+AI,2000,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,2000,799,30560,0,0,SBS,sharpchin rockfish
+AI,2000,299,30560,0,0,Western AI,sharpchin rockfish
+AI,2000,5699,30560,0,0,Eastern AI,sharpchin rockfish
+AI,2002,799,30560,0,0,SBS,sharpchin rockfish
+AI,2002,5699,30560,0,0,Eastern AI,sharpchin rockfish
+AI,2002,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,2002,299,30560,0,0,Western AI,sharpchin rockfish
+AI,2004,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,2004,799,30560,2.7,7.02950482933759,SBS,sharpchin rockfish
+AI,2004,5699,30560,0,0,Eastern AI,sharpchin rockfish
+AI,2004,299,30560,0,0,Western AI,sharpchin rockfish
+AI,2006,5699,30560,0,0,Eastern AI,sharpchin rockfish
+AI,2006,299,30560,0,0,Western AI,sharpchin rockfish
+AI,2006,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,2006,799,30560,0,0,SBS,sharpchin rockfish
+AI,2010,299,30560,0,0,Western AI,sharpchin rockfish
+AI,2010,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,2010,5699,30560,3,9.00789424163808,Eastern AI,sharpchin rockfish
+AI,2010,799,30560,0,0,SBS,sharpchin rockfish
+AI,2012,299,30560,0,0,Western AI,sharpchin rockfish
+AI,2012,5699,30560,0,0,Eastern AI,sharpchin rockfish
+AI,2012,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,2012,799,30560,0,0,SBS,sharpchin rockfish
+AI,2014,299,30560,0,0,Western AI,sharpchin rockfish
+AI,2014,799,30560,0,0,SBS,sharpchin rockfish
+AI,2014,5699,30560,4.4,19.1542817269759,Eastern AI,sharpchin rockfish
+AI,2014,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,2016,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,2016,5699,30560,3.1,9.75658051309224,Eastern AI,sharpchin rockfish
+AI,2016,799,30560,0,0,SBS,sharpchin rockfish
+AI,2016,299,30560,0.4,0.180483662085983,Western AI,sharpchin rockfish
+AI,2018,3499,30560,0,0,Central AI,sharpchin rockfish
+AI,2018,799,30560,0,0,SBS,sharpchin rockfish
+AI,2018,299,30560,0,0,Western AI,sharpchin rockfish
+AI,2018,5699,30560,0,0,Eastern AI,sharpchin rockfish
+EBS_SHELF,1982,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1983,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1984,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1985,NA,30150,36.17,1308.2141,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1986,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1987,NA,30150,49.72,2472.0651,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1988,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1989,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1990,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1991,NA,30150,857.4,653352.7356,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1992,NA,30150,13.75,188.9268,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1993,NA,30150,86.07,7408.2826,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1994,NA,30150,46.61,2172.4267,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1995,NA,30150,75.58,2819.253,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1996,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1997,NA,30150,126.24,15935.8139,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1998,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1999,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2000,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2001,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2002,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2003,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2004,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2005,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2006,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2007,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2008,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2009,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2010,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2011,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2012,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2013,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2014,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2015,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2016,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2017,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2018,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,2019,NA,30150,0,0,EBS Shelf,dusky and dark rockfishes unid.
+EBS_SHELF,1982,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1983,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1984,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1985,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1986,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1987,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1988,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1989,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1990,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1991,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1992,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1993,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1994,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1995,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1996,NA,30152,35.63,1269.4358,EBS Shelf,dusky rockfish
+EBS_SHELF,1997,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1998,NA,30152,537.59,133355.6633,EBS Shelf,dusky rockfish
+EBS_SHELF,1999,NA,30152,397.58,88955.8431,EBS Shelf,dusky rockfish
+EBS_SHELF,2000,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,2001,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,2002,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,2003,NA,30152,55.35,1495.4727,EBS Shelf,dusky rockfish
+EBS_SHELF,2004,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,2005,NA,30152,36.32,1319.1748,EBS Shelf,dusky rockfish
+EBS_SHELF,2006,NA,30152,356.64,91264.8934,EBS Shelf,dusky rockfish
+EBS_SHELF,2007,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,2008,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,2009,NA,30152,121.56,4939.5792,EBS Shelf,dusky rockfish
+EBS_SHELF,2010,NA,30152,52.19,2723.5343,EBS Shelf,dusky rockfish
+EBS_SHELF,2011,NA,30152,55.82,3116.0498,EBS Shelf,dusky rockfish
+EBS_SHELF,2012,NA,30152,36.63,1341.8309,EBS Shelf,dusky rockfish
+EBS_SHELF,2013,NA,30152,39.73,1578.848,EBS Shelf,dusky rockfish
+EBS_SHELF,2014,NA,30152,28.25,797.9894,EBS Shelf,dusky rockfish
+EBS_SHELF,2015,NA,30152,142.91,20422.5609,EBS Shelf,dusky rockfish
+EBS_SHELF,2016,NA,30152,20.06,402.2318,EBS Shelf,dusky rockfish
+EBS_SHELF,2017,NA,30152,169.32,15140.1885,EBS Shelf,dusky rockfish
+EBS_SHELF,2018,NA,30152,1592.69,1242751.4219,EBS Shelf,dusky rockfish
+EBS_SHELF,2019,NA,30152,0,0,EBS Shelf,dusky rockfish
+EBS_SHELF,1982,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1983,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1984,NA,30535,17.75,315.1367,EBS Shelf,harlequin rockfish
+EBS_SHELF,1985,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1986,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1987,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1988,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1989,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1990,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1991,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1992,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1993,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1994,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1995,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1996,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1997,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1998,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,1999,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2000,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2001,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2002,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2003,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2004,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2005,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2006,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2007,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2008,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2009,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2010,NA,30535,4.76,22.6728,EBS Shelf,harlequin rockfish
+EBS_SHELF,2011,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2012,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2013,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2014,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2015,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2016,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2017,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2018,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SHELF,2019,NA,30535,0,0,EBS Shelf,harlequin rockfish
+EBS_SLOPE,2002,NA,30020,16940.3469423163,3839838.26873871,EBS Slope,shortspine thornyhead
+EBS_SLOPE,2004,NA,30020,18792.7758829193,2830310.39980233,EBS Slope,shortspine thornyhead
+EBS_SLOPE,2008,NA,30020,26054.643271377,10528665.1080001,EBS Slope,shortspine thornyhead
+EBS_SLOPE,2010,NA,30020,29334.4963124175,11694812.3740226,EBS Slope,shortspine thornyhead
+EBS_SLOPE,2012,NA,30020,29564.6369185906,9929460.50106529,EBS Slope,shortspine thornyhead
+EBS_SLOPE,2016,NA,30020,35947.6045676151,17027871.8431635,EBS Slope,shortspine thornyhead
+EBS_SLOPE,2002,NA,30025,5.11867309538242,13.6619314816705,EBS Slope,broadfin thornyhead
+EBS_SLOPE,2004,NA,30025,12.2591855870382,36.9557210150807,EBS Slope,broadfin thornyhead
+EBS_SLOPE,2008,NA,30025,10.5102919289804,28.615287532166,EBS Slope,broadfin thornyhead
+EBS_SLOPE,2012,NA,30025,7.59640887829619,30.6737321037772,EBS Slope,broadfin thornyhead
+EBS_SLOPE,2016,NA,30025,4.67199568171483,11.2897568433254,EBS Slope,broadfin thornyhead
+EBS_SLOPE,2002,NA,30030,7.11309316843125,37.2679427847411,EBS Slope,longspine thornyhead
+EBS_SLOPE,2010,NA,30030,22.7266893134439,291.992034106361,EBS Slope,longspine thornyhead
+EBS_SLOPE,2016,NA,30030,20.1219608519224,75.0405241797299,EBS Slope,longspine thornyhead
+EBS_SLOPE,2002,NA,30040,0.443611239811105,0.174181877792321,EBS Slope,rockfish unid.
+EBS_SLOPE,2004,NA,30040,5.14684254510029,26.2111015846194,EBS Slope,rockfish unid.
+EBS_SLOPE,2010,NA,30040,3.35230573601151,11.2379537476957,EBS Slope,rockfish unid.
+EBS_SLOPE,2002,NA,30152,25.0143410192459,200.466572429147,EBS Slope,dusky rockfish
+EBS_SLOPE,2004,NA,30152,13.2103290390838,55.7580638974781,EBS Slope,dusky rockfish
+EBS_SLOPE,2008,NA,30152,10.034664964941,100.694500958615,EBS Slope,dusky rockfish
+EBS_SLOPE,2010,NA,30152,116.923110616673,10358.17168422,EBS Slope,dusky rockfish
+EBS_SLOPE,2012,NA,30152,40.2034282641922,600.299777351218,EBS Slope,dusky rockfish
+EBS_SLOPE,2004,NA,30475,0.686772138350638,0.471655970014708,EBS Slope,redbanded rockfish
+EBS_SLOPE,2008,NA,30475,6.87803872892664,23.655851619508802,EBS Slope,redbanded rockfish
+EBS_SLOPE,2010,NA,30475,1.20537364384722,1.45292562128154,EBS Slope,redbanded rockfish
+EBS_SLOPE,2012,NA,30475,4.10593943859967,16.8587386734482,EBS Slope,redbanded rockfish
+EBS_SLOPE,2016,NA,30535,5.66544470073582,17.3258280170554,EBS Slope,harlequin rockfish
+EBS_SLOPE,2010,NA,30600,3.00028557378237,9.00171352424663,EBS Slope,yellowmouth rockfish

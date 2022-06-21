@@ -43,6 +43,10 @@ Type objective_function<Type>::operator() ()
   DATA_MATRIX(cpue_cv);
   DATA_INTEGER(sum_cpue_index); // 0 = no, 1 = yes (default = 0); can the cpue index be summed across strata (e.g. Relative population numbers = 1, Numbers per hachi = 0)
 
+  // switch for observation error distribution
+  DATA_INTEGER(obs_error_type); // 0 = default = lognormal (make data assumptions about zeros); 1 = Tweedie (model zeros)
+
+  // indexing vectors
   DATA_IVECTOR(pointer_PE_biomass); // length = ncol biomass obs (# strata), unique values = number of PE parameters
   DATA_IVECTOR(pointer_biomass_cpue_strata);  // length = ncol biomass obs (# strata), unique values = number of cpue survey strata
   DATA_IVECTOR(pointer_q_cpue); // length = ncol cpue obs (# strata), unique values = number of q parameters
@@ -63,10 +67,18 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(psig_log_q);
 
   // parameter section
+
   // PARAMETER(dummy);  // dummy var for troubleshooting
-  PARAMETER_VECTOR(log_PE);
-  PARAMETER_VECTOR(log_q);
-  PARAMETER_MATRIX(log_biomass_pred);
+  PARAMETER_VECTOR(log_PE); // process errors
+  PARAMETER_VECTOR(log_q); // scaling parameters
+
+  PARAMETER_VECTOR(log_tweedie_dispersion); // tweedie dispersion (one for biomass survey and optional one for cpue survey)
+  PARAMETER_VECTOR(logit_tweedie_p); // tweedie power parameter (one for biomass survey and optional one for cpue survey)
+
+  vector<Type> tweedie_dispersion = exp(log_tweedie_dispersion);
+  vector<Type> tweedie_p = invlogit(logit_tweedie_p) + Type(1.0);
+
+  PARAMETER_MATRIX(log_biomass_pred); // random effects of predicted biomass
 
   // negative log likelihood
   vector<Type> jnll(3); // random walk, biomass obs, cpue obs
@@ -101,6 +113,10 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_biomass_sd(nyrs, n_strata_biomass);
   log_biomass_sd = biomass_cv.array() * biomass_cv.array() + Type(1.0);
   log_biomass_sd = sqrt(log(log_biomass_sd.array()));
+  matrix<Type> biomass_sd(nyrs, n_strata_biomass);
+  biomass_sd = biomass_obs.array() * biomass_cv.array();
+  matrix<Type> biomass_dispersion(nyrs, n_strata_biomass);
+  biomass_dispersion.setZero();
 
   // derived quantities - cpue survey observations
   matrix<Type> log_cpue_obs(nyrs, n_strata_cpue);
@@ -108,6 +124,8 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_cpue_sd(nyrs, n_strata_cpue);
   log_cpue_sd = cpue_cv.array() * cpue_cv.array() + Type(1.0);
   log_cpue_sd = sqrt(log(log_cpue_sd.array()));
+  matrix<Type> cpue_sd(nyrs, n_strata_cpue);
+  cpue_sd = cpue_obs.array() * cpue_cv.array();
 
   // random effects contribution to likelihood
   for(int i = 1; i < nyrs; i++) {
@@ -118,35 +136,74 @@ Type objective_function<Type>::operator() ()
   switch(PE_penalty_type) {
 
   case 0: // no penalty
-    jnll(1) = jnll(1);
+    jnll(0) = jnll(0);
     break;
 
   case 1: // weight
-    jnll(1) = wt_PE * jnll(1);
+    jnll(0) = wt_PE * jnll(0);
     break;
 
   case 2: // squared penalty
     for(int k = 0; k < log_PE.size(); k++) {
-      jnll(1) += pow(log_PE(k) + squared_penalty_PE(k), 2);
+      jnll(0) += pow(log_PE(k) + squared_penalty_PE(k), 2);
     }
     break;
 
   case 3: // normal prior
     for(int k = 0; k < log_PE.size(); k++) {
-      jnll(1) -= dnorm(log_PE(k), pmu_log_PE(k), psig_log_PE(k), 1);
+      jnll(0) -= dnorm(log_PE(k), pmu_log_PE(k), psig_log_PE(k), 1);
     }
     break;
   }
 
-  // data likelihood for biomass survey observations
-  for(int i = 0; i < nyrs; i++) {
-    for(int j = 0; j < n_strata_biomass; j++) {
-      if(biomass_obs(i,j) > 0) {
-        jnll(1) -= dnorm(log_biomass_pred(i,j), log_biomass_obs(i,j), log_biomass_sd(i,j), 1);
+  // likelihood for observation error of biomass survey data
+  switch(obs_error_type) {
+
+  case 0: // lognormal
+    for(int i = 0; i < nyrs; i++) {
+      for(int j = 0; j < n_strata_biomass; j++) {
+        if(biomass_obs(i,j) > 0) {
+          jnll(1) -= dnorm(log_biomass_pred(i,j), log_biomass_obs(i,j), log_biomass_sd(i,j), 1);
+        }
+        biomass_pred(i,j) = exp(log_biomass_pred(i,j));
       }
-      biomass_pred(i,j) = exp(log_biomass_pred(i,j));
     }
+    break;
+
+  case 1: // Tweedie
+
+    Type tmp_biomass_sd = 100.0;
+
+    for(int i = 0; i < nyrs; i++) {
+      for(int j = 0; j < n_strata_biomass; j++) {
+
+        biomass_pred(i,j) = exp(log_biomass_pred(i,j));
+
+        // if(biomass_sd(i,j) == 0) {
+        //   tmp_biomass_sd = 100.0;
+        // }
+        // if(biomass_sd(i,j) > 0) {
+        //   tmp_biomass_sd = biomass_sd(i,j);
+        // }
+
+        if(biomass_obs(i,j) == 0) {
+          biomass_dispersion(i,j) = Type(100.0);
+        }
+        if(biomass_obs(i,j) > 0) {
+          biomass_dispersion(i,j) = (biomass_sd(i,j) * biomass_sd(i,j)) / pow(biomass_pred(i,j), tweedie_p(0));
+        }
+
+        if(biomass_obs(i,j) >= 0) {
+          // tweedie_dispersion(0) = (tmp_biomass_sd * tmp_biomass_sd) / pow(biomass_pred(i,j), tweedie_p(0));
+          // jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), tweedie_dispersion(0), tweedie_p(0), 1);
+          jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
+        }
+
+      }
+    }
+    break;
   }
+
   jnll(1) = jnll(1) * wt_biomass;
 
   // If in multi-survey mode (1=on, 0=off), calculate predicted cpue and data
@@ -170,14 +227,37 @@ Type objective_function<Type>::operator() ()
         log_cpue_pred(i,j) = log(cpue_pred(i,j));
         log_biomass_pred_cpue_strata(i,j) = log(biomass_pred_cpue_strata(i,j));
       }
+    }
 
-      // get data likelihood for cpue survey
-      for(int j = 0; j < n_strata_cpue; j++) {
-        if(cpue_obs(i,j) > 0) {
-          jnll(2) -= dnorm(log_cpue_pred(i,j), log_cpue_obs(i,j), log_cpue_sd(i,j), 1);
+
+    // get data likelihood for cpue survey
+    switch(obs_error_type) {
+
+    case 0: // lognormal
+
+      for(int i = 0; i < nyrs; i++) {
+        for(int j = 0; j < n_strata_cpue; j++) {
+          if(cpue_obs(i,j) > 0) {
+            jnll(2) -= dnorm(log_cpue_pred(i,j), log_cpue_obs(i,j), log_cpue_sd(i,j), 1);
+          }
         }
       }
+      break;
+
+    case 1: // Tweedie
+      for(int i = 0; i < nyrs; i++) {
+        for(int j = 0; j < n_strata_cpue; j++) {
+
+          if(cpue_obs(i,j) >= 0) {
+            jnll(2) -= dtweedie(cpue_pred(i,j), cpue_obs(i,j), tweedie_dispersion(1), tweedie_p(1), 1);
+            // tweedie_dispersion(1) =  (cpue_sd(i,j) * cpue_sd(i,j)) / pow(cpue_pred(i,j), tweedie_p(1));
+
+          }
+        }
+      }
+      break;
     }
+
     jnll(2) = jnll(2) * wt_cpue;
 
     // optional penalty or prior on log_q
@@ -230,7 +310,11 @@ Type objective_function<Type>::operator() ()
   }
 
   REPORT(log_biomass_pred);
-  REPORT(log_cpue_pred);
+  // REPORT(log_cpue_pred);
+  REPORT(tweedie_dispersion);
+  REPORT(tweedie_p);
+  REPORT(biomass_pred);
+  REPORT(biomass_sd);
   REPORT(jnll);
 
   // jnll = dummy * dummy;        // Uncomment when debugging code

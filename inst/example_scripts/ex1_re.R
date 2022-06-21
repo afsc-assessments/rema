@@ -49,14 +49,17 @@ names(admb_re)
 # (2) Prepare REMA model inputs
 ?prepare_rema_input # note alternative methods for bringing in survey data observations
 input <- prepare_rema_input(model_name = 'tmb_rema_aisr',
-                            admb_re = admb_re)
+                            admb_re = admb_re,
+                            zeros = list(assumption = 'tweedie'))
+                                         # options_tweedie = list(fix_pars = c(2))))
 names(input)
 
 # (3) Fit REMA model
 ?fit_rema
-m <- fit_rema(input)
+m <- fit_rema(input, do.fit = T)
 names(m)
-
+m$report()
+exp(m$report()$log_biomass_pred)
 # (4) Check convergence criteria if you so wish
 ?check_convergence
 check_convergence(m)
@@ -94,7 +97,8 @@ admb_re <- read_admb_re(filename = 'bsaisst_rwout.rep',
                       model_name = 'admb_rem_bsaisst')
 
 input <- prepare_rema_input(model_name = 'tmb_rema_bsaisst',
-                            admb_re = admb_re)
+                            admb_re = admb_re,
+                            zeros = list(assumption = 'small_constant'))
 
 m <- fit_rema(input)
 check_convergence(m)
@@ -190,10 +194,12 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
                             # follows for each biomass survey stratum:
                             q_options = list(
                               pointer_biomass_cpue_strata = c(1, 1, 1, 2, 2, 2, 3, 3, 3),
-                              pointer_q_cpue = c(1, 1, 1))) # equivalent of admb model, but maybe consider c(1, 2, 3) as best practice? i.e. why would scaling pars be shared across strata?
-
-m <- fit_rema(input) #, do.fit = FALSE)
+                              pointer_q_cpue = c(1, 1, 1)), # equivalent of admb model, but maybe consider c(1, 2, 3) as best practice? i.e. why would scaling pars be shared across strata?
+                            zeros = list(assumption = 'tweedie'))
+m <- fit_rema(input, do.fit = F) #, do.fit = FALSE)
 names(m)
+m$report()
+
 check_convergence(m)
 output <- tidy_rema(m)
 output$parameter_estimates
