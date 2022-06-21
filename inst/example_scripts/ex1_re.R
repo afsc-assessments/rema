@@ -50,16 +50,13 @@ names(admb_re)
 ?prepare_rema_input # note alternative methods for bringing in survey data observations
 input <- prepare_rema_input(model_name = 'tmb_rema_aisr',
                             admb_re = admb_re,
-                            zeros = list(assumption = 'tweedie'))
-                                         # options_tweedie = list(fix_pars = c(2))))
+                            zeros = list(assumption = 'NA'))
 names(input)
 
 # (3) Fit REMA model
 ?fit_rema
-m <- fit_rema(input, do.fit = T)
-names(m)
-m$report()
-exp(m$report()$log_biomass_pred)
+m <- fit_rema(input)
+
 # (4) Check convergence criteria if you so wish
 ?check_convergence
 check_convergence(m)
@@ -112,14 +109,14 @@ plots <- plot_rema(tidy_rema = output,
                    # optional y-axis label
                    biomass_ylab = 'Biomass (t)')
 
-plots$biomass_by_strata
 # Use ggplot2 functions to modify formatting of plots
+plots$biomass_by_strata + facet_wrap(~strata, ncol = 1, scales = 'free_y')
 plots$total_predicted_biomass + ggplot2::ggtitle('BSAI Shortspine thornyhead predicted biomass')
 
 compare <- compare_rema_models(rema_models = list(m),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)')
-compare$plots$biomass_by_strata + facet_wrap(~strata, ncol = 1)
+compare$plots$biomass_by_strata + facet_wrap(~strata, ncol = 1, scales = 'free_y')
 compare$plots$total_predicted_biomass
 
 # Ex 3 REMA ----
@@ -150,8 +147,8 @@ output <- tidy_rema(m)
 output$parameter_estimates
 
 plots <- plot_rema(output, biomass_ylab = 'Biomass (t)', cpue_ylab = 'Relative Population Weights')
-plots$biomass_by_strata
-plots$cpue_by_strata
+plots$biomass_by_strata + facet_wrap(~strata, ncol = 1, scales = 'free_y')
+plots$cpue_by_strata + facet_wrap(~strata, ncol = 1, scales = 'free_y')
 cowplot::plot_grid(plots$biomass_by_strata,
                    plots$cpue_by_strata,
                    ncol = 1)
@@ -195,10 +192,8 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
                             q_options = list(
                               pointer_biomass_cpue_strata = c(1, 1, 1, 2, 2, 2, 3, 3, 3),
                               pointer_q_cpue = c(1, 1, 1)), # equivalent of admb model, but maybe consider c(1, 2, 3) as best practice? i.e. why would scaling pars be shared across strata?
-                            zeros = list(assumption = 'tweedie'))
-m <- fit_rema(input, do.fit = F) #, do.fit = FALSE)
-names(m)
-m$report()
+                            zeros = list(assumption = 'NA'))
+m <- fit_rema(input) #, do.fit = FALSE)
 
 check_convergence(m)
 output <- tidy_rema(m)
@@ -222,4 +217,3 @@ compare <- compare_rema_models(rema_models = list(m),
 compare$plots$biomass_by_strata
 compare$plots$total_predicted_biomass
 compare$plots$total_predicted_cpue
-
