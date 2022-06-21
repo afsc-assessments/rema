@@ -22,8 +22,8 @@
 #'     biomass strata, starting with an index of 1 and ending with the number of
 #'     unique PE estimated. For example, if there are three biomass survey
 #'     strata and the user wants to estimate only one PE, they would specify
-#'     \code{pointer_PE_biomass = c(1, 1, 1). By default there is one unique
-#'     log_PE estimated for each unique biomass survey stratum}}
+#'     \code{pointer_PE_biomass = c(1, 1, 1)}. By default there is one unique
+#'     log_PE estimated for each unique biomass survey stratum}
 #'     \item{$initial_pars}{A vector of initial values for log_PE. The
 #'     default initial value for each log_PE is 1.}
 #'     \item{$fix_pars}{Option to fix PE parameters, where the user specifies
@@ -141,10 +141,55 @@
 #'         }
 #' }}
 #'
-#' @param model_name character, name of stock and identifier for REMA model used
-#'   for model comparison
-#' @param multi_survey logical; if equal to 1 (TRUE), the model will fit to an additional
-#'   cpue survey index if provided in \code{cpue_dat}. Default = FALSE
+#' \code{zeros} allows the user to specify options for how to treat zero biomass
+#' or CPUE survey observations. By default zero observations are treated as NAs
+#' and a warning msg to that effect is returned to the console. \code{zeros}
+#' allows the user to specify non-default zero assumptions using the following
+#' list of entries:
+#' \describe{
+#'     \item{$assumption}{character, name of assumption using. Only three
+#'     alternatives are currently implemented, \code{zeros = list(assumption =
+#'     c("NA", "small_constant", "tweedie")}. \code{"NA"} is the default; this
+#'     option assumes the zero estimates are failed surveys and removes them.
+#'     \code{"small_constant"} is an ad hoc method where a fixed value is added
+#'     to the zero with an assumed CV. By default, the small constant = 0.0001
+#'     and the CV is the value entered by the user in the data. The user can
+#'     change the assumed value and CV using \code{options_small_constant}.
+#'     \code{"tweedie"} uses the Tweedie as the assumed error distribution of
+#'     the survey data, which allows zeros. This alternative estimates
+#'     additional power and dispersion parameters. The user can change initial
+#'     values for these parameters or fix them at initial values using
+#'     \code{options_tweedie}.}
+#'     \item{$options_small_constant}{a vector length of
+#'     two numeric values. The first value is the small constant to add to the
+#'     zero observation, the second is the user-defined coefficient for this
+#'     value. The user can specify the small value but use the input CV by
+#'     specifying an NA for the second value. E.g., 'options_small_constant =
+#'     c(0.0001, NA)'.}
+#'     \item{$options_tweedie}{a list of entries to control initial or fixed
+#'     values for Tweedie parameters. Currently, this argument accepts the
+#'     following entries:}
+#'         \describe{
+#'         \item{$initial_pars}{In single-survey mode,
+#'         \code{zeros$options_tweedie$initial_pars} must be a vector of numeric
+#'         values with length = 2 \code{c(log_tweedie_dispersion,
+#'         logit_tweedie_p)}. In multi-survey mode,
+#'         \code{zeros$options_tweedie$initial_pars} must be a vector of numeric
+#'         values with length = 4 \code{c(biomass survey log_tweedie_dispersion,
+#'         logit_tweedie_p, cpue survey log_tweedie_dispersion,
+#'         logit_tweedie_p)}. Initial values for log_tweedie_dispersion should
+#'         be in log space. Initial values for logit_tweedie_p < -10 approach
+#'         tweedie_p = 1 (zero-inflated Poisson), logit_tweedie_p > 10 approach
+#'         tweedie_p = 2 (gamma).}
+#'         \item{$fix_pars}{\code{zeros$options_tweedie$fix_pars} must be a
+#'         vector of integer value(s) with the index value (starting at 1) of
+#'         the log_tweedie_dispersion (1) or logit_tweedie_p (2) to be fixed.
+#'         For example, in multi survey mode, if the user wants to fix both
+#'         logit_tweedie_p's, they should enter \code{zeros = list(assumption =
+#'         'tweedie', options_tweedie = list(fix_pars = c(2, 4)))}}
+#'         }
+#'     }
+#'
 #' @param admb_re list object returned from \code{\link{read_admb_re.R}}, which
 #'   includes biomass survey data (\code{admb_re$biomass_dat}), optional cpue
 #'   survey data (\code{admb_re$cpue_dat}), years for model predictions
@@ -214,7 +259,7 @@
 #'   (q), including options to define q by biomass or cpue survey cpue strata,
 #'   change starting values, fix parameters, and add penalties or priors (see
 #'   details). only used when \code{multi_survey = 1}
-#' @param zeros (options) define assumptions about how to treat zero biomass or
+#' @param zeros (optional) define assumptions about how to treat zero biomass or
 #'   CPUE observations (see details).
 #'
 #' @return This function returns a named list with the following components:
@@ -268,7 +313,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                                zeros = NULL) {
 
   # model_name = 'REMA for unnamed stock'
-  # multi_survey = 1 # should this be 0 or FALSE instead of null?
+  # multi_survey = 0 # should this be 0 or FALSE instead of null?
   # admb_re = admb_re
   # # biomass_dat = NULL
   # # cpue_dat = NULL
@@ -328,9 +373,18 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   }
 
   # see set_zeros.R
-  zeros <- set_zeros_default(zeros)
+  # zeros <- set_zeros_default(zeros, dat = biomass_dat)
+  if(is.null(zeros) & any(biomass_dat$biomass == 0, na.rm = TRUE)) {
+    warning("The user has entered a zero observation for the survey data but has not explicitly defined an assumption for treatment of zeros in the model. By default, this observation will be removed (i.e. treated as an NA or failed survey). If the user wants to make another assumption (e.g. add a small constant or use the Tweedie distribution to model observation error), they can do so by defining an assumption in the 'zeros' argument. See details in ?prepare_rema_input() for more information.")
+  }
 
-  biomass_dat = set_zeros(dat = biomass_dat)
+  if(is.null(zeros$assumption)) {
+    zeros <- list()
+    zeros$assumption = 'NA'
+  }
+
+  biomass_dat = set_zeros(zeros = zeros,
+                          dat = biomass_dat)
 
   # remove NAs, expand biomass survey data, and create biomass input for TMB
   biomass_dat <- biomass_dat %>%
@@ -354,7 +408,8 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   if((input$data$multi_survey == 1) & !is.null(cpue_dat)) {
 
     # zero survey cpue specs
-    cpue_dat <- set_zeros(dat = cpue_dat)
+    cpue_dat <- set_zeros(zeros = zeros,
+                          dat = cpue_dat)
 
     # remove NAs
     cpue_dat <- cpue_dat %>%
@@ -427,15 +482,9 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   # user-defined scaling parameter (q) options
   input <- set_q_options(input, q_options)
 
-  # user-defined Tweedie parameter (tweedie_phi, tweedie_p) options
-  # input <- set_tweedie_options(input, zeros$options_tweedie)
+  # set tweedie starting values, user-defined options
+  input <- set_tweedie(input, zeros)
 
-  # zeros = list(assumption = 'tweedie', # c('NA', 'small_constant', 'tweedie'),
-  #              options_small_constant = c(0.0001, 5), # assumed mean, assumed CV
-  #              options_tweedie = list(initial_pars = c(1, 1.6, 1, 1.6), # biomass survey (phi, rho); cpue survey (phi, rho)
-  #                                     fix_pars = NULL)
-  # )
-  #
   # output tidied version of the biomass and cpue data
   input$biomass_dat <- biom %>%
     dplyr::arrange(strata, year)

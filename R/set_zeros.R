@@ -1,24 +1,25 @@
 
-# function to set default zeros values (currently treat as NAs) replace zeros in the biomass or cpue _dat objects based on
-# user-defined assumptions. see 'zeros' details in ?prepare_rema_inputs
+# function to set default zeros values (currently treat as NAs) replace zeros in
+# the biomass or cpue _dat objects based on user-defined assumptions. see
+# 'zeros' details in ?prepare_rema_inputs
 
-set_zeros_default <- function(zeros) {
+# set_zeros_default <- function(zeros, dat) {
+#
+#   # set default assumptions
+#   if(is.null(zeros) & any(dat$biomass == 0, na.rm = TRUE)) {
+#     warning("The user has entered a zero observation for the biomass survey data but has not explicitly defined an assumption for treatment of zeros in the model. By default, this observation will be removed (i.e. treated as an NA or failed survey). If the user wants to make another assumption (e.g. add a small constant or use the Tweedie distribution to model observation error), they can do so by defining an assumption in the 'zeros' argument. See details in ?prepare_rema_input() for more information.")
+#   }
+#
+#   if(is.null(zeros$assumption)) {
+#     zeros <- list()
+#     zeros$assumption = 'NA'
+#   }
+#
+#   return(zeros)
+# }
 
-  # set default assumptions
-  if(is.null(zeros) & any(dat$biomass == 0, na.rm = TRUE)) {
-    warning("The user has entered a zero observation for the biomass survey data but has not explicitly defined an assumption for treatment of zeros in the model. By default, this observation will be removed (i.e. treated as an NA or failed survey). If the user wants to make another assumption (e.g. add a small constant or use the Tweedie distribution to model observation error), they can do so by defining an assumption in the 'zeros' argument. See details in ?prepare_rema_input() for more information.")
-  }
-
-  if(is.null(zeros$assumption)) {
-    zeros <- list()
-    zeros$assumption = 'NA'
-  }
-
-  return(zeros)
-}
-
-set_zeros <- function(dat  # either biomass_dat or cpue_dat
-){
+set_zeros <- function(zeros,
+                      dat) {  # either biomass_dat or cpue_dat
 
   # tests
   # dat = data.frame(year = 1990:1994, strata = 'strata', biomass = c(NA, 0, 0, 1, 1), cv = rep(0.1, 5))
@@ -34,6 +35,8 @@ set_zeros <- function(dat  # either biomass_dat or cpue_dat
   default_small_constant <- 1e-4
 
   if(zeros$assumption == 'small_constant') {
+
+    tmp_cv <- NULL
 
     if(is.null(zeros$options_small_constant)) {
       tmp_small_constant <- default_small_constant
@@ -88,6 +91,5 @@ set_zeros <- function(dat  # either biomass_dat or cpue_dat
                       cpue = ifelse(cpue == 0, tmp_small_constant, cpue))
     }
   }
-  # dat
   return(dat)
 }
