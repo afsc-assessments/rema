@@ -129,11 +129,11 @@ admb_re <- read_admb_re(filename = 'goasr_rwout.rep',
                         cpue_strata_names = c('CGOA', 'EGOA', 'WGOA'),
                         model_name = 'admb_rema_goasr')
 
-input <- prepare_rema_input(model_name = 'tmb_rema_goasr',
+input <- prepare_rema_input(model_name = 'tmb_rema_goasr_cpue_wt=1',
                             multi_survey = 1,
                             admb_re = admb_re,
                             sum_cpue_index = TRUE,
-                            wt_cpue = 0.5,
+                            wt_cpue = 1,
                             # one process error parameters (log_PE) estimated
                             PE_options = list(pointer_PE_biomass = c(1, 1, 1)),
                             # three scaling parameters (log_q) estimated, indexed as
@@ -160,7 +160,19 @@ plots$total_predicted_biomass
 plots$total_predicted_cpue
 plots$biomass_by_cpue_strata
 
-compare <- compare_rema_models(rema_models = list(m),
+input2 <- prepare_rema_input(model_name = 'tmb_rema_goasr_cpue_wt=0.5',
+                            multi_survey = 1,
+                            admb_re = admb_re,
+                            sum_cpue_index = TRUE,
+                            wt_cpue = 0.5,
+                            # one process error parameters (log_PE) estimated
+                            PE_options = list(pointer_PE_biomass = c(1, 1, 1)),
+                            # three scaling parameters (log_q) estimated, indexed as
+                            # follows for each biomass survey stratum:
+                            q_options = list(pointer_biomass_cpue_strata = c(1, 2, 3)))
+m2 <- fit_rema(input2)
+
+compare <- compare_rema_models(rema_models = list(m, m2),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)',
                                cpue_ylab = 'Relative Population Weights')
@@ -196,8 +208,9 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
                               pointer_biomass_cpue_strata = c(1, 1, 1, 2, 2, 2, 3, 3, 3),
                               pointer_q_cpue = c(1, 1, 1)), # equivalent of admb model, but maybe consider c(1, 2, 3) as best practice? i.e. why would scaling pars be shared across strata?
                             zeros = list(assumption = 'NA'))
-m <- fit_rema(input) #, do.fit = FALSE)
-
+# )
+m <- fit_rema(input, do.fit = F) #, do.fit = FALSE)
+m$report()
 check_convergence(m)
 output <- tidy_rema(m)
 output$parameter_estimates

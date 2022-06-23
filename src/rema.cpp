@@ -195,8 +195,8 @@ Type objective_function<Type>::operator() ()
 
         if(biomass_obs(i,j) >= 0) {
           // tweedie_dispersion(0) = (tmp_biomass_sd * tmp_biomass_sd) / pow(biomass_pred(i,j), tweedie_p(0));
-          // jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), tweedie_dispersion(0), tweedie_p(0), 1);
-          jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
+          jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), tweedie_dispersion(0), tweedie_p(0), 1);
+          // jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
         }
 
       }

@@ -387,8 +387,8 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                           dat = biomass_dat)
 
   # remove NAs, expand biomass survey data, and create biomass input for TMB
-  biomass_dat <- biomass_dat %>%
-    dplyr::filter(!is.na(biomass))
+  # biomass_dat <- biomass_dat %>%
+  #   dplyr::filter(!is.na(biomass))
 
   biom <- biomass_dat %>%
     tidyr::expand(year = model_yrs, strata) %>%
@@ -412,8 +412,8 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                           dat = cpue_dat)
 
     # remove NAs
-    cpue_dat <- cpue_dat %>%
-      dplyr::filter(!is.na(cpue))
+    # cpue_dat <- cpue_dat %>%
+    #   dplyr::filter(!is.na(cpue))
 
     cpue <- cpue_dat %>%
       tidyr::expand(year = model_yrs, strata) %>%
