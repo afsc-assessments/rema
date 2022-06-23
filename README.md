@@ -35,3 +35,5 @@ list.files(rema_examples)
 5.  Compare alternative REMA models and conduct model selection using `compare_rema_models()`. Output from this function includes a table of Akaike Information Criteria (AIC) when appropriate, figures, and tidied data frames. This function also accepts model output from the ADMB version of the RE model for easy comparison to past models.
 
 Taken together, these functions allow R users to quickly fit and interrogate a suite of simple statistical models in TMB without needing software-specific training or expertise.
+
+![standards](https://user-images.githubusercontent.com/68303089/174915022-e9b89cb4-79ed-4dcc-af93-3cd199b5f82c.png)
