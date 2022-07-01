@@ -2,7 +2,7 @@
 
 // A multivariate random effects model that accepts an additional relative (i.e.
 // cpue) survey index. If the multi-survey mode is off, REMA runs the same as
-// the univariate (RE) and multivariate (REM) versions of the randon effects
+// the univariate (RE) and multivariate (REM) versions of the random effects
 // model. The biomass and cpue surveys can have multiple strata, which can be
 // uniquely defined by survey. Because the cpue survey is intended to inform the
 // trend of the biomass, the number of cpue strata cannot exceed the number of
@@ -36,11 +36,13 @@ Type objective_function<Type>::operator() ()
 
   // survey biomass (absolute biomass gives scale to the model)
   DATA_MATRIX(biomass_obs);
-  DATA_MATRIX(biomass_cv);
+  DATA_MATRIX(biomass_cv); // for dnorm (transformed to log_biomass_sd)
+  DATA_MATRIX(biomass_sd); // for dtweedie dispersion
 
   // survey cpue (relative index that can inform trend in the model)
   DATA_MATRIX(cpue_obs);
-  DATA_MATRIX(cpue_cv);
+  DATA_MATRIX(cpue_cv); // for dnorm (transformed to log_cpue_sd)
+  DATA_MATRIX(cpue_sd); // for dtweedie dispersion
   DATA_INTEGER(sum_cpue_index); // 0 = no, 1 = yes (default = 0); can the cpue index be summed across strata (e.g. Relative population numbers = 1, Numbers per hachi = 0)
 
   // switch for observation error distribution
@@ -60,6 +62,7 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(squared_penalty_PE); // prevents process error from shrinking to zero
   DATA_VECTOR(pmu_log_PE); // normal prior
   DATA_VECTOR(psig_log_PE);
+
   // scaling parameter penalty/prior options and likelihood weight for CPUE data
   // likelihood
   DATA_INTEGER(q_penalty_type); // 0 = "none", 1 = "normal_prior"
@@ -72,11 +75,11 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(log_PE); // process errors
   PARAMETER_VECTOR(log_q); // scaling parameters
 
-  PARAMETER_VECTOR(log_tweedie_dispersion); // tweedie dispersion (one for biomass survey and optional one for cpue survey)
+  // PARAMETER_VECTOR(log_tweedie_dispersion); // tweedie dispersion (one for biomass survey and optional one for cpue survey)
   PARAMETER_VECTOR(logit_tweedie_p); // tweedie power parameter (one for biomass survey and optional one for cpue survey)
 
-  vector<Type> tweedie_dispersion = exp(log_tweedie_dispersion);
-  vector<Type> tweedie_p = invlogit(logit_tweedie_p) + Type(1.0);
+  // vector<Type> tweedie_dispersion = exp(log_tweedie_dispersion);
+  vector<Type> tweedie_p = Type(0.95) * invlogit(logit_tweedie_p) + Type(1.05);
 
   PARAMETER_MATRIX(log_biomass_pred); // random effects of predicted biomass
 
@@ -113,10 +116,6 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_biomass_sd(nyrs, n_strata_biomass);
   log_biomass_sd = biomass_cv.array() * biomass_cv.array() + Type(1.0);
   log_biomass_sd = sqrt(log(log_biomass_sd.array()));
-  matrix<Type> biomass_sd(nyrs, n_strata_biomass);
-  biomass_sd = biomass_obs.array() * biomass_cv.array();
-  matrix<Type> biomass_dispersion(nyrs, n_strata_biomass);
-  biomass_dispersion.setZero();
 
   // derived quantities - cpue survey observations
   matrix<Type> log_cpue_obs(nyrs, n_strata_cpue);
@@ -124,8 +123,12 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_cpue_sd(nyrs, n_strata_cpue);
   log_cpue_sd = cpue_cv.array() * cpue_cv.array() + Type(1.0);
   log_cpue_sd = sqrt(log(log_cpue_sd.array()));
-  matrix<Type> cpue_sd(nyrs, n_strata_cpue);
-  cpue_sd = cpue_obs.array() * cpue_cv.array();
+
+  // dispersion for tweedie
+  matrix<Type> biomass_dispersion(nyrs, n_strata_biomass);
+  biomass_dispersion.setZero();
+  matrix<Type> cpue_dispersion(nyrs, n_strata_cpue);
+  cpue_dispersion.setZero();
 
   // random effects contribution to likelihood
   for(int i = 1; i < nyrs; i++) {
@@ -157,46 +160,39 @@ Type objective_function<Type>::operator() ()
   }
 
   // likelihood for observation error of biomass survey data
+
+  for(int i = 0; i < nyrs; i++) {
+    for(int j = 0; j < n_strata_biomass; j++) {
+      biomass_pred(i,j) = exp(log_biomass_pred(i,j));
+    }
+  }
+
   switch(obs_error_type) {
 
   case 0: // lognormal
+
     for(int i = 0; i < nyrs; i++) {
       for(int j = 0; j < n_strata_biomass; j++) {
+
         if(biomass_obs(i,j) > 0) {
           jnll(1) -= dnorm(log_biomass_pred(i,j), log_biomass_obs(i,j), log_biomass_sd(i,j), 1);
         }
-        biomass_pred(i,j) = exp(log_biomass_pred(i,j));
+
       }
     }
     break;
 
   case 1: // Tweedie
 
-    Type tmp_biomass_sd = 100.0;
-
     for(int i = 0; i < nyrs; i++) {
       for(int j = 0; j < n_strata_biomass; j++) {
 
-        biomass_pred(i,j) = exp(log_biomass_pred(i,j));
-
-        // if(biomass_sd(i,j) == 0) {
-        //   tmp_biomass_sd = 100.0;
-        // }
-        // if(biomass_sd(i,j) > 0) {
-        //   tmp_biomass_sd = biomass_sd(i,j);
-        // }
-
-        if(biomass_obs(i,j) == 0) {
-          biomass_dispersion(i,j) = Type(100.0);
-        }
-        if(biomass_obs(i,j) > 0) {
-          biomass_dispersion(i,j) = (biomass_sd(i,j) * biomass_sd(i,j)) / pow(biomass_pred(i,j), tweedie_p(0));
-        }
-
         if(biomass_obs(i,j) >= 0) {
+          biomass_dispersion(i,j) = (biomass_sd(i,j) * biomass_sd(i,j)) / pow(biomass_pred(i,j), tweedie_p(0));
+          jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
+
           // tweedie_dispersion(0) = (tmp_biomass_sd * tmp_biomass_sd) / pow(biomass_pred(i,j), tweedie_p(0));
-          jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), tweedie_dispersion(0), tweedie_p(0), 1);
-          // jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
+          // jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), tweedie_dispersion(0), tweedie_p(0), 1);
         }
 
       }
@@ -229,7 +225,6 @@ Type objective_function<Type>::operator() ()
       }
     }
 
-
     // get data likelihood for cpue survey
     switch(obs_error_type) {
 
@@ -237,9 +232,11 @@ Type objective_function<Type>::operator() ()
 
       for(int i = 0; i < nyrs; i++) {
         for(int j = 0; j < n_strata_cpue; j++) {
+
           if(cpue_obs(i,j) > 0) {
             jnll(2) -= dnorm(log_cpue_pred(i,j), log_cpue_obs(i,j), log_cpue_sd(i,j), 1);
           }
+
         }
       }
       break;
@@ -249,10 +246,13 @@ Type objective_function<Type>::operator() ()
         for(int j = 0; j < n_strata_cpue; j++) {
 
           if(cpue_obs(i,j) >= 0) {
-            jnll(2) -= dtweedie(cpue_pred(i,j), cpue_obs(i,j), tweedie_dispersion(1), tweedie_p(1), 1);
-            // tweedie_dispersion(1) =  (cpue_sd(i,j) * cpue_sd(i,j)) / pow(cpue_pred(i,j), tweedie_p(1));
+            cpue_dispersion(i,j) = (cpue_sd(i,j) * cpue_sd(i,j)) / pow(cpue_pred(i,j), tweedie_p(1));
+            jnll(2) -= dtweedie(cpue_pred(i,j), cpue_obs(i,j), cpue_dispersion(i,j), tweedie_p(1), 1);
 
+            // tweedie_dispersion(1) = (cpue_sd * cpue_sd) / pow(cpue_pred(i,j), tweedie_p(1));
+            // jnll(2) -= dtweedie(cpue_pred(i,j), cpue_obs(i,j), tweedie_dispersion(1), tweedie_p(1), 1);
           }
+
         }
       }
       break;
@@ -291,7 +291,7 @@ Type objective_function<Type>::operator() ()
 
     // only sum cpue index if its appropriate for that index (e.g. appropriate
     // for relative popn numbers, not appropriate for nominal cpue).
-    if(sum_cpue_index == 1 & n_strata_cpue > 1){
+    if(sum_cpue_index == 1 && n_strata_cpue > 1){
 
       vector<Type> tot_cpue_pred;
       tot_cpue_pred = cpue_pred.rowwise().sum();
@@ -311,7 +311,7 @@ Type objective_function<Type>::operator() ()
 
   REPORT(log_biomass_pred);
   // REPORT(log_cpue_pred);
-  REPORT(tweedie_dispersion);
+  // REPORT(tweedie_dispersion);
   REPORT(tweedie_p);
   REPORT(biomass_pred);
   REPORT(biomass_sd);

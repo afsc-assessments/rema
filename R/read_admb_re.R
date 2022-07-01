@@ -22,9 +22,11 @@
 #' @return a list with the following items:
 #'   \describe{
 #'     \item{\code{$biomass_dat}}{A dataframe of biomass survey data with
-#'     strata, year, biomass estimates, and CVs.}
+#'     strata, year, biomass estimates, and CVs. Note that the CVs have been
+#'     back-transformed to natural space.}
 #'     \item{\code{$cpue_dat}}{Optional dataframe of CPUE survey data with
-#'     strata, year, CPUE estimates, and CVs.}
+#'     strata, year, CPUE estimates, and CVs. Note that the CVs have been
+#'     back-transformed to natural space.}
 #'     \item{\code{$model_yrs}}{Vector of prediction years.}
 #'     \item{\code{$init_log_biomass_pred}}{Matrix of initial parameter values for
 #'     log_biomass_pred (the random effects matrix), ready for input into REMA.}
@@ -121,7 +123,9 @@ read_admb_re <- function(filename,
   biomass_dat <- biomass_est %>%
     dplyr::left_join(biomass_cv) %>%
     dplyr::arrange(strata, year) %>%
-    dplyr::mutate(cv = ifelse(cv > 5, cv / biomass, cv)) %>%
+    # transform cv back to normal space (they were transformed to
+    # log_biomasss_sd inside the re.tpl)
+    dplyr::mutate(cv = sqrt(exp(cv ^ 2) - 1)) %>%
     dplyr::select(strata, year, biomass, cv)
 
   if(re_version == 'rema') {
@@ -149,7 +153,9 @@ read_admb_re <- function(filename,
     cpue_dat <- cpue_est %>%
       dplyr::left_join(cpue_cv) %>%
       dplyr::arrange(strata, year) %>%
-      dplyr::mutate(cv = ifelse(cv > 5, cv / cpue, cv)) %>%
+      # transform cv back to normal space (they were transformed to
+      # log_biomasss_sd inside the re.tpl)
+      dplyr::mutate(cv = sqrt(exp(cv ^ 2) - 1)) %>%
       dplyr::select(strata, year, cpue, cv)
 
   } else {
@@ -282,10 +288,9 @@ read_admb_re <- function(filename,
                          dplyr::mutate(obs = ifelse(obs == 0, NA, obs)) %>%
                          dplyr::filter(!is.na(obs)) %>%
                          dplyr::mutate(log_obs = log(obs),
-                                       sd_log_obs = sqrt(log(obs_cv + 1)),
+                                       sd_log_obs = sqrt(log(obs_cv ^ 2 + 1)),
                                        obs_lci = exp(log_obs - qnorm(1 - alpha_ci/2) * sd_log_obs),
                                        obs_uci = exp(log_obs + qnorm(1 - alpha_ci/2) * sd_log_obs)))
-
   }
   parameter_estimates <- "The rwout.rep file does not contain parameter estimates, therefore they are not readily available for comparison with REMA models. Please contact the author(s) of this package for more information."
 

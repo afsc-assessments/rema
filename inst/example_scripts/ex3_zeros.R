@@ -37,8 +37,8 @@ nonsst <- read.csv('ebsshelf_orox.csv')
 
 # model 1: zeros as NAs
 input1 <- prepare_rema_input(model_name = 'zeros as NAs',
-                            biomass_dat = nonsst,
-                            zeros = list(assumption = 'NA'))
+                             biomass_dat = nonsst,
+                             zeros = list(assumption = 'NA'))
 m1 <- fit_rema(input1)
 check_convergence(m1)
 tidy_rema(m1)
@@ -68,9 +68,15 @@ compare$plots$total_predicted_biomass
 input4 <- prepare_rema_input(model_name = 'tweedie',
                              biomass_dat = nonsst %>%
                                mutate(cv = ifelse(biomass == 0, 1.5, cv)),
+                             zeros = list(assumption = 'tweedie'))
+
+input4 <- prepare_rema_input(model_name = 'tweedie',
+                             biomass_dat = nonsst %>%
+                               mutate(cv = ifelse(biomass == 0, 1.5, cv)),
                              zeros = list(assumption = 'tweedie',
-                                          options_tweedie = list(fix_pars = c(1,2))))
+                                          options_tweedie = list(fix_pars = c(1))))
 m4 <- fit_rema(input4, do.fit = T)
+m4 <- fit_rema(input4, do.fit = F)
 m4$report()
 cbind(input4$data$biomass_obs, m4$report()$biomass_sd)
 

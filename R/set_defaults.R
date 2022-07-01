@@ -48,10 +48,10 @@ set_defaults <- function(input, admb_re = NULL) {
 
   # 0.4054651
   if(data$multi_survey == 0) {
-    par$log_tweedie_dispersion <- 1.8
+    # par$log_tweedie_dispersion <- 1.8
     par$logit_tweedie_p <- 0.4054651
   } else {
-    par$log_tweedie_dispersion <- rep(1.8, 2)
+    # par$log_tweedie_dispersion <- rep(1.8, 2)
     par$logit_tweedie_p <- rep(0.4054651, 2)
   }
 
@@ -81,7 +81,7 @@ set_defaults <- function(input, admb_re = NULL) {
     map$log_q <- as.factor(1:length(map$log_q))
   }
 
-  map$log_tweedie_dispersion <- fill_vals(par$log_tweedie_dispersion, NA)
+  # map$log_tweedie_dispersion <- fill_vals(par$log_tweedie_dispersion, NA)
   map$logit_tweedie_p <- fill_vals(par$logit_tweedie_p, NA)
 
   # FLAG I don't think the parameter factor order level matters here but if it

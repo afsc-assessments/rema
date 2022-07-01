@@ -313,10 +313,11 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                                zeros = NULL) {
 
   # model_name = 'REMA for unnamed stock'
-  # multi_survey = 0 # should this be 0 or FALSE instead of null?
-  # admb_re = admb_re
-  # # biomass_dat = NULL
-  # # cpue_dat = NULL
+  # multi_survey = 1 # should this be 0 or FALSE instead of null?
+  # # admb_re = admb_re
+  # admb_re = NULL
+  # biomass_dat = NULL
+  # cpue_dat = NULL
   # sum_cpue_index = FALSE
   # start_year = NULL
   # end_year = NULL
@@ -386,13 +387,14 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   biomass_dat = set_zeros(zeros = zeros,
                           dat = biomass_dat)
 
-  # remove NAs, expand biomass survey data, and create biomass input for TMB
-  # biomass_dat <- biomass_dat %>%
-  #   dplyr::filter(!is.na(biomass))
-
   biom <- biomass_dat %>%
     tidyr::expand(year = model_yrs, strata) %>%
-    dplyr::left_join(biomass_dat)
+    dplyr::left_join(biomass_dat) %>%
+    # for tweedie. not sure what to do with sds for zero biomass
+    # obs. for now assume sd = mean(biomass) * 0.5
+    dplyr::mutate(biomass_sd = ifelse(biomass == 0,
+                                      mean(biomass, na.rm = TRUE) * 0.5,
+                                      biomass * cv))
 
   biom_input <- biom %>%
     tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
@@ -402,6 +404,10 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                 tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
                             values_from = "cv", values_fill = NA) %>%
                 dplyr::mutate(value = "cv")) %>%
+    dplyr::bind_rows(biom %>%
+                tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
+                            values_from = "biomass_sd", values_fill = NA) %>%
+                dplyr::mutate(value = "biomass_sd")) %>%
     dplyr::arrange(value, year)
 
   # CPUE survey observations
@@ -411,13 +417,14 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     cpue_dat <- set_zeros(zeros = zeros,
                           dat = cpue_dat)
 
-    # remove NAs
-    # cpue_dat <- cpue_dat %>%
-    #   dplyr::filter(!is.na(cpue))
-
     cpue <- cpue_dat %>%
       tidyr::expand(year = model_yrs, strata) %>%
-      dplyr::left_join(cpue_dat)
+      dplyr::left_join(cpue_dat)  %>%
+      # for tweedie. not sure what to do with sds for zero biomass
+      # obs. for now assume sd = mean(cpue) * 0.5
+      dplyr::mutate(cpue_sd = ifelse(cpue == 0,
+                                     mean(cpue, na.rm = TRUE) * 0.5,
+                                     cpue * cv))
 
   } else if ((input$data$multi_survey == 1) & is.null(cpue_dat)){
     stop(paste("user defined multi_survey as TRUE but did not provide CPUE survey data in the admb_re list or as a dataframe in the cpue_dat argument."))
@@ -427,7 +434,8 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     cpue <- expand.grid(year = model_yrs,
                         strata = unique(biomass_dat$strata),
                         cpue = NA,
-                        cv = NA)
+                        cv = NA,
+                        cpue_sd = NA)
   }
 
   if((input$data$multi_survey == 0) & !is.null(cpue_dat)) {
@@ -442,6 +450,10 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                        tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
                                           values_from = "cv", values_fill = NA) %>%
                        dplyr::mutate(value = "cv")) %>%
+    dplyr::bind_rows(cpue %>%
+                       tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
+                                          values_from = "cpue_sd", values_fill = NA) %>%
+                       dplyr::mutate(value = "cpue_sd")) %>%
     dplyr::arrange(value, year)
 
   # input biomass survey data
@@ -455,6 +467,11 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     dplyr::select(-year, -value) %>%
     as.matrix()
 
+  input$data$biomass_sd <- biom_input %>%
+    dplyr::filter(value == 'biomass_sd') %>%
+    dplyr::select(-year, -value) %>%
+    as.matrix()
+
   # input cpue survey data
   input$data$cpue_obs <- cpue_input %>%
     dplyr::filter(value == 'mu') %>%
@@ -463,6 +480,11 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
 
   input$data$cpue_cv <- cpue_input %>%
     dplyr::filter(value == 'cv') %>%
+    dplyr::select(-year, -value) %>%
+    as.matrix()
+
+  input$data$cpue_sd <- cpue_input %>%
+    dplyr::filter(value == 'cpue_sd') %>%
     dplyr::select(-year, -value) %>%
     as.matrix()
 
@@ -495,9 +517,11 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
 
   # output tidied version of the biomass and cpue data
   input$biomass_dat <- biom %>%
-    dplyr::arrange(strata, year)
+    dplyr::arrange(strata, year) %>%
+    dplyr::select(-biomass_sd)
   input$cpue_dat <- cpue %>%
-    dplyr::arrange(strata, year)
+    dplyr::arrange(strata, year) %>%
+    dplyr::select(-cpue_sd)
   if(input$data$multi_survey == 0) {
     input$cpue_dat <- NULL
   }

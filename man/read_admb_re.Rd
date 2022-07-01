@@ -34,9 +34,11 @@ object of type "list" with biomass optional cpue survey data in long
 a list with the following items:
   \describe{
     \item{\code{$biomass_dat}}{A dataframe of biomass survey data with
-    strata, year, biomass estimates, and CVs.}
+    strata, year, biomass estimates, and CVs. Note that the CVs have been
+    back-transformed to natural space.}
     \item{\code{$cpue_dat}}{Optional dataframe of CPUE survey data with
-    strata, year, CPUE estimates, and CVs.}
+    strata, year, CPUE estimates, and CVs. Note that the CVs have been
+    back-transformed to natural space.}
     \item{\code{$model_yrs}}{Vector of prediction years.}
     \item{\code{$init_log_biomass_pred}}{Matrix of initial parameter values for
     log_biomass_pred (the random effects matrix), ready for input into REMA.}

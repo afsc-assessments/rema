@@ -168,7 +168,7 @@ tidy_rema <- function(rema_model,
     dplyr::left_join(rema_model$input$biomass_dat %>%
                        dplyr::rename(obs = biomass, obs_cv = cv) %>%
                        dplyr::mutate(log_obs = ifelse(obs > 0, log(obs), NA),
-                                     sd_log_obs = ifelse(obs > 0, sqrt(log(obs_cv + 1)), NA),
+                                     sd_log_obs = ifelse(obs > 0, sqrt(log(obs_cv^2 + 1)), NA),
                                      obs_lci = exp(log_obs - qnorm(1 - alpha_ci/2) * sd_log_obs),
                                      obs_uci = exp(log_obs + qnorm(1 - alpha_ci/2) * sd_log_obs)))
 
@@ -198,7 +198,7 @@ tidy_rema <- function(rema_model,
       dplyr::left_join(rema_model$input$cpue_dat %>%
                          dplyr::rename(obs = cpue, obs_cv = cv) %>%
                          dplyr::mutate(log_obs = ifelse(obs > 0, log(obs), NA),
-                                       sd_log_obs = ifelse(obs > 0, sqrt(log(obs_cv + 1)), NA),
+                                       sd_log_obs = ifelse(obs > 0, sqrt(log(obs_cv^2 + 1)), NA),
                                        obs_lci = exp(log_obs - qnorm(1 - alpha_ci/2) * sd_log_obs),
                                        obs_uci = exp(log_obs + qnorm(1 - alpha_ci/2) * sd_log_obs)))
 
