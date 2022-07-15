@@ -156,10 +156,11 @@
 #'     and the CV is the value entered by the user in the data. The user can
 #'     change the assumed value and CV using \code{options_small_constant}.
 #'     \code{"tweedie"} uses the Tweedie as the assumed error distribution of
-#'     the survey data, which allows zeros. This alternative estimates
-#'     additional power and dispersion parameters. The user can change initial
-#'     values for these parameters or fix them at initial values using
-#'     \code{options_tweedie}.}
+#'     the survey data, which allows zeros. This alternative estimates one
+#'     additional power parameter. The assumed CV for zero biomass or zero cpue
+#'     survey observations defaults to 1.5. The user can change this assumed CV,
+#'     change initial values for the inverse logit transformed power parameter,
+#'     or fix it at initial values using \code{options_tweedie}.}
 #'     \item{$options_small_constant}{a vector length of
 #'     two numeric values. The first value is the small constant to add to the
 #'     zero observation, the second is the user-defined coefficient for this
@@ -170,23 +171,28 @@
 #'     values for Tweedie parameters. Currently, this argument accepts the
 #'     following entries:}
 #'         \describe{
-#'         \item{$initial_pars}{In single-survey mode,
+#'         \item{$zeros_cv}{Change the assumed CV of zero biomass or cpue survey
+#'         observations. Default CV = 1.5. This input accepts a positive,
+#'         non-zero numeric value.}
+#'         \item{$initial_pars}{Input to change initial values. In single-survey mode,
 #'         \code{zeros$options_tweedie$initial_pars} must be a vector of numeric
-#'         values with length = 2 \code{c(log_tweedie_dispersion,
-#'         logit_tweedie_p)}. In multi-survey mode,
-#'         \code{zeros$options_tweedie$initial_pars} must be a vector of numeric
-#'         values with length = 4 \code{c(biomass survey log_tweedie_dispersion,
-#'         logit_tweedie_p, cpue survey log_tweedie_dispersion,
-#'         logit_tweedie_p)}. Initial values for log_tweedie_dispersion should
-#'         be in log space. Initial values for logit_tweedie_p < -10 approach
-#'         tweedie_p = 1 (zero-inflated Poisson), logit_tweedie_p > 10 approach
-#'         tweedie_p = 2 (gamma).}
+#'         values with length = 1 \code{c(logit_tweedie_p)}. In multi-survey
+#'         mode, \code{zeros$options_tweedie$initial_pars} must be a vector of
+#'         numeric values with length = 2 \code{c(biomass survey
+#'         logit_tweedie_p, cpue survey logit_tweedie_p)}. Initial values for
+#'         log_tweedie_dispersion should be in log space. Initial values for
+#'         logit_tweedie_p < -10 approach tweedie_p = 1 (zero-inflated Poisson),
+#'         logit_tweedie_p > 10 approach tweedie_p = 2 (gamma).}
 #'         \item{$fix_pars}{\code{zeros$options_tweedie$fix_pars} must be a
 #'         vector of integer value(s) with the index value (starting at 1) of
-#'         the log_tweedie_dispersion (1) or logit_tweedie_p (2) to be fixed.
-#'         For example, in multi survey mode, if the user wants to fix both
-#'         logit_tweedie_p's, they should enter \code{zeros = list(assumption =
-#'         'tweedie', options_tweedie = list(fix_pars = c(2, 4)))}}
+#'         logit_tweedie_p parameters to be fixed. For example, in single survey
+#'         mode, if the user wants to fix the biomass survey logit_tweedie_p,
+#'         they should enter \code{zeros = list(assumption = 'tweedie',
+#'         options_tweedie = list(fix_pars = c(1)))}. In multi-survey, if they
+#'         want to fix only the cpue survey log_tweedie_p but estimate the
+#'         biomass survey log_tweedie_p, they should enter \code{zeros =
+#'         list(assumption = 'tweedie', options_tweedie = list(fix_pars =
+#'         c(2)))}.}
 #'         }
 #'     }
 #'
@@ -260,7 +266,9 @@
 #'   change starting values, fix parameters, and add penalties or priors (see
 #'   details). only used when \code{multi_survey = 1}
 #' @param zeros (optional) define assumptions about how to treat zero biomass or
-#'   CPUE observations (see details).
+#'   CPUE observations, including treating zeros as NAs, changing the zeros to
+#'   small constants with fixed CVs, or modeling the zeros using a Tweedie
+#'   distribution (see details).
 #'
 #' @return This function returns a named list with the following components:
 #'   \describe{
@@ -313,7 +321,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                                zeros = NULL) {
 
   # model_name = 'REMA for unnamed stock'
-  # multi_survey = 1 # should this be 0 or FALSE instead of null?
+  # multi_survey = 0 # should this be 0 or FALSE instead of null?
   # # admb_re = admb_re
   # admb_re = NULL
   # biomass_dat = NULL
@@ -390,11 +398,9 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   biom <- biomass_dat %>%
     tidyr::expand(year = model_yrs, strata) %>%
     dplyr::left_join(biomass_dat) %>%
-    # for tweedie. not sure what to do with sds for zero biomass
-    # obs. for now assume sd = mean(biomass) * 0.5
-    dplyr::mutate(biomass_sd = ifelse(biomass == 0,
-                                      mean(biomass, na.rm = TRUE) * 0.5,
-                                      biomass * cv))
+    # for tweedie assume cv of zero observations = 1.5 (can change using
+    # zeros$options_tweedie$zeros_cv)
+    dplyr::mutate(cv = ifelse(zeros$assumption == 'tweedie' & biomass == 0, 1.5, cv))
 
   biom_input <- biom %>%
     tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
@@ -404,10 +410,6 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                 tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
                             values_from = "cv", values_fill = NA) %>%
                 dplyr::mutate(value = "cv")) %>%
-    dplyr::bind_rows(biom %>%
-                tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
-                            values_from = "biomass_sd", values_fill = NA) %>%
-                dplyr::mutate(value = "biomass_sd")) %>%
     dplyr::arrange(value, year)
 
   # CPUE survey observations
@@ -420,11 +422,9 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     cpue <- cpue_dat %>%
       tidyr::expand(year = model_yrs, strata) %>%
       dplyr::left_join(cpue_dat)  %>%
-      # for tweedie. not sure what to do with sds for zero biomass
-      # obs. for now assume sd = mean(cpue) * 0.5
-      dplyr::mutate(cpue_sd = ifelse(cpue == 0,
-                                     mean(cpue, na.rm = TRUE) * 0.5,
-                                     cpue * cv))
+      # for tweedie assume cv of zero observations = 1.5 (can change using
+      # zeros$options_tweedie$zeros_cv)
+      dplyr::mutate(cv = ifelse(zeros$assumption == 'tweedie' & cpue == 0, 1.5, cv))
 
   } else if ((input$data$multi_survey == 1) & is.null(cpue_dat)){
     stop(paste("user defined multi_survey as TRUE but did not provide CPUE survey data in the admb_re list or as a dataframe in the cpue_dat argument."))
@@ -434,8 +434,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     cpue <- expand.grid(year = model_yrs,
                         strata = unique(biomass_dat$strata),
                         cpue = NA,
-                        cv = NA,
-                        cpue_sd = NA)
+                        cv = NA)
   }
 
   if((input$data$multi_survey == 0) & !is.null(cpue_dat)) {
@@ -450,10 +449,6 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                        tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
                                           values_from = "cv", values_fill = NA) %>%
                        dplyr::mutate(value = "cv")) %>%
-    dplyr::bind_rows(cpue %>%
-                       tidyr::pivot_wider(id_cols = c("year"), names_from = "strata",
-                                          values_from = "cpue_sd", values_fill = NA) %>%
-                       dplyr::mutate(value = "cpue_sd")) %>%
     dplyr::arrange(value, year)
 
   # input biomass survey data
@@ -467,11 +462,6 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     dplyr::select(-year, -value) %>%
     as.matrix()
 
-  input$data$biomass_sd <- biom_input %>%
-    dplyr::filter(value == 'biomass_sd') %>%
-    dplyr::select(-year, -value) %>%
-    as.matrix()
-
   # input cpue survey data
   input$data$cpue_obs <- cpue_input %>%
     dplyr::filter(value == 'mu') %>%
@@ -480,11 +470,6 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
 
   input$data$cpue_cv <- cpue_input %>%
     dplyr::filter(value == 'cv') %>%
-    dplyr::select(-year, -value) %>%
-    as.matrix()
-
-  input$data$cpue_sd <- cpue_input %>%
-    dplyr::filter(value == 'cpue_sd') %>%
     dplyr::select(-year, -value) %>%
     as.matrix()
 
@@ -517,11 +502,11 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
 
   # output tidied version of the biomass and cpue data
   input$biomass_dat <- biom %>%
-    dplyr::arrange(strata, year) %>%
-    dplyr::select(-biomass_sd)
+    dplyr::arrange(strata, year)
+
   input$cpue_dat <- cpue %>%
-    dplyr::arrange(strata, year) %>%
-    dplyr::select(-cpue_sd)
+    dplyr::arrange(strata, year)
+
   if(input$data$multi_survey == 0) {
     input$cpue_dat <- NULL
   }

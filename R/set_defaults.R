@@ -40,18 +40,16 @@ set_defaults <- function(input, admb_re = NULL) {
   par$log_PE <- rep(1, length(unique(data$pointer_PE_biomass)))
   par$log_q <- rep(1, length(unique(data$pointer_q_cpue)))
 
-  # tweedie parameters
+  # tweedie parameters starting vals
   # tweedie_p_init = 1.6 # based on Dave Warton (ref?)
   # tweedie_p_upper = 2 # gamma
   # tweedie_p_lower = 1 # zero inflated poisson
   # log((tweedie_p_init - tweedie_p_lower) / (tweedie_p_upper - tweedie_p_init))
-
   # 0.4054651
+
   if(data$multi_survey == 0) {
-    # par$log_tweedie_dispersion <- 1.8
     par$logit_tweedie_p <- 0.4054651
   } else {
-    # par$log_tweedie_dispersion <- rep(1.8, 2)
     par$logit_tweedie_p <- rep(0.4054651, 2)
   }
 
@@ -81,7 +79,6 @@ set_defaults <- function(input, admb_re = NULL) {
     map$log_q <- as.factor(1:length(map$log_q))
   }
 
-  # map$log_tweedie_dispersion <- fill_vals(par$log_tweedie_dispersion, NA)
   map$logit_tweedie_p <- fill_vals(par$logit_tweedie_p, NA)
 
   # FLAG I don't think the parameter factor order level matters here but if it
