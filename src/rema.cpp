@@ -36,13 +36,11 @@ Type objective_function<Type>::operator() ()
 
   // survey biomass (absolute biomass gives scale to the model)
   DATA_MATRIX(biomass_obs);
-  DATA_MATRIX(biomass_cv); // for dnorm (transformed to log_biomass_sd)
-  DATA_MATRIX(biomass_sd); // for dtweedie dispersion
+  DATA_MATRIX(biomass_cv);
 
   // survey cpue (relative index that can inform trend in the model)
   DATA_MATRIX(cpue_obs);
-  DATA_MATRIX(cpue_cv); // for dnorm (transformed to log_cpue_sd)
-  DATA_MATRIX(cpue_sd); // for dtweedie dispersion
+  DATA_MATRIX(cpue_cv); //
   DATA_INTEGER(sum_cpue_index); // 0 = no, 1 = yes (default = 0); can the cpue index be summed across strata (e.g. Relative population numbers = 1, Numbers per hachi = 0)
 
   // switch for observation error distribution
@@ -75,10 +73,7 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(log_PE); // process errors
   PARAMETER_VECTOR(log_q); // scaling parameters
 
-  // PARAMETER_VECTOR(log_tweedie_dispersion); // tweedie dispersion (one for biomass survey and optional one for cpue survey)
   PARAMETER_VECTOR(logit_tweedie_p); // tweedie power parameter (one for biomass survey and optional one for cpue survey)
-
-  // vector<Type> tweedie_dispersion = exp(log_tweedie_dispersion);
   vector<Type> tweedie_p = Type(0.95) * invlogit(logit_tweedie_p) + Type(1.05);
 
   PARAMETER_MATRIX(log_biomass_pred); // random effects of predicted biomass
@@ -124,7 +119,11 @@ Type objective_function<Type>::operator() ()
   log_cpue_sd = cpue_cv.array() * cpue_cv.array() + Type(1.0);
   log_cpue_sd = sqrt(log(log_cpue_sd.array()));
 
-  // dispersion for tweedie
+  // SD and dispersion for tweedie
+  matrix<Type> biomass_sd(nyrs, n_strata_biomass);
+  biomass_sd.setZero();
+  matrix<Type> cpue_sd(nyrs, n_strata_cpue);
+  cpue_sd.setZero();
   matrix<Type> biomass_dispersion(nyrs, n_strata_biomass);
   biomass_dispersion.setZero();
   matrix<Type> cpue_dispersion(nyrs, n_strata_cpue);
@@ -188,11 +187,9 @@ Type objective_function<Type>::operator() ()
       for(int j = 0; j < n_strata_biomass; j++) {
 
         if(biomass_obs(i,j) >= 0) {
+          biomass_sd(i,j) = biomass_cv(i,j) * biomass_pred(i,j);
           biomass_dispersion(i,j) = (biomass_sd(i,j) * biomass_sd(i,j)) / pow(biomass_pred(i,j), tweedie_p(0));
           jnll(1) -= dtweedie(biomass_obs(i,j), biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
-
-          // tweedie_dispersion(0) = (tmp_biomass_sd * tmp_biomass_sd) / pow(biomass_pred(i,j), tweedie_p(0));
-          // jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), tweedie_dispersion(0), tweedie_p(0), 1);
         }
 
       }
@@ -246,11 +243,9 @@ Type objective_function<Type>::operator() ()
         for(int j = 0; j < n_strata_cpue; j++) {
 
           if(cpue_obs(i,j) >= 0) {
+            cpue_sd(i,j) = cpue_cv(i,j) * cpue_pred(i,j);
             cpue_dispersion(i,j) = (cpue_sd(i,j) * cpue_sd(i,j)) / pow(cpue_pred(i,j), tweedie_p(1));
             jnll(2) -= dtweedie(cpue_obs(i,j), cpue_pred(i,j), cpue_dispersion(i,j), tweedie_p(1), 1);
-
-            // tweedie_dispersion(1) = (cpue_sd * cpue_sd) / pow(cpue_pred(i,j), tweedie_p(1));
-            // jnll(2) -= dtweedie(cpue_pred(i,j), cpue_obs(i,j), tweedie_dispersion(1), tweedie_p(1), 1);
           }
 
         }
@@ -301,6 +296,7 @@ Type objective_function<Type>::operator() ()
       ADREPORT(log_tot_cpue_pred);
 
     }
+
     // report biomass at the cpue strata level (and get SDs) if they have
     // different strata definitions
     if(n_strata_biomass > n_strata_cpue) {
@@ -310,11 +306,12 @@ Type objective_function<Type>::operator() ()
   }
 
   REPORT(log_biomass_pred);
-  // REPORT(log_cpue_pred);
-  // REPORT(tweedie_dispersion);
   REPORT(tweedie_p);
   REPORT(biomass_pred);
   REPORT(biomass_sd);
+  REPORT(biomass_dispersion);
+  REPORT(cpue_sd);
+  REPORT(cpue_dispersion);
   REPORT(jnll);
 
   // jnll = dummy * dummy;        // Uncomment when debugging code

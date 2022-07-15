@@ -59,7 +59,7 @@ tidy_rema <- function(rema_model,
                       path = NULL, # NOT IMPLEMENTED
                       alpha_ci = 0.05) {
 
-  # rema_model = m
+  # rema_model = m4
   # alpha_ci = 0.05
 
   if(isFALSE(rema_model$is_sdrep)) {
@@ -116,7 +116,7 @@ tidy_rema <- function(rema_model,
       dplyr::bind_cols(pe_ci)
   }
 
-  # scaling parameters when available
+  # scaling parameter(s) when available
   q_pars <- NULL
   if(data$multi_survey == 1 & length(pars$log_q) > 0) {
     q_pars <- data.frame(model_name = rema_model$input$model_name,
@@ -135,12 +135,36 @@ tidy_rema <- function(rema_model,
       dplyr::bind_cols(q_ci)
   }
 
+  # power parameter(s) when available
+  p_pars <- NULL
+  if(any(grepl('logit_tweedie_p', names(pars)))) {
+    p_pars <- data.frame(model_name = rema_model$input$model_name,
+                         parameter = 'tweedie_p',
+                         estimate = 1 + (1 / (1 + exp(-pars$logit_tweedie_p))))
+
+
+    p_ci <- matrix(nrow = 0, ncol = 3)
+    for(i in 1:length(pars$logit_tweedie_p)) {
+      p_ci <- rbind(p_ci, get_ci(pars$logit_tweedie_p[i], sd$logit_tweedie_p[i], type = 'expit', lo = 1, hi = 2))
+    }
+
+    p_ci <- as.data.frame(p_ci)
+    names(p_ci) <- c('std_err', 'lci', 'uci')
+
+    p_pars <- p_pars %>%
+      dplyr::bind_cols(p_ci)
+  }
+
   parameter_estimates <- NULL
 
   if(!is.null(q_pars)) {
     parameter_estimates <- dplyr::bind_rows(pe_pars, q_pars)
   } else {
     parameter_estimates <- pe_pars
+  }
+
+  if(!is.null(p_pars)) {
+    parameter_estimates <- dplyr::bind_rows(parameter_estimates, p_pars)
   }
 
   # Model predictions:
