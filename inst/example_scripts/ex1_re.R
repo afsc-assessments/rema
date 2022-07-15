@@ -208,8 +208,8 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
                               pointer_biomass_cpue_strata = c(1, 1, 1, 2, 2, 2, 3, 3, 3),
                               pointer_q_cpue = c(1, 1, 1)), # equivalent of admb model, but maybe consider c(1, 2, 3) as best practice? i.e. why would scaling pars be shared across strata?
                             zeros = list(assumption = 'NA'))
-# )
-m <- fit_rema(input, do.fit = F) #, do.fit = FALSE)
+
+m <- fit_rema(input)
 m$report()
 check_convergence(m)
 output <- tidy_rema(m)

@@ -77,6 +77,9 @@ input4 <- prepare_rema_input(model_name = 'tweedie',
                                           options_tweedie = list(fix_pars = c(1))))
 m4 <- fit_rema(input4, do.fit = T)
 m4 <- fit_rema(input4, do.fit = F)
+names(m4)
+m4$gr()
+m4$fn()
 m4$report()
 cbind(input4$data$biomass_obs, m4$report()$biomass_sd)
 
