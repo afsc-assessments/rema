@@ -175,7 +175,7 @@ Type objective_function<Type>::operator() ()
       for(int j = 0; j < n_strata_biomass; j++) {
 
         if(biomass_obs(i,j) > 0) {
-          jnll(1) -= dnorm(log_biomass_pred(i,j), log_biomass_obs(i,j), log_biomass_sd(i,j), 1);
+          jnll(1) -= dnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j), 1);
         }
 
       }
@@ -189,7 +189,7 @@ Type objective_function<Type>::operator() ()
 
         if(biomass_obs(i,j) >= 0) {
           biomass_dispersion(i,j) = (biomass_sd(i,j) * biomass_sd(i,j)) / pow(biomass_pred(i,j), tweedie_p(0));
-          jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
+          jnll(1) -= dtweedie(biomass_obs(i,j), biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
 
           // tweedie_dispersion(0) = (tmp_biomass_sd * tmp_biomass_sd) / pow(biomass_pred(i,j), tweedie_p(0));
           // jnll(1) -= dtweedie(biomass_pred(i,j), biomass_obs(i,j), tweedie_dispersion(0), tweedie_p(0), 1);
@@ -234,7 +234,7 @@ Type objective_function<Type>::operator() ()
         for(int j = 0; j < n_strata_cpue; j++) {
 
           if(cpue_obs(i,j) > 0) {
-            jnll(2) -= dnorm(log_cpue_pred(i,j), log_cpue_obs(i,j), log_cpue_sd(i,j), 1);
+            jnll(2) -= dnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j), 1);
           }
 
         }
@@ -247,7 +247,7 @@ Type objective_function<Type>::operator() ()
 
           if(cpue_obs(i,j) >= 0) {
             cpue_dispersion(i,j) = (cpue_sd(i,j) * cpue_sd(i,j)) / pow(cpue_pred(i,j), tweedie_p(1));
-            jnll(2) -= dtweedie(cpue_pred(i,j), cpue_obs(i,j), cpue_dispersion(i,j), tweedie_p(1), 1);
+            jnll(2) -= dtweedie(cpue_obs(i,j), cpue_pred(i,j), cpue_dispersion(i,j), tweedie_p(1), 1);
 
             // tweedie_dispersion(1) = (cpue_sd * cpue_sd) / pow(cpue_pred(i,j), tweedie_p(1));
             // jnll(2) -= dtweedie(cpue_pred(i,j), cpue_obs(i,j), tweedie_dispersion(1), tweedie_p(1), 1);
