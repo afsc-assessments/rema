@@ -23,7 +23,7 @@ set_osa_obs <- function(input) {
           val <- unname(x[i,j])
         }
 
-        tmp = data.frame(year = i, survey = 'biomass', strata = colnames(x)[j], value = val)
+        tmp = data.frame(year = data$model_yrs[i], survey = 'Biomass survey', strata = colnames(x)[j], value = val)
         obs <- rbind(obs, tmp[, obs_colnames])
       }
     }
@@ -43,7 +43,7 @@ set_osa_obs <- function(input) {
           val <- unname(x[i,j])
         }
 
-        tmp = data.frame(year = i, survey = 'cpue', strata = colnames(x)[j], value = val)
+        tmp = data.frame(year = data$model_yrs[i], survey = 'CPUE survey', strata = colnames(x)[j], value = val)
         obs <- rbind(obs, tmp[, obs_colnames])
       }
     }
@@ -59,7 +59,7 @@ set_osa_obs <- function(input) {
   for(i in 1:nrow(data$biomass_obs)) {
     for(j in 1:ncol(data$biomass_obs)) {
       if(!is.na(data$biomass_obs[i,j])) {
-        keep_biomass_obs[i,j] <- subset(obs, year == i & survey == 'biomass' & strata == colnames(data$biomass_obs)[j])$ind
+        keep_biomass_obs[i,j] <- subset(obs, year == data$model_yrs[i] & survey == 'Biomass survey' & strata == colnames(data$biomass_obs)[j])$ind
       }
     }
   }
@@ -68,7 +68,7 @@ set_osa_obs <- function(input) {
   for(i in 1:nrow(data$cpue_obs)) {
     for(j in 1:ncol(data$cpue_obs)) {
       if(!is.na(data$cpue_obs[i,j])) {
-        keep_cpue_obs[i,j] <- subset(obs, year == i & survey == 'cpue' & strata == colnames(data$cpue_obs)[j])$ind
+        keep_cpue_obs[i,j] <- subset(obs, year == data$model_yrs[i] & survey == 'CPUE survey' & strata == colnames(data$cpue_obs)[j])$ind
       }
     }
   }
@@ -78,6 +78,7 @@ set_osa_obs <- function(input) {
   data$keep_cpue_obs <- keep_cpue_obs
 
   input$data <- data
+  input$osa <- obs
   return(input)
 
 }

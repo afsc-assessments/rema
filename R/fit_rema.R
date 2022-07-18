@@ -104,7 +104,7 @@ fit_rema <- function(input,
   # do.sdrep = TRUE
   # do.retro = FALSE
   # n.peels = 7
-  # do.osa = FALSE
+  # do.osa = TRUE
   # osa.opts = list(method = "cdf", parallel = TRUE)
   # model = NULL
   # do.check = FALSE
@@ -144,8 +144,22 @@ fit_rema <- function(input,
 
     # one-step-ahead residuals
     if(do.osa){
-      warning("One-step-ahead (OSA) residuals not currently implemented for REMA.")
+      warning("One-step-ahead (OSA) residuals are currently experimental...")
       # placeholder for future development. check wham code for good example.
+
+      if(mod$is_sdrep){ # only do OSA residuals if sdrep ran
+        cat("Doing OSA residuals...\n");
+
+        input$osa$residual = NA
+        osa_resids <- suppressWarnings(TMB::oneStepPredict(obj = mod, observation.name = "obsvec",
+                                                               data.term.indicator = "keep",
+                                                               method = osa.opts$method))
+        input$osa$residual <- osa_resids$residual
+        mod$osa <- input$osa
+
+      } else warning(paste("","** Did not do OSA residual analyses. **",
+                           "Error during TMB::sdreport(). Check for unidentifiable parameters.","",sep='\n'))
+
     }
 
     # error message reporting

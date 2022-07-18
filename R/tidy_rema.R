@@ -59,7 +59,7 @@ tidy_rema <- function(rema_model,
                       path = NULL, # NOT IMPLEMENTED
                       alpha_ci = 0.05) {
 
-  # rema_model = m4
+  # rema_model = m
   # alpha_ci = 0.05
 
   if(isFALSE(rema_model$is_sdrep)) {
