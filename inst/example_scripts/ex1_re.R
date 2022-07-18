@@ -288,6 +288,11 @@ output$biomass_by_strata %>%
   facet_wrap(~strata) +
   theme_cowplot()
 
+resids_biom <- m$osa %>% filter(survey == 'Biomass survey') %>% pull(residual)
+qqnorm(resids_biom); abline(0, 1)
+resids_cpue <- m$osa %>% filter(survey == 'CPUE survey') %>% pull(residual)
+qqnorm(resids_cpue); abline(0, 1)
+
 output$cpue_by_strata %>%
   left_join(m$osa %>%
               filter(survey == 'CPUE survey') %>%
