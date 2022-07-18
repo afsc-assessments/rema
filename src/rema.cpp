@@ -67,6 +67,12 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(pmu_log_q); // normal prior
   DATA_VECTOR(psig_log_q);
 
+  // data for one-step-ahead (OSA) residuals
+  DATA_VECTOR(obsvec); // vector of all observations for OSA residuals
+  DATA_VECTOR_INDICATOR(keep, obsvec); // for OSA residuals
+  DATA_IMATRIX(keep_biomass_obs); // indices for biomass survey obs, can loop years/survey strata with keep(keep_biomass_obs(i,j))
+  DATA_IMATRIX(keep_cpue_obs);
+
   // parameter section
 
   // PARAMETER(dummy);  // dummy var for troubleshooting
@@ -174,7 +180,9 @@ Type objective_function<Type>::operator() ()
       for(int j = 0; j < n_strata_biomass; j++) {
 
         if(biomass_obs(i,j) > 0) {
-          jnll(1) -= dnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j), 1);
+          jnll(1) -= keep(keep_biomass_obs(i,j)) * dnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j), 1);
+          jnll(1) -= keep.cdf_lower(keep_biomass_obs(i,j)) * log(squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j))));
+          jnll(1) -= keep.cdf_upper(keep_biomass_obs(i,j)) * log(1.0 - squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j))));
         }
 
       }
@@ -231,7 +239,9 @@ Type objective_function<Type>::operator() ()
         for(int j = 0; j < n_strata_cpue; j++) {
 
           if(cpue_obs(i,j) > 0) {
-            jnll(2) -= dnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j), 1);
+            jnll(2) -= keep(keep_cpue_obs(i,j)) * dnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j), 1);
+            jnll(2) -= keep.cdf_lower(keep_cpue_obs(i,j)) * log(squeeze(pnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j))));
+            jnll(2) -= keep.cdf_upper(keep_cpue_obs(i,j)) * log(1.0 - squeeze(pnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j))));
           }
 
         }
