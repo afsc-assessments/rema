@@ -163,7 +163,7 @@ tidy_rema <- function(rema_model,
     parameter_estimates <- pe_pars
   }
 
-  if(!is.null(p_pars)) {
+  if(!is.null(p_pars) & data$obs_error_type == 1) {
     parameter_estimates <- dplyr::bind_rows(parameter_estimates, p_pars)
   }
 
