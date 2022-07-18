@@ -26,7 +26,7 @@ set_zeros <- function(zeros,
   # zeros = list(assumption = 'tweedie', # c('NA', 'small_constant', 'tweedie'),
   #              options_small_constant = c(0.0001, NA), # replace mean, CV from data
   #              # options_small_constant = c(0.0001, 5), # replace mean, replace CV
-  #              options_tweedie = list(initial_pars = c(1, 1.6, 1, 1.6), # biomass survey (phi, rho); cpue survey (phi, rho)
+  #              options_tweedie = list(initial_pars = c(1.5), #
   #                                     fix_pars = NULL)
   # )
   # zeros = NULL

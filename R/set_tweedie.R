@@ -33,15 +33,12 @@ set_tweedie <- function(input, zeros) {
 
     # default tweedie - note that parameter initial values for tweedie were
     # already defined in set_defaults.R
-    if(is.null(zeros$options_tweedie)) {
-
-      if(data$multi_survey == 0) {
+    if(data$multi_survey == 0) {
         map$logit_tweedie_p <- as.factor(c(1))
-      }
+    }
 
-      if(data$multi_survey == 1) {
+    if(data$multi_survey == 1) {
         map$logit_tweedie_p <- as.factor(c(1, 2))
-      }
     }
 
     if(!is.null(zeros$options_tweedie)) {
@@ -55,6 +52,7 @@ set_tweedie <- function(input, zeros) {
         if(!any(zeros$options_tweedie$zeros_cv > 0)) stop("zeros$options_tweedie$zeros_cv accepts a single positive, non-zero value as an input. This input changes the assumed value for zero biomass or cpue survey observations. See ?prepare_rema_input for details.")
 
         data$biomass_cv[data$biomass_obs==0] <- zeros$options_tweedie$zeros_cv
+        data$cpue_cv[data$cpue_obs==0] <- zeros$options_tweedie$zeros_cv
       }
 
       # user-defined changes to initial values: Up to two values in the
@@ -65,12 +63,13 @@ set_tweedie <- function(input, zeros) {
         if(data$multi_survey == 0) {
           if(length(zeros$options_tweedie$initial_pars) != 1) stop("In single-survey mode, zeros$options_tweedie$initial_pars must be a vector of numeric values with length = 1 [c(logit_tweedie_p)]. Initial values for logit_tweedie_p < -10 approach tweedie_p = 1 (zero-inflated Poisson), logit_tweedie_p > 10 approach tweedie_p = 2 (gamma). See ?prepare_rema_input for details.")
           if(!any(is.numeric(zeros$options_tweedie$initial_pars))) stop("In single-survey mode, zeros$options_tweedie$initial_pars must be a vector of numeric values with length = 1 [c(logit_tweedie_p)]. Initial values for logit_tweedie_p < -10 approach tweedie_p = 1 (zero-inflated Poisson), logit_tweedie_p > 10 approach tweedie_p = 2 (gamma). See ?prepare_rema_input for details.")
-          par$logit_tweedie_p <- zeros$options_tweedie$initial_pars[1]
+          par$logit_tweedie_p <- zeros$options_tweedie$initial_pars
         }
 
         if(data$multi_survey == 1) {
           if(length(zeros$options_tweedie$initial_pars) != 2) stop("In multi-survey mode, zeros$options_tweedie$initial_pars must be a vector of numeric values with length = 2 [c(biomass survey logit_tweedie_p, cpue survey logit_tweedie_p). Initial values for logit_tweedie_p < -10 approach tweedie_p = 1 (zero-inflated Poisson), logit_tweedie_p > 10 approach tweedie_p = 2 (gamma). See ?prepare_rema_input for details.")
           if(!any(is.numeric(zeros$options_tweedie$initial_pars))) stop("In multi-survey mode, zeros$options_tweedie$initial_pars must be a vector of numeric values with length = 2 [c(biomass survey logit_tweedie_p, cpue survey logit_tweedie_p). Initial values for logit_tweedie_p < -10 approach tweedie_p = 1 (zero-inflated Poisson), logit_tweedie_p > 10 approach tweedie_p = 2 (gamma). See ?prepare_rema_input for details.")
+          par$logit_tweedie_p <- zeros$options_tweedie$initial_pars
         }
       }
 

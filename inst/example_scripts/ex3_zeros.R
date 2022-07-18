@@ -69,15 +69,8 @@ compare$plots$total_predicted_biomass
 input4 <- prepare_rema_input(model_name = 'tweedie',
                              biomass_dat = nonsst,
                              zeros = list(assumption = 'tweedie'))
-input4$map
-# input4 <- prepare_rema_input(model_name = 'tweedie',
-#                              biomass_dat = nonsst,
-#                              zeros = list(assumption = 'tweedie',
-#                                           options_tweedie = list(zeros_cv = 1.2)))
-
-# zeros = list(assumption = 'tweedie',
-#              options_tweedie = list(fix_pars = c(1))))
-
+input4$map$logit_tweedie_p; input4$par$logit_tweedie_p
+cbind(input4$data$biomass_obs, input4$data$biomass_cv)
 m4 <- fit_rema(input4)
 check_convergence(m4)
 m4sum <- tidy_rema(m4)
@@ -88,13 +81,14 @@ compare <- compare_rema_models(rema_models = list(m1, m2, m3, m4))
 compare$plots$total_predicted_biomass
 
 # in log-space
-bind_rows(m1sum$biomass_by_strata, m2sum$biomass_by_strata,
-                     m3sum$biomass_by_strata, m4sum$biomass_by_strata) %>%
+bind_rows(m1sum$biomass_by_strata,
+          m2sum$biomass_by_strata,
+          m3sum$biomass_by_strata,
+          m4sum$biomass_by_strata) %>%
   dplyr::mutate(log_pred_lci = log_pred - 1.96 * sd_log_pred,
-         log_pred_uci = log_pred + 1.96 * sd_log_pred) %>%
+                log_pred_uci = log_pred + 1.96 * sd_log_pred) %>%
   ggplot(aes(x = year, y = log_pred, col = model_name, fill = model_name,  ymin = log_pred_lci, ymax = log_pred_uci)) +
   geom_ribbon(col = NA, alpha = 0.25) +
   geom_line() +
   ggplot2::scale_fill_viridis_d() +
   ggplot2::scale_colour_viridis_d()
-
