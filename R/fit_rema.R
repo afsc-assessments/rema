@@ -41,13 +41,6 @@
 #'   RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.
 #' @param n.peels integer, number of peels to use in retrospective analysis.
 #'   Default = \code{7}.RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.
-#' @param do.osa T/F, calculate one-step-ahead (OSA) residuals? Default =
-#'   \code{FALSE}. See details. Returned as \code{mod$osa$residual}. OSA
-#'   RESIDUALS NOT IMPLEMENTED.
-#' @param osa.opts list of options for calculating OSA residuals, passed to
-#'   \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}. Default:
-#'   \code{osa.opts = list(method = "cdf", parallel = TRUE)}. OSA RESIDUALS NOT
-#'   IMPLEMENTED.
 #' @param model (optional), a previously fit rema model.
 #' @param do.check T/F, check if model parameters are identifiable? Passed to
 #'   \code{\link{fit_tmb}}. Runs internal function \code{check_estimability},
@@ -72,8 +65,6 @@
 #'     \code{do.sdrep = TRUE})}
 #'     \item{\code{$peels}}{Retrospective analysis (if \code{do.retro = TRUE}).
 #'     RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.}
-#'     \item{\code{$osa}}{One-step-ahead residuals (if \code{do.osa = TRUE}).
-#'     OSA RESIDUALS NOT IMPLEMENTED.}
 #'   }
 #'
 #' @useDynLib rema
@@ -91,15 +82,14 @@ fit_rema <- function(input,
                      do.sdrep = TRUE,
                      do.retro = FALSE,
                      n.peels = 7,
-                     do.osa = FALSE,
-                     osa.opts = list(method = "cdf", parallel = TRUE),
+                     # do.osa = FALSE,
+                     # osa.opts = list(method = "cdf", parallel = TRUE),
                      model = NULL,
                      do.check = FALSE,
                      MakeADFun.silent = FALSE,
                      retro.silent = FALSE,
                      do.fit = TRUE,
                      save.sdrep = TRUE) {
-  # DELETE ME
   # n.newton = 1
   # do.sdrep = TRUE
   # do.retro = FALSE
@@ -142,25 +132,25 @@ fit_rema <- function(input,
       # placeholder for future development. check wham code for good example.
     }
 
-    # one-step-ahead residuals
-    if(do.osa){
-      warning("One-step-ahead (OSA) residuals are currently experimental...")
-      # placeholder for future development. check wham code for good example.
-
-      if(mod$is_sdrep){ # only do OSA residuals if sdrep ran
-        cat("Doing OSA residuals...\n");
-
-        input$osa$residual = NA
-        osa_resids <- suppressWarnings(TMB::oneStepPredict(obj = mod, observation.name = "obsvec",
-                                                               data.term.indicator = "keep",
-                                                               method = osa.opts$method))
-        input$osa$residual <- osa_resids$residual
-        mod$osa <- input$osa
-
-      } else warning(paste("","** Did not do OSA residual analyses. **",
-                           "Error during TMB::sdreport(). Check for unidentifiable parameters.","",sep='\n'))
-
-    }
+    # # one-step-ahead residuals
+    # if(do.osa){
+    #   warning("One-step-ahead (OSA) residuals are currently experimental...")
+    #   # placeholder for future development. check wham code for good example.
+    #
+    #   if(mod$is_sdrep){ # only do OSA residuals if sdrep ran
+    #     cat("Doing OSA residuals...\n");
+    #
+    #     input$osa$residual = NA
+    #     osa_resids <- suppressWarnings(TMB::oneStepPredict(obj = mod, observation.name = "obsvec",
+    #                                                            data.term.indicator = "keep",
+    #                                                            method = osa.opts$method))
+    #     input$osa$residual <- osa_resids$residual
+    #     mod$osa <- input$osa
+    #
+    #   } else warning(paste("","** Did not do OSA residual analyses. **",
+    #                        "Error during TMB::sdreport(). Check for unidentifiable parameters.","",sep='\n'))
+    #
+    # }
 
     # error message reporting
     if(!is.null(mod$err)) warning(paste("","** Error during model fit. **",

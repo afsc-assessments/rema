@@ -56,8 +56,7 @@ names(input)
 
 # (3) Fit REMA model
 ?fit_rema
-m <- fit_rema(input, do.osa = TRUE)
-m$osa
+m <- fit_rema(input)
 
 # (4) Check convergence criteria if you so wish
 ?check_convergence
@@ -71,31 +70,27 @@ output$parameter_estimates # estimated fixed effects parameters
 output$biomass_by_strata # data.frame of predicted and observed biomass by stratum
 output$total_predicted_biomass # total predicted biomass (same as biomass_by_strata for univariate models)
 
-output$biomass_by_strata %>%
-  left_join(m$osa %>%
-              filter(survey == 'Biomass survey') %>%
-              select(year, strata, residual)) %>%
-  ggplot(aes(x = year, y = residual)) +
-  geom_hline(yintercept = 0, colour = "grey", size = 1) +
-  geom_segment(aes(x = year, xend = year, y = 0, yend = residual),
-               size = 0.2, colour = "grey") +
-  geom_point() +
-  expand_limits(y = c(-2, 2)) +
-  facet_wrap(~strata) +
-  theme_cowplot()
-
 # (6) Generate model plots
 ?plot_rema
 plots <- plot_rema(tidy_rema = output,
                    # optional y-axis label
                    biomass_ylab = 'Biomass (t)')
-
 plots$biomass_by_strata
-# (7) Compare with ADMB RE model results
+
+# (7) Get one-step-ahead (OSA) residuals
+osa <- get_osa_residuals(m)
+osa$residuals
+cowplot::plot_grid(osa$plots$biomass_resids,
+                   osa$plots$biomass_qqplot,
+                   osa$plots$biomass_hist,
+                   osa$plots$biomass_fitted)
+
+# (8) Compare with ADMB RE model results
 compare <- compare_rema_models(rema_models = list(m),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)')
 compare$plots$biomass_by_strata
+names(compare$output)
 
 # Ex 2 REM ----
 
@@ -109,9 +104,9 @@ admb_re <- read_admb_re(filename = 'bsaisst_rwout.rep',
 
 input <- prepare_rema_input(model_name = 'tmb_rema_bsaisst',
                             admb_re = admb_re,
-                            zeros = list(assumption = 'small_constant'))
+                            zeros = list(assumption = 'NA'))
 
-m <- fit_rema(input, do.osa = TRUE)
+m <- fit_rema(input)
 check_convergence(m)
 
 output <- tidy_rema(rema_model = m)
@@ -130,22 +125,18 @@ plots$total_predicted_biomass + ggplot2::ggtitle('BSAI Shortspine thornyhead pre
 compare <- compare_rema_models(rema_models = list(m),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)')
+
+# FIXME! something doesn't seem right here - also: change the "fit to different
+# data" error msg to something more informative, get rid of "unfortunately"
+# language, edit language about param est comparisons from admb mods
 compare$plots$biomass_by_strata + facet_wrap(~strata, ncol = 1, scales = 'free_y')
 compare$plots$total_predicted_biomass
 
-output$biomass_by_strata %>%
-  left_join(m$osa %>%
-              filter(survey == 'Biomass survey') %>%
-              select(year, strata, residual)) %>%
-  ggplot(aes(x = year, y = residual)) +
-  geom_hline(yintercept = 0, colour = "grey", size = 1) +
-  geom_segment(aes(x = year, xend = year, y = 0, yend = residual),
-               size = 0.2, colour = "grey") +
-  geom_point() +
-  expand_limits(y = c(-2, 2)) +
-  facet_wrap(~strata, ncol = 1) +
-  theme_cowplot()
-
+osa <- get_osa_residuals(m)
+cowplot::plot_grid(osa$plots$biomass_resids,
+                   osa$plots$biomass_qqplot,
+                   osa$plots$biomass_fitted,
+                   ncol = 1)
 # Ex 3 REMA ----
 
 # Multi-survey and multi-strata version of the random effects model (REMA).
@@ -170,7 +161,7 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasr_cpue_wt=1',
 input$data$wt_biomass
 input$data$wt_cpue
 
-m <- fit_rema(input, do.osa = TRUE)
+m <- fit_rema(input)
 check_convergence(m)
 
 output <- tidy_rema(m)

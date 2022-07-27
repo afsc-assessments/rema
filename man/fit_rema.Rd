@@ -10,8 +10,6 @@ fit_rema(
   do.sdrep = TRUE,
   do.retro = FALSE,
   n.peels = 7,
-  do.osa = FALSE,
-  osa.opts = list(method = "cdf", parallel = TRUE),
   model = NULL,
   do.check = FALSE,
   MakeADFun.silent = FALSE,
@@ -51,15 +49,6 @@ RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.}
 \item{n.peels}{integer, number of peels to use in retrospective analysis.
 Default = \code{7}.RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.}
 
-\item{do.osa}{T/F, calculate one-step-ahead (OSA) residuals? Default =
-\code{FALSE}. See details. Returned as \code{mod$osa$residual}. OSA
-RESIDUALS NOT IMPLEMENTED.}
-
-\item{osa.opts}{list of options for calculating OSA residuals, passed to
-\code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}. Default:
-\code{osa.opts = list(method = "cdf", parallel = TRUE)}. OSA RESIDUALS NOT
-IMPLEMENTED.}
-
 \item{model}{(optional), a previously fit rema model.}
 
 \item{do.check}{T/F, check if model parameters are identifiable? Passed to
@@ -90,8 +79,6 @@ a fit TMB model with additional output if specified:
     \code{do.sdrep = TRUE})}
     \item{\code{$peels}}{Retrospective analysis (if \code{do.retro = TRUE}).
     RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.}
-    \item{\code{$osa}}{One-step-ahead residuals (if \code{do.osa = TRUE}).
-    OSA RESIDUALS NOT IMPLEMENTED.}
   }
 }
 \description{
