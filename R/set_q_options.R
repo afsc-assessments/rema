@@ -33,10 +33,13 @@ set_q_options <- function(input, q_options) {
   # biomass strata but only two CPUE strata. if pointer_biomass_cpue_strata =
   # c(1, 1, 2)), this means the first two biomass strata correspond to the first
   # CPUE survey stratum, and the third biomass strata corresponds to second CPUE
-  # survey stratum.
+  # survey stratum. If there is no CPUE data to compliment a specific biomass
+  # stratum, the user can populate these with NAs. For example if
+  # pointer_biomass_cpue_strata = c(1, NA, 3), it means there is CPUE data for
+  # biomass strata 1 and 3 but not 2.
   if(!is.null(q_options$pointer_biomass_cpue_strata)) {
     if(length(q_options$pointer_biomass_cpue_strata) != ncol(data$biomass_obs)) stop("Length of q_options$pointer_biomass_cpue_strata must equal the number of biomass survey strata (e.g., length(unique(admb_re$biomass_dat$strata)). Please see q_options details in ?prepare_rema_input.")
-    if(length(unique(q_options$pointer_biomass_cpue_strata)) != ncol(data$cpue_obs)) stop("Length of unique values in q_options$pointer_biomass_cpue_strata must equal the number of CPUE survey strata (e.g., length(unique(admb_re$cpue_dat$strata)). Please see q_options details in ?prepare_rema_input.")
+    if(length(unique(q_options$pointer_biomass_cpue_strata[!is.na(q_options$pointer_biomass_cpue_strata)])) != ncol(data$cpue_obs)) stop("Length of unique values in q_options$pointer_biomass_cpue_strata must equal the number of CPUE survey strata (e.g., length(unique(admb_re$cpue_dat$strata)). Please see q_options details in ?prepare_rema_input.")
     if(any(!is.numeric(q_options$pointer_biomass_cpue_strata))) stop("q_options$pointer_biomass_cpue_strata must be a vector of integer values starting at 1 with a vector length equal the number of biomass survey strata (e.g., length(unique(admb_re$biomass_dat$strata)). Please see q_options details in ?prepare_rema_input.")
     q_options$pointer_biomass_cpue_strata <- as.integer(q_options$pointer_biomass_cpue_strata)
     if(any(!is.integer(q_options$pointer_biomass_cpue_strata))) stop("q_options$pointer_biomass_cpue_strata must be a vector of integer values starting at 1 with a vector length equal the number of biomass survey strata (e.g., length(unique(admb_re$biomass_dat$strata)). Please see q_options details in ?prepare_rema_input.")

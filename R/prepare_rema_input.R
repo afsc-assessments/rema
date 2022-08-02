@@ -102,10 +102,13 @@
 #'     that are represented by only 2 CPUE survey strata, the user may specify
 #'     \code{pointer_biomass_cpue_strata = c(1, 1, 2)}. This specification would
 #'     assign the first 2 biomass strata to the first CPUE strata, and the third
-#'     biomass stratum to the second CPUE stratum. NOTE: there cannot be a
-#'     scenario where there are more CPUE survey strata than biomass survey
-#'     strata because the CPUE survey is used to inform the biomass survey
-#'     trend. An error will be thrown if
+#'     biomass stratum to the second CPUE stratum. If there is no CPUE data to
+#'     compliment a specific biomass stratum, the user can populate these with
+#'     NAs. For example if pointer_biomass_cpue_strata = c(1, NA, 3), it means
+#'     there is CPUE data for biomass strata 1 and 3 but not 2. NOTE: there
+#'     cannot be a scenario where there are more CPUE survey strata than biomass
+#'     survey strata because the CPUE survey is used to inform the biomass
+#'     survey trend. An error will be thrown if
 #'     \code{q_options$pointer_biomass_cpue_strata} is not defined and the
 #'     biomass and CPUE survey strata definitions are not the same.}
 #'     \item{$initial_pars}{A vector of initial values for \code{log_q}. The
@@ -247,10 +250,10 @@
 #'   to \code{end_year = max(admb_re$model_yrs)}; if \code{admb_re} is not
 #'   supplied, this value defaults to the last year in either \code{biomass_dat}
 #'   or \code{cpue_dat}
-#' @param sum_cpue_index T/F, is the CPUE survey index able to be summed across
-#'   strata to get a total CPUE survey index? For example, Longline survey
-#'   relative population numbers (RPNs) are summable but longline survey numbers
-#'   per hachi (CPUE) are not. Default = \code{FALSE}.
+#' @param sum_cpue_index T/F or 1/0, is the CPUE survey index able to be summed
+#'   across strata to get a total CPUE survey index? For example, Longline
+#'   survey relative population numbers (RPNs) are summable but longline survey
+#'   numbers per hachi (CPUE) are not. Default = \code{FALSE}.
 #' @param wt_biomass (optional) a multiplier on the biomass survey data
 #'   component of the negative log likelihood. For example, \code{nll =
 #'   wt_biomass * nll}. Defaults to \code{wt_biomass = 1}
@@ -384,7 +387,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   # see set_zeros.R
   # zeros <- set_zeros_default(zeros, dat = biomass_dat)
   if(is.null(zeros) & any(biomass_dat$biomass == 0, na.rm = TRUE)) {
-    warning("The user has entered a zero observation for the survey data but has not explicitly defined an assumption for treatment of zeros in the model. By default, this observation will be removed (i.e. treated as an NA or failed survey). If the user wants to make another assumption (e.g. add a small constant or use the Tweedie distribution to model observation error), they can do so by defining an assumption in the 'zeros' argument. See details in ?prepare_rema_input() for more information.")
+    warning("The user has entered a zero observation for the survey data but has not explicitly defined an assumption for treatment of zeros in the model. By default, this observation will be removed (i.e. treated as an NA or failed survey). If the user wants to make another assumption (e.g. add a small constant or explore the Tweedie distribution to model observation error), they can do so by defining an assumption in the 'zeros' argument. See details in ?prepare_rema_input() for more information.")
   }
 
   if(is.null(zeros$assumption)) {
@@ -474,7 +477,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     as.matrix()
 
   # cpue index summable across strata?
-  if(isTRUE(sum_cpue_index)){
+  if(isTRUE(sum_cpue_index) | sum_cpue_index == 1){
     input$data$sum_cpue_index <- 1
   } else {
     input$data$sum_cpue_index <- 0 # default
