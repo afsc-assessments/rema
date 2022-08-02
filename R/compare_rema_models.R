@@ -52,13 +52,14 @@ compare_rema_models <- function(rema_models,
                                 xlab = NULL,
                                 biomass_ylab = 'Biomass',
                                 cpue_ylab = 'CPUE') {
-  # rema_models <- list(m)
+  # rema_models <- list(m, m2)
+  # admb_re = NULL
   # biomass_ylab <- 'ROV biomass'
   # cpue_ylab <- 'IPHC setline survey CPUE'
   # xlab = NULL
 
   if(!is.list(rema_models)) {
-    stop("This function expects a list of model objects. Each of the model objects should be a list returned from fit_rema() See ?compare_rema_models for details.")
+    stop("This function expects a list of model objects (e.g., compare_rema_models(rema_models = list(m1, m2))). Each of the model objects should be a list returned from fit_rema() See ?compare_rema_models for details.")
   }
 
   compare_rema_output <- list()
@@ -96,7 +97,7 @@ compare_rema_models <- function(rema_models,
   if(tst_parameter_estimates) {
     out_parameter_estimates <- do.call('rbind', parameter_estimates)
   } else if(!is.null(admb_re)){
-    out_parameter_estimates <- "Parameter estimates for the ADMB version of the RE model are not readily available for comparison with REMA models."
+    out_parameter_estimates <- "Parameter estimates for the ADMB version of the RE model are not readily available for comparison with REMA models. User will need to check the ADMB .std file for parameter estimates."
   } else {
     stop("Something went wrong... run check_convergence() and review output$parameter_estimates from tidy_rema() output for all REMA models you want to compare. All models should have should meet minimum convergence criteria and have valid parameter estimates.")
   }
@@ -112,6 +113,7 @@ compare_rema_models <- function(rema_models,
     # test that biomass data are all equal
     tst_biomass_data <- lapply(biomass_by_strata, `[`, 8:9) # 8:9 = obs and obs_cv
     tst_biomass_data <- all(sapply(tst_biomass_data, identical, tst_biomass_data[[1]]))
+    tst_biomass_data <- TRUE
 
     if(isFALSE(tst_biomass_data)) {
       out_biomass_by_strata <- "The REMA models selected for comparison were fit to different biomass data, and therefore the fits to the biomass data by strata cannot be compared."
@@ -128,13 +130,17 @@ compare_rema_models <- function(rema_models,
                     alpha = 0.25) +
         geom_line() +
         facet_wrap(~strata, nrow = NULL) +
-        geom_point(aes(x = year, y = obs), col = 'black') +
-        geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
+        # geom_point(aes(x = year, y = obs), col = 'black') +
+        # geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
+        geom_point(aes(x = year, y = obs, col = model_name, shape = model_name)) +
+        geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
         scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
         labs(x = xlab, y = biomass_ylab,
-             fill = NULL, colour = NULL) +
-        ggplot2::scale_fill_viridis_d() +
-        ggplot2::scale_colour_viridis_d()
+             fill = NULL, colour = NULL, shape = NULL) +
+        ggplot2::scale_colour_brewer(palette = 'Set1') +
+        ggplot2::scale_fill_brewer(palette = 'Set1')
+        # ggplot2::scale_fill_viridis_d() +
+        # ggplot2::scale_colour_viridis_d()
     }
   } else if(!is.null(admb_re)) {
     out_biomass_by_strata <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
@@ -154,6 +160,7 @@ compare_rema_models <- function(rema_models,
     # test that cpue data are all equal
     tst_cpue_data <- lapply(cpue_by_strata, `[`, 8:9) # 8:9 = obs and obs_cv
     tst_cpue_data <- all(sapply(tst_cpue_data, identical, tst_cpue_data[[1]]))
+    tst_cpue_data <- TRUE
 
     if(isFALSE(tst_cpue_data)) {
       out_cpue_by_strata <- "The REMA models selected for comparison were fit to different CPUE data, and therefore the fits to the CPUE data by strata cannot be compared."
@@ -168,13 +175,17 @@ compare_rema_models <- function(rema_models,
                     alpha = 0.25) +
         geom_line() +
         facet_wrap(~strata, nrow = NULL) +
-        geom_point(aes(x = year, y = obs), col = 'black') +
-        geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
+        # geom_point(aes(x = year, y = obs), col = 'black') +
+        # geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
+        geom_point(aes(x = year, y = obs, col = model_name, shape = model_name)) +
+        geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
         scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
         labs(x = xlab, y = cpue_ylab,
              fill = NULL, colour = NULL) +
-        ggplot2::scale_fill_viridis_d() +
-        ggplot2::scale_colour_viridis_d()
+        # ggplot2::scale_fill_viridis_d() +
+        # ggplot2::scale_colour_viridis_d() +
+        ggplot2::scale_colour_brewer(palette = 'Set1') +
+        ggplot2::scale_fill_brewer(palette = 'Set1')
     }
   } else {
     out_cpue_by_strata <- "One or more of the models selected for comparison were not fit to CPUE data and therefore cannot be compared."
@@ -193,13 +204,17 @@ compare_rema_models <- function(rema_models,
                   alpha = 0.25) +
       geom_line() +
       facet_wrap(~strata, nrow = NULL) +
-      geom_point(aes(x = year, y = obs), col = 'black') +
-      geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
+      # geom_point(aes(x = year, y = obs), col = 'black') +
+      # geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
+      geom_point(aes(x = year, y = obs, col = model_name, shape = model_name)) +
+      geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
       scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = biomass_ylab,
            fill = NULL, colour = NULL) +
-      ggplot2::scale_fill_viridis_d() +
-      ggplot2::scale_colour_viridis_d()
+      # ggplot2::scale_fill_viridis_d() +
+      # ggplot2::scale_colour_viridis_d()
+      ggplot2::scale_colour_brewer(palette = 'Set1') +
+      ggplot2::scale_fill_brewer(palette = 'Set1')
 
   } else {
     out_biomass_by_cpue_strata <- "'biomass_by_cpue_strata' is reserved for multi-survey scenarios when there are more biomass survey strata than CPUE survey strata, and the user wants predicted biomass at the same resolution as the CPUE survey index. One or more of the models selected for comparison did not meet this criterion."
@@ -224,8 +239,10 @@ compare_rema_models <- function(rema_models,
       scale_y_continuous(labels = scales::comma) + #, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = biomass_ylab,
            fill = NULL, colour = NULL) +
-      ggplot2::scale_fill_viridis_d() +
-      ggplot2::scale_colour_viridis_d()
+      # ggplot2::scale_fill_viridis_d() +
+      # ggplot2::scale_colour_viridis_d()
+      ggplot2::scale_colour_brewer(palette = 'Set1') +
+      ggplot2::scale_fill_brewer(palette = 'Set1')
   } else if(!is.null(admb_re)) {
     out_total_predicted_biomass <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
     p4 <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
@@ -251,8 +268,10 @@ compare_rema_models <- function(rema_models,
       scale_y_continuous(labels = scales::comma) + #, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = cpue_ylab,
            fill = NULL, colour = NULL) +
-      ggplot2::scale_fill_viridis_d() +
-      ggplot2::scale_colour_viridis_d()
+      # ggplot2::scale_fill_viridis_d() +
+      # ggplot2::scale_colour_viridis_d
+      ggplot2::scale_colour_brewer(palette = 'Set1') +
+      ggplot2::scale_fill_brewer(palette = 'Set1')
 
   } else {
     out_total_predicted_cpue <- "Either one or more of the models selected for comparison were not fit to CPUE survey data OR the CPUE survey index was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."

@@ -15,6 +15,7 @@
 #define TMB_LIB_INIT R_init_rema
 #include <TMB.hpp>
 #include <iostream>
+#include <algorithm>
 
 #define see(object) std::cout << #object ":\n" << object << "\n";
 
@@ -219,7 +220,9 @@ Type objective_function<Type>::operator() ()
     for(int i = 0; i < nyrs; i++) {
 
       for(int j = 0; j < n_strata_biomass; j++) {
-        biomass_pred_cpue_strata(i,pointer_biomass_cpue_strata(j)) += biomass_pred(i,j);
+        if(std::count(pointer_biomass_cpue_strata.begin(), pointer_biomass_cpue_strata.end(), j)) {
+          biomass_pred_cpue_strata(i,pointer_biomass_cpue_strata(j)) += biomass_pred(i,j);
+        }
       }
 
       // get predicted cpue, log-transform for variance estimates
