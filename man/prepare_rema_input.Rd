@@ -65,10 +65,10 @@ they must define it in the data manually.}
 estimate (i.e. sd(cpue)/cpue)}
 }}
 
-\item{sum_cpue_index}{T/F, is the CPUE survey index able to be summed across
-strata to get a total CPUE survey index? For example, Longline survey
-relative population numbers (RPNs) are summable but longline survey numbers
-per hachi (CPUE) are not. Default = \code{FALSE}.}
+\item{sum_cpue_index}{T/F or 1/0, is the CPUE survey index able to be summed
+across strata to get a total CPUE survey index? For example, Longline
+survey relative population numbers (RPNs) are summable but longline survey
+numbers per hachi (CPUE) are not. Default = \code{FALSE}.}
 
 \item{start_year}{(optional) integer value specifying the start year for
 estimation in the model; if \code{admb_re} is supplied, this value defaults
@@ -241,10 +241,13 @@ default \code{q_options} using the following list of entries:
     that are represented by only 2 CPUE survey strata, the user may specify
     \code{pointer_biomass_cpue_strata = c(1, 1, 2)}. This specification would
     assign the first 2 biomass strata to the first CPUE strata, and the third
-    biomass stratum to the second CPUE stratum. NOTE: there cannot be a
-    scenario where there are more CPUE survey strata than biomass survey
-    strata because the CPUE survey is used to inform the biomass survey
-    trend. An error will be thrown if
+    biomass stratum to the second CPUE stratum. If there is no CPUE data to
+    compliment a specific biomass stratum, the user can populate these with
+    NAs. For example if pointer_biomass_cpue_strata = c(1, NA, 3), it means
+    there is CPUE data for biomass strata 1 and 3 but not 2. NOTE: there
+    cannot be a scenario where there are more CPUE survey strata than biomass
+    survey strata because the CPUE survey is used to inform the biomass
+    survey trend. An error will be thrown if
     \code{q_options$pointer_biomass_cpue_strata} is not defined and the
     biomass and CPUE survey strata definitions are not the same.}
     \item{$initial_pars}{A vector of initial values for \code{log_q}. The
