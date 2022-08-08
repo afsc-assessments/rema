@@ -178,32 +178,6 @@ plots$total_predicted_biomass
 plots$total_predicted_cpue
 plots$biomass_by_cpue_strata
 
-output$biomass_by_strata %>%
-  left_join(m$osa %>%
-              filter(survey == 'Biomass survey') %>%
-              select(year, strata, residual)) %>%
-  ggplot(aes(x = year, y = residual)) +
-  geom_hline(yintercept = 0, colour = "grey", size = 1) +
-  geom_segment(aes(x = year, xend = year, y = 0, yend = residual),
-               size = 0.2, colour = "grey") +
-  geom_point() +
-  expand_limits(y = c(-2, 2)) +
-  facet_wrap(~strata) +
-  theme_cowplot()
-
-output$cpue_by_strata %>%
-  left_join(m$osa %>%
-              filter(survey == 'CPUE survey') %>%
-              select(year, strata, residual)) %>%
-  ggplot(aes(x = year, y = residual)) +
-  geom_hline(yintercept = 0, colour = "grey", size = 1) +
-  geom_segment(aes(x = year, xend = year, y = 0, yend = residual),
-               size = 0.2, colour = "grey") +
-  geom_point() +
-  expand_limits(y = c(-2, 2)) +
-  facet_wrap(~strata) +
-  theme_cowplot()
-
 input2 <- prepare_rema_input(model_name = 'tmb_rema_goasr_cpue_wt=0.5',
                             multi_survey = 1,
                             admb_re = admb_re,
@@ -253,7 +227,7 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
                               pointer_q_cpue = c(1, 1, 1)), # equivalent of admb model, but maybe consider c(1, 2, 3) as best practice? i.e. why would scaling pars be shared across strata?
                             zeros = list(assumption = 'NA'))
 
-m <- fit_rema(input, do.osa = TRUE)
+m <- fit_rema(input)
 m$report()
 check_convergence(m)
 output <- tidy_rema(m)
@@ -265,37 +239,6 @@ plots$cpue_by_strata
 plots$biomass_by_cpue_strata
 plots$total_predicted_biomass
 plots$total_predicted_cpue
-
-output$biomass_by_strata %>%
-  left_join(m$osa %>%
-              filter(survey == 'Biomass survey') %>%
-              select(year, strata, residual)) %>%
-  ggplot(aes(x = year, y = residual)) +
-  geom_hline(yintercept = 0, colour = "grey", size = 1) +
-  geom_segment(aes(x = year, xend = year, y = 0, yend = residual),
-               size = 0.2, colour = "grey") +
-  geom_point() +
-  expand_limits(y = c(-2, 2)) +
-  facet_wrap(~strata) +
-  theme_cowplot()
-
-resids_biom <- m$osa %>% filter(survey == 'Biomass survey') %>% pull(residual)
-qqnorm(resids_biom); abline(0, 1)
-resids_cpue <- m$osa %>% filter(survey == 'CPUE survey') %>% pull(residual)
-qqnorm(resids_cpue); abline(0, 1)
-
-output$cpue_by_strata %>%
-  left_join(m$osa %>%
-              filter(survey == 'CPUE survey') %>%
-              select(year, strata, residual)) %>%
-  ggplot(aes(x = year, y = residual)) +
-  geom_hline(yintercept = 0, colour = "grey", size = 1) +
-  geom_segment(aes(x = year, xend = year, y = 0, yend = residual),
-               size = 0.2, colour = "grey") +
-  geom_point() +
-  expand_limits(y = c(-2, 2)) +
-  facet_wrap(~strata) +
-  theme_cowplot()
 
 cowplot::plot_grid(plots$biomass_by_strata + facet_wrap(~strata, nrow = 1),
                    plots$cpue_by_strata, nrow = 2)

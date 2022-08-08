@@ -137,10 +137,10 @@ compare_rema_models <- function(rema_models,
         scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
         labs(x = xlab, y = biomass_ylab,
              fill = NULL, colour = NULL, shape = NULL) +
-        ggplot2::scale_colour_brewer(palette = 'Set1') +
-        ggplot2::scale_fill_brewer(palette = 'Set1')
-        # ggplot2::scale_fill_viridis_d() +
-        # ggplot2::scale_colour_viridis_d()
+        # ggplot2::scale_colour_brewer(palette = 'Set1') +
+        # ggplot2::scale_fill_brewer(palette = 'Set1')
+        ggplot2::scale_fill_viridis_d() +
+        ggplot2::scale_colour_viridis_d()
     }
   } else if(!is.null(admb_re)) {
     out_biomass_by_strata <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
@@ -182,10 +182,10 @@ compare_rema_models <- function(rema_models,
         scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
         labs(x = xlab, y = cpue_ylab,
              fill = NULL, colour = NULL) +
-        # ggplot2::scale_fill_viridis_d() +
-        # ggplot2::scale_colour_viridis_d() +
-        ggplot2::scale_colour_brewer(palette = 'Set1') +
-        ggplot2::scale_fill_brewer(palette = 'Set1')
+        ggplot2::scale_fill_viridis_d() +
+        ggplot2::scale_colour_viridis_d() #+
+        # ggplot2::scale_colour_brewer(palette = 'Set1') +
+        # ggplot2::scale_fill_brewer(palette = 'Set1')
     }
   } else {
     out_cpue_by_strata <- "One or more of the models selected for comparison were not fit to CPUE data and therefore cannot be compared."
@@ -211,10 +211,10 @@ compare_rema_models <- function(rema_models,
       scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = biomass_ylab,
            fill = NULL, colour = NULL) +
-      # ggplot2::scale_fill_viridis_d() +
-      # ggplot2::scale_colour_viridis_d()
-      ggplot2::scale_colour_brewer(palette = 'Set1') +
-      ggplot2::scale_fill_brewer(palette = 'Set1')
+      ggplot2::scale_fill_viridis_d() +
+      ggplot2::scale_colour_viridis_d()
+      # ggplot2::scale_colour_brewer(palette = 'Set1') +
+      # ggplot2::scale_fill_brewer(palette = 'Set1')
 
   } else {
     out_biomass_by_cpue_strata <- "'biomass_by_cpue_strata' is reserved for multi-survey scenarios when there are more biomass survey strata than CPUE survey strata, and the user wants predicted biomass at the same resolution as the CPUE survey index. One or more of the models selected for comparison did not meet this criterion."
@@ -239,10 +239,10 @@ compare_rema_models <- function(rema_models,
       scale_y_continuous(labels = scales::comma) + #, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = biomass_ylab,
            fill = NULL, colour = NULL) +
-      # ggplot2::scale_fill_viridis_d() +
-      # ggplot2::scale_colour_viridis_d()
-      ggplot2::scale_colour_brewer(palette = 'Set1') +
-      ggplot2::scale_fill_brewer(palette = 'Set1')
+      ggplot2::scale_fill_viridis_d() +
+      ggplot2::scale_colour_viridis_d()
+      # ggplot2::scale_colour_brewer(palette = 'Set1') +
+      # ggplot2::scale_fill_brewer(palette = 'Set1')
   } else if(!is.null(admb_re)) {
     out_total_predicted_biomass <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
     p4 <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
@@ -268,10 +268,10 @@ compare_rema_models <- function(rema_models,
       scale_y_continuous(labels = scales::comma) + #, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = cpue_ylab,
            fill = NULL, colour = NULL) +
-      # ggplot2::scale_fill_viridis_d() +
-      # ggplot2::scale_colour_viridis_d
-      ggplot2::scale_colour_brewer(palette = 'Set1') +
-      ggplot2::scale_fill_brewer(palette = 'Set1')
+      ggplot2::scale_fill_viridis_d() +
+      ggplot2::scale_colour_viridis_d()
+      # ggplot2::scale_colour_brewer(palette = 'Set1') +
+      # ggplot2::scale_fill_brewer(palette = 'Set1')
 
   } else {
     out_total_predicted_cpue <- "Either one or more of the models selected for comparison were not fit to CPUE survey data OR the CPUE survey index was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."

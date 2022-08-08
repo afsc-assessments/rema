@@ -159,5 +159,5 @@ compare$plots$biomass_by_strata
 compare$plots$total_predicted_biomass
 compare$plots$cpue_by_strata # does not exist...check output:
 compare$output$cpue_by_strata
-compare_rema_models(rema_models = list(m4, m5))$aic
+compare_rema_models(rema_models = list(m3, m4, m5))$aic
 
