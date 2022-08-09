@@ -78,12 +78,18 @@ plots <- plot_rema(tidy_rema = output,
 plots$biomass_by_strata
 
 # (7) Get one-step-ahead (OSA) residuals
-osa <- get_osa_residuals(m)
-osa$residuals
+?get_osa_residuals
+osa <- get_osa_residuals(m, options = list(method = "cdf"))
 cowplot::plot_grid(osa$plots$biomass_resids,
                    osa$plots$biomass_qqplot,
                    osa$plots$biomass_hist,
                    osa$plots$biomass_fitted)
+osa$residuals$biomass %>% filter(is.nan(residual))
+osa <- get_osa_residuals(m, options = list(method = "oneStepGeneric"))
+osa <- get_osa_residuals(m, options = list(method = "fullGaussian"))
+osa <- get_osa_residuals(m, options = list(method = "oneStepGaussianOffMode"))
+osa <- get_osa_residuals(m, options = list(method = "oneStepGaussian"))
+osa$residuals$biomass
 
 # (8) Compare with ADMB RE model results
 compare <- compare_rema_models(rema_models = list(m),
@@ -126,17 +132,24 @@ compare <- compare_rema_models(rema_models = list(m),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)')
 
-# FIXME! something doesn't seem right here - also: change the "fit to different
-# data" error msg to something more informative, get rid of "unfortunately"
-# language, edit language about param est comparisons from admb mods
+# Note different confidence intervals between the ADMB version (Marlow method) and the TMB version (Delta method)
 compare$plots$biomass_by_strata + facet_wrap(~strata, ncol = 1, scales = 'free_y')
 compare$plots$total_predicted_biomass
 
-osa <- get_osa_residuals(m)
+osa <- get_osa_residuals(m, options = list(method = "cdf"))
 cowplot::plot_grid(osa$plots$biomass_resids,
                    osa$plots$biomass_qqplot,
                    osa$plots$biomass_fitted,
                    ncol = 1)
+osa$residuals$biomass %>% filter(is.nan(residual))
+osa <- get_osa_residuals(m, options = list(method = "oneStepGeneric"))
+osa <- get_osa_residuals(m, options = list(method = "fullGaussian"))
+osa <- get_osa_residuals(m, options = list(method = "oneStepGaussianOffMode"))
+osa$residuals$biomass %>% print(n = Inf)
+osa <- get_osa_residuals(m, options = list(method = "oneStepGaussian"))
+osa <- get_osa_residuals(m)
+osa$residuals$biomass %>% print(n = Inf)
+
 # Ex 3 REMA ----
 
 # Multi-survey and multi-strata version of the random effects model (REMA).
@@ -163,6 +176,21 @@ input$data$wt_cpue
 
 m <- fit_rema(input)
 check_convergence(m)
+
+osa <- get_osa_residuals(m, options = list(method = "cdf"))
+osa$residuals$biomass %>% filter(is.nan(residual))
+osa$residuals$cpue %>% filter(is.nan(residual))
+osa <- get_osa_residuals(m, options = list(method = "oneStepGeneric"))
+osa <- get_osa_residuals(m, options = list(method = "fullGaussian"))
+osa <- get_osa_residuals(m, options = list(method = "oneStepGaussianOffMode"))
+osa$residuals$biomass
+osa <- get_osa_residuals(m, options = list(method = "oneStepGaussian"))
+# "oneStepGaussianOffMode", "fullGaussian", "oneStepGeneric",
+# "oneStepGaussian", "cdf"
+osa$residuals$biomass %>% print(n = Inf)
+osa$plots$biomass_resids
+osa$plots$cpue_resids
+osa$plots$cpue_qq
 
 output <- tidy_rema(m)
 output$parameter_estimates
@@ -244,6 +272,10 @@ cowplot::plot_grid(plots$biomass_by_strata + facet_wrap(~strata, nrow = 1),
                    plots$cpue_by_strata, nrow = 2)
 cowplot::plot_grid(plots$biomass_by_cpue_strata, plots$cpue_by_strata, nrow = 2)
 
+osa <- get_osa_residuals(m, options = list(method = "cdf"))
+osa$residuals$biomass %>% filter(is.nan(residual))
+osa$residuals$cpue %>% filter(is.nan(residual))
+osa$plots$biomass_resids
 compare <- compare_rema_models(rema_models = list(m),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)',

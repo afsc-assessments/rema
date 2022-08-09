@@ -25,6 +25,8 @@
 #' }
 get_osa_residuals <- function(rema_model,
                               options = list(method = "cdf",
+                                             # "oneStepGaussianOffMode", "fullGaussian", "oneStepGeneric",
+                                             # "oneStepGaussian", "cdf"
                                              parallel = TRUE)) {
 
   # rema_model = m
