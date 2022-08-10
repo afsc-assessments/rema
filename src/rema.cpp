@@ -84,6 +84,12 @@ Type objective_function<Type>::operator() ()
 
   PARAMETER_MATRIX(log_biomass_pred); // random effects of predicted biomass
 
+  // extra cv for biomass and cpue observations
+  PARAMETER(logit_tau_biomass);
+  PARAMETER(logit_tau_cpue);
+  Type tau_biomass = Type(-0.1) + ((Type(1.5) - Type(-0.1)) / (Type(1.0) + exp(-logit_tau_biomass)));
+  Type tau_cpue = Type(-0.1) + ((Type(1.5) - Type(-0.1)) / (Type(1.0) + exp(-logit_tau_cpue)));
+
   // negative log likelihood
   vector<Type> jnll(3); // random walk, biomass obs, cpue obs
   jnll.setZero();
@@ -115,14 +121,18 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_biomass_obs(nyrs, n_strata_biomass);
   log_biomass_obs = log(biomass_obs.array());
   matrix<Type> log_biomass_sd(nyrs, n_strata_biomass);
-  log_biomass_sd = biomass_cv.array() * biomass_cv.array() + Type(1.0);
+  // log_biomass_sd = biomass_cv.array() * biomass_cv.array() + Type(1.0);
+  // log_biomass_sd = sqrt(log(log_biomass_sd.array()));
+  log_biomass_sd = biomass_cv.array() * biomass_cv.array() + tau_biomass * tau_biomass + Type(1.0);
   log_biomass_sd = sqrt(log(log_biomass_sd.array()));
 
   // derived quantities - cpue survey observations
   matrix<Type> log_cpue_obs(nyrs, n_strata_cpue);
   log_cpue_obs = log(cpue_obs.array());
   matrix<Type> log_cpue_sd(nyrs, n_strata_cpue);
-  log_cpue_sd = cpue_cv.array() * cpue_cv.array() + Type(1.0);
+  // log_cpue_sd = cpue_cv.array() * cpue_cv.array() + Type(1.0);
+  // log_cpue_sd = sqrt(log(log_cpue_sd.array()));
+  log_cpue_sd = cpue_cv.array() * cpue_cv.array() + tau_cpue * tau_cpue + Type(1.0);
   log_cpue_sd = sqrt(log(log_cpue_sd.array()));
 
   // SD and dispersion for tweedie

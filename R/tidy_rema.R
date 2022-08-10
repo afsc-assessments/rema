@@ -155,6 +155,45 @@ tidy_rema <- function(rema_model,
       dplyr::bind_cols(p_ci)
   }
 
+  # biomass tau (extra CV) parameter(s) when available
+  tau_biomass_pars <- NULL
+  if(any(grepl('logit_tau_biomass', names(pars)))) {
+    tau_biomass_pars <- data.frame(model_name = rema_model$input$model_name,
+                         parameter = 'tau_biomass',
+                         estimate = -0.1 + ((1.5 - (-0.1)) / (1 + exp(-pars$logit_tau_biomass))))
+
+
+    tau_biomass_ci <- matrix(nrow = 0, ncol = 3)
+    for(i in 1:length(pars$logit_tau_biomass)) {
+      tau_biomass_ci <- rbind(tau_biomass_ci, get_ci(pars$logit_tau_biomass[i], sd$logit_tau_biomass[i], type = 'expit', lo = -0.1, hi = 1.5))
+    }
+
+    tau_biomass_ci <- as.data.frame(tau_biomass_ci)
+    names(tau_biomass_ci) <- c('std_err', 'lci', 'uci')
+
+    tau_biomass_pars <- tau_biomass_pars %>%
+      dplyr::bind_cols(tau_biomass_ci)
+  }
+
+  # cpue tau (extra CV) parameter(s) when available
+  tau_cpue_pars <- NULL
+  if(any(grepl('logit_tau_cpue', names(pars)))) {
+    tau_cpue_pars <- data.frame(model_name = rema_model$input$model_name,
+                                   parameter = 'tau_cpue',
+                                   estimate = -0.1 + ((1.5 - (-0.1)) / (1 + exp(-pars$logit_tau_cpue))))
+
+
+    tau_cpue_ci <- matrix(nrow = 0, ncol = 3)
+    for(i in 1:length(pars$logit_tau_cpue)) {
+      tau_cpue_ci <- rbind(tau_cpue_ci, get_ci(pars$logit_tau_cpue[i], sd$logit_tau_cpue[i], type = 'expit', lo = -0.1, hi = 1.5))
+    }
+
+    tau_cpue_ci <- as.data.frame(tau_cpue_ci)
+    names(tau_cpue_ci) <- c('std_err', 'lci', 'uci')
+
+    tau_cpue_pars <- tau_cpue_pars %>%
+      dplyr::bind_cols(tau_cpue_ci)
+  }
   parameter_estimates <- NULL
 
   if(!is.null(q_pars)) {
@@ -165,6 +204,14 @@ tidy_rema <- function(rema_model,
 
   if(!is.null(p_pars) & data$obs_error_type == 1) {
     parameter_estimates <- dplyr::bind_rows(parameter_estimates, p_pars)
+  }
+
+  if(!is.null(tau_biomass_pars)) {
+    parameter_estimates <- dplyr::bind_rows(parameter_estimates, tau_biomass_pars)
+  }
+
+  if(!is.null(tau_cpue_pars)) {
+    parameter_estimates <- dplyr::bind_rows(parameter_estimates, tau_cpue_pars)
   }
 
   # Model predictions:

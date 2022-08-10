@@ -255,8 +255,15 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
                               pointer_q_cpue = c(1, 1, 1)), # equivalent of admb model, but maybe consider c(1, 2, 3) as best practice? i.e. why would scaling pars be shared across strata?
                             zeros = list(assumption = 'NA'))
 
+input$par$logit_tau_biomass <- -2.70805
+input$par$logit_tau_cpue <- -2.70805
+# input$map$logit_tau_biomass <- factor(NA)
+input$map$logit_tau_biomass <- factor(c(1))
+input$map$logit_tau_cpue <- factor(c(1))
+
 m <- fit_rema(input)
 m$report()
+m$sdrep
 check_convergence(m)
 output <- tidy_rema(m)
 output$parameter_estimates

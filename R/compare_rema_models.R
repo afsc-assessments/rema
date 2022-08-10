@@ -139,8 +139,8 @@ compare_rema_models <- function(rema_models,
              fill = NULL, colour = NULL, shape = NULL) +
         # ggplot2::scale_colour_brewer(palette = 'Set1') +
         # ggplot2::scale_fill_brewer(palette = 'Set1')
-        ggplot2::scale_fill_viridis_d() +
-        ggplot2::scale_colour_viridis_d()
+        ggplot2::scale_fill_viridis_d(direction = 1) +
+        ggplot2::scale_colour_viridis_d(direction = 1)
     }
   } else if(!is.null(admb_re)) {
     out_biomass_by_strata <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
@@ -181,9 +181,9 @@ compare_rema_models <- function(rema_models,
         geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
         scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
         labs(x = xlab, y = cpue_ylab,
-             fill = NULL, colour = NULL) +
-        ggplot2::scale_fill_viridis_d() +
-        ggplot2::scale_colour_viridis_d() #+
+             fill = NULL, colour = NULL, shape = NULL) +
+        ggplot2::scale_fill_viridis_d(direction = 1) +
+        ggplot2::scale_colour_viridis_d(direction = 1) #+
         # ggplot2::scale_colour_brewer(palette = 'Set1') +
         # ggplot2::scale_fill_brewer(palette = 'Set1')
     }
@@ -210,9 +210,9 @@ compare_rema_models <- function(rema_models,
       geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
       scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = biomass_ylab,
-           fill = NULL, colour = NULL) +
-      ggplot2::scale_fill_viridis_d() +
-      ggplot2::scale_colour_viridis_d()
+           fill = NULL, colour = NULL, shape = NULL) +
+      ggplot2::scale_fill_viridis_d(direction = 1) +
+      ggplot2::scale_colour_viridis_d(direction = 1)
       # ggplot2::scale_colour_brewer(palette = 'Set1') +
       # ggplot2::scale_fill_brewer(palette = 'Set1')
 
@@ -239,8 +239,8 @@ compare_rema_models <- function(rema_models,
       scale_y_continuous(labels = scales::comma) + #, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = biomass_ylab,
            fill = NULL, colour = NULL) +
-      ggplot2::scale_fill_viridis_d() +
-      ggplot2::scale_colour_viridis_d()
+      ggplot2::scale_fill_viridis_d(direction = 1) +
+      ggplot2::scale_colour_viridis_d(direction = 1)
       # ggplot2::scale_colour_brewer(palette = 'Set1') +
       # ggplot2::scale_fill_brewer(palette = 'Set1')
   } else if(!is.null(admb_re)) {
@@ -268,8 +268,8 @@ compare_rema_models <- function(rema_models,
       scale_y_continuous(labels = scales::comma) + #, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = cpue_ylab,
            fill = NULL, colour = NULL) +
-      ggplot2::scale_fill_viridis_d() +
-      ggplot2::scale_colour_viridis_d()
+      ggplot2::scale_fill_viridis_d(direction = 1) +
+      ggplot2::scale_colour_viridis_d(direction = 1)
       # ggplot2::scale_colour_brewer(palette = 'Set1') +
       # ggplot2::scale_fill_brewer(palette = 'Set1')
 
