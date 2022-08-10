@@ -83,7 +83,8 @@ osa <- get_osa_residuals(m, options = list(method = "cdf"))
 cowplot::plot_grid(osa$plots$biomass_resids,
                    osa$plots$biomass_qqplot,
                    osa$plots$biomass_hist,
-                   osa$plots$biomass_fitted)
+                   osa$plots$biomass_fitted,
+                   ncol = 1)
 osa$residuals$biomass %>% filter(is.nan(residual))
 osa <- get_osa_residuals(m, options = list(method = "oneStepGeneric"))
 osa <- get_osa_residuals(m, options = list(method = "fullGaussian"))
