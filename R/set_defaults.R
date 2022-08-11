@@ -22,6 +22,8 @@ set_defaults <- function(input, admb_re = NULL) {
   data$pointer_PE_biomass <- (1:ncol(data$biomass_obs))-1
   data$pointer_biomass_cpue_strata <- (1:ncol(data$biomass_obs))-1
   data$pointer_q_cpue <- (1:ncol(data$cpue_obs))-1
+  data$pointer_extra_biomass_cv <- (1:ncol(data$biomass_obs))-1
+  data$pointer_extra_cpue_cv <- (1:ncol(data$cpue_obs))-1
 
   data$wt_biomass <- 1
   data$wt_cpue <- 1
@@ -35,6 +37,12 @@ set_defaults <- function(input, admb_re = NULL) {
   data$q_penalty_type <- 0
   data$pmu_log_q <- NA
   data$psig_log_q <- NA
+
+  data$extra_biomass_cv <- 0
+  data$extra_cpue_cv <- 0
+
+  data$tau_biomass_upper <- rep(1.5, length(unique(data$pointer_extra_biomass_cv)))
+  data$tau_cpue_upper <- rep(1.5, length(unique(data$pointer_extra_cpue_cv)))
 
   # process error and scaling parameters
   par$log_PE <- rep(1, length(unique(data$pointer_PE_biomass)))
@@ -52,6 +60,10 @@ set_defaults <- function(input, admb_re = NULL) {
   } else {
     par$logit_tweedie_p <- rep(0.4054651, 2)
   }
+
+  # extra CV for biomass or CPUE survey (-Inf = 0 in logit space)
+  par$logit_tau_biomass <- rep(-Inf, length(unique(data$pointer_extra_biomass_cv)))
+  par$logit_tau_cpue <- rep(-Inf, length(unique(data$pointer_extra_cpue_cv)))
 
   # if admb_re is provided using read_admb_re(), use log biomass predictions as
   # initial values for the model. if not, use linear interpolation to initiate
@@ -81,8 +93,10 @@ set_defaults <- function(input, admb_re = NULL) {
 
   map$logit_tweedie_p <- fill_vals(par$logit_tweedie_p, NA)
 
-  # FLAG I don't think the parameter factor order level matters here but if it
-  # does do I need a byrow = TRUE
+  map$logit_tau_biomass <- fill_vals(par$logit_tau_biomass, NA)
+
+  map$logit_tau_cpue <- fill_vals(par$logit_tau_cpue, NA)
+
   map$log_biomass_pred <- as.factor(1:length(map$log_biomass_pred))
 
   # by default random = log_pred_biomass

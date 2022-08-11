@@ -59,7 +59,7 @@ tidy_rema <- function(rema_model,
                       path = NULL, # NOT IMPLEMENTED
                       alpha_ci = 0.05) {
 
-  # rema_model = m
+  # rema_model = m1
   # alpha_ci = 0.05
 
   if(isFALSE(rema_model$is_sdrep)) {
@@ -159,13 +159,13 @@ tidy_rema <- function(rema_model,
   tau_biomass_pars <- NULL
   if(any(grepl('logit_tau_biomass', names(pars)))) {
     tau_biomass_pars <- data.frame(model_name = rema_model$input$model_name,
-                         parameter = 'tau_biomass',
-                         estimate = -0.1 + ((1.5 - (-0.1)) / (1 + exp(-pars$logit_tau_biomass))))
+                         parameter = 'extra_biomass_cv',
+                         estimate = 1.5 / (1 + exp(-pars$logit_tau_biomass)))
 
 
     tau_biomass_ci <- matrix(nrow = 0, ncol = 3)
     for(i in 1:length(pars$logit_tau_biomass)) {
-      tau_biomass_ci <- rbind(tau_biomass_ci, get_ci(pars$logit_tau_biomass[i], sd$logit_tau_biomass[i], type = 'expit', lo = -0.1, hi = 1.5))
+      tau_biomass_ci <- rbind(tau_biomass_ci, get_ci(pars$logit_tau_biomass[i], sd$logit_tau_biomass[i], type = 'expit', lo = 0, hi = data$tau_biomass_upper[i]))
     }
 
     tau_biomass_ci <- as.data.frame(tau_biomass_ci)
@@ -179,13 +179,13 @@ tidy_rema <- function(rema_model,
   tau_cpue_pars <- NULL
   if(any(grepl('logit_tau_cpue', names(pars)))) {
     tau_cpue_pars <- data.frame(model_name = rema_model$input$model_name,
-                                   parameter = 'tau_cpue',
-                                   estimate = -0.1 + ((1.5 - (-0.1)) / (1 + exp(-pars$logit_tau_cpue))))
+                                   parameter = 'extra_cpue_cv',
+                                   estimate = 1.5 / (1 + exp(-pars$logit_tau_cpue)))
 
 
     tau_cpue_ci <- matrix(nrow = 0, ncol = 3)
     for(i in 1:length(pars$logit_tau_cpue)) {
-      tau_cpue_ci <- rbind(tau_cpue_ci, get_ci(pars$logit_tau_cpue[i], sd$logit_tau_cpue[i], type = 'expit', lo = -0.1, hi = 1.5))
+      tau_cpue_ci <- rbind(tau_cpue_ci, get_ci(pars$logit_tau_cpue[i], sd$logit_tau_cpue[i], type = 'expit', lo = 0, hi = data$tau_cpue_upper[i]))
     }
 
     tau_cpue_ci <- as.data.frame(tau_cpue_ci)
@@ -206,11 +206,11 @@ tidy_rema <- function(rema_model,
     parameter_estimates <- dplyr::bind_rows(parameter_estimates, p_pars)
   }
 
-  if(!is.null(tau_biomass_pars)) {
+  if(!is.null(tau_biomass_pars) & data$extra_biomass_cv == 1) {
     parameter_estimates <- dplyr::bind_rows(parameter_estimates, tau_biomass_pars)
   }
 
-  if(!is.null(tau_cpue_pars)) {
+  if(!is.null(tau_cpue_pars) & data$extra_cpue_cv == 1) {
     parameter_estimates <- dplyr::bind_rows(parameter_estimates, tau_cpue_pars)
   }
 

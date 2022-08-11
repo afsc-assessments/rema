@@ -50,6 +50,8 @@ Type objective_function<Type>::operator() ()
   DATA_IVECTOR(pointer_PE_biomass); // length = ncol biomass obs (# strata), unique values = number of PE parameters
   DATA_IVECTOR(pointer_biomass_cpue_strata);  // length = ncol biomass obs (# strata), unique values = number of cpue survey strata
   DATA_IVECTOR(pointer_q_cpue); // length = ncol cpue obs (# strata), unique values = number of q parameters
+  DATA_IVECTOR(pointer_extra_biomass_cv); // length = ncol biomass obs (# strata, unique values = number of extra biomass CV (tau_biomass) parameters)
+  DATA_IVECTOR(pointer_extra_cpue_cv); // length = ncol cpue obs (# strata, unique values = number of extra cpue CV (tau_cpue) parameters)
 
   DATA_SCALAR(wt_biomass); // weight for biomass data likelihood (default = 1)
   DATA_SCALAR(wt_cpue); // weight for cpue data likelihood (default = 1)
@@ -67,6 +69,15 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(pmu_log_q); // normal prior
   DATA_VECTOR(psig_log_q);
 
+  // switch for estimating extra biomass cv (tau_biomass)
+  DATA_INTEGER(extra_biomass_cv);
+  DATA_INTEGER(extra_cpue_cv);
+
+  // upper bounds for extra cv on biomass or cpue survey observations, default =
+  // 1.5 (used to constrain tau parameter using the logit transformation)
+  DATA_VECTOR(tau_biomass_upper);
+  DATA_VECTOR(tau_cpue_upper);
+
   // data for one-step-ahead (OSA) residuals
   DATA_VECTOR(obsvec); // vector of all observations for OSA residuals
   DATA_VECTOR_INDICATOR(keep, obsvec); // for OSA residuals
@@ -82,13 +93,21 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(logit_tweedie_p); // tweedie power parameter (one for biomass survey and optional one for cpue survey)
   vector<Type> tweedie_p = Type(0.95) * invlogit(logit_tweedie_p) + Type(1.05);
 
-  PARAMETER_MATRIX(log_biomass_pred); // random effects of predicted biomass
+  // extra cv (tau) for biomass and cpue observations
+  PARAMETER_VECTOR(logit_tau_biomass);
+  vector<Type> tau_biomass(logit_tau_biomass.size());
+  for(int i = 0; i < logit_tau_biomass.size(); i++) {
+    tau_biomass(i) = tau_biomass_upper(i) / (Type(1.0) + exp(-logit_tau_biomass(i)));
+  }
 
-  // extra cv for biomass and cpue observations
-  PARAMETER(logit_tau_biomass);
-  PARAMETER(logit_tau_cpue);
-  Type tau_biomass = Type(-0.1) + ((Type(1.5) - Type(-0.1)) / (Type(1.0) + exp(-logit_tau_biomass)));
-  Type tau_cpue = Type(-0.1) + ((Type(1.5) - Type(-0.1)) / (Type(1.0) + exp(-logit_tau_cpue)));
+  PARAMETER_VECTOR(logit_tau_cpue);
+  vector<Type> tau_cpue(logit_tau_cpue.size());
+  for(int i = 0; i < logit_tau_cpue.size(); i++) {
+    tau_cpue(i) = tau_cpue_upper(i) / (Type(1.0) + exp(-logit_tau_cpue(i)));
+  }
+
+  // random effects of predicted biomass
+  PARAMETER_MATRIX(log_biomass_pred);
 
   // negative log likelihood
   vector<Type> jnll(3); // random walk, biomass obs, cpue obs
@@ -121,19 +140,31 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_biomass_obs(nyrs, n_strata_biomass);
   log_biomass_obs = log(biomass_obs.array());
   matrix<Type> log_biomass_sd(nyrs, n_strata_biomass);
-  // log_biomass_sd = biomass_cv.array() * biomass_cv.array() + Type(1.0);
+  for(int i = 0; i < nyrs; i++) {
+    for(int j = 0; j < n_strata_biomass; j++) {
+      log_biomass_sd(i,j) = biomass_cv(i,j) * biomass_cv(i,j) +
+        tau_biomass(pointer_extra_biomass_cv(j)) * tau_biomass(pointer_extra_biomass_cv(j)) +
+        Type(1.0);
+      log_biomass_sd(i,j) = sqrt(log(log_biomass_sd(i,j)));
+    }
+  }
+  // log_biomass_sd = biomass_cv.array() * biomass_cv.array() + tau_biomass.array() * tau_biomass.array() + Type(1.0);
   // log_biomass_sd = sqrt(log(log_biomass_sd.array()));
-  log_biomass_sd = biomass_cv.array() * biomass_cv.array() + tau_biomass * tau_biomass + Type(1.0);
-  log_biomass_sd = sqrt(log(log_biomass_sd.array()));
 
   // derived quantities - cpue survey observations
   matrix<Type> log_cpue_obs(nyrs, n_strata_cpue);
   log_cpue_obs = log(cpue_obs.array());
   matrix<Type> log_cpue_sd(nyrs, n_strata_cpue);
-  // log_cpue_sd = cpue_cv.array() * cpue_cv.array() + Type(1.0);
+  for(int i = 0; i < nyrs; i++) {
+    for(int j = 0; j < n_strata_cpue; j++) {
+      log_cpue_sd(i,j) = cpue_cv(i,j) * cpue_cv(i,j) +
+        tau_cpue(pointer_extra_cpue_cv(j)) * tau_cpue(pointer_extra_cpue_cv(j)) +
+        Type(1.0);
+      log_cpue_sd(i,j) = sqrt(log(log_cpue_sd(i,j)));
+    }
+  }
+  // log_cpue_sd = cpue_cv.array() * cpue_cv.array() + tau_cpue.array() * tau_cpue.array() + Type(1.0);
   // log_cpue_sd = sqrt(log(log_cpue_sd.array()));
-  log_cpue_sd = cpue_cv.array() * cpue_cv.array() + tau_cpue * tau_cpue + Type(1.0);
-  log_cpue_sd = sqrt(log(log_cpue_sd.array()));
 
   // SD and dispersion for tweedie
   matrix<Type> biomass_sd(nyrs, n_strata_biomass);
