@@ -199,6 +199,77 @@
 #'         }
 #'     }
 #'
+#' \code{extra_biomass_cv} allows the user to specify options for estimating an
+#' additional CV parameter ("tau" in the source code) for the biomass survey
+#' observations. If \code{extra_biomass_cv = NULL} (default), no extra CV is
+#' estimated. The user can modify the default \code{extra_biomass_cv} options
+#' using the following list of entries:
+#' \describe{
+#'     \item{$assumption}{A string identifying what assumption is used for the
+#'     biomass survey observations. Options include "none" (default in which no
+#'     extra CV is estimated) or "extra_cv". If \code{extra_biomass_cv} is not
+#'     NULL, user must define appropriate assumption.}
+#'     \item{$pointer_extra_biomass_cv}{An index to customize the assignment of
+#'     extra CV parameters to individual biomass survey strata. Vector with
+#'     length = number of biomass strata, starting with an index of 1 and ending
+#'     with the number of unique extra CV parameters estimated. By default, if
+#'     there are three biomass survey strata, the \code{pointer_extra_biomass_cv
+#'     = c(1, 2, 3)}. If the user wanted to estimate only one extra CV, they
+#'     would specify \code{pointer_extra_biomass_cv = c(1, 1, 1)}.}
+#'     \item{$initial_pars}{A vector of initial values for the extra biomass
+#'     \code{logit_tau}. The default initial value for each logit_tau is
+#'     -Inf (0 in real space).}
+#'     \item{$fix_pars}{Option to fix extra biomass CV parameters, where
+#'     the user specifies the index value of the parameter they would like to
+#'     fix at the initial value. For example, if there are three biomass survey
+#'     strata, and the user wants to fix the \code{logit_tau} for the second
+#'     stratum but estimate the \code{logit_tau} for the first and third strata
+#'     they would specify \code{fix_pars = c(2)}.}
+#'     \item{$upper_bound}{A vector of user-specified values for the upper bound
+#'     in real space of the estimated extra biomass CV, where the default
+#'     upper bound is 1.5. For example, if there are three biomass survey
+#'     strata, and the user wants to increase the upper bound of the extra
+#'     biomass CV from 1.5 to 2, they would specify \code{upper_bound = c(2.0,
+#'     2.0, 2.0)}.}
+#' }
+#'
+#' \code{extra_cpue_cv} allows the user to specify options for estimating an
+#' additional CV parameter ("tau" in the source code) for the CPUE survey
+#' observations. If \code{extra_cpue_cv = NULL} (default), no extra CV is
+#' estimated. The user can modify the default \code{extra_cpue_cv} options
+#' using the following list of entries:
+#' \describe{
+#'     \item{$assumption}{A string identifying what assumption is used for the
+#'     CPUE survey observations. Options include "none" (default in which no
+#'     extra CV is estimated) or "extra_cv".If \code{extra_cpue_cv} is not
+#'     NULL, user must define appropriate assumption.}
+#'     \item{$pointer_extra_cpue_cv}{An index to customize the assignment of
+#'     extra CV parameters to individual CPUE survey strata. Vector with
+#'     length = number of CPUE strata, starting with an index of 1 and ending
+#'     with the number of unique extra CV parameters estimated. By default, if
+#'     there are three CPUE survey strata, the \code{pointer_extra_cpue_cv
+#'     = c(1, 2, 3)}. If the user wanted to estimate only one extra CV, they
+#'     would specify \code{pointer_extra_cpue_cv = c(1, 1, 1)}.}
+#'     \item{$initial_pars}{A vector of initial values for the extra cpue
+#'     \code{logit_tau}. The default initial value for each logit_tau is
+#'     -Inf (0 in real space).}
+#'     \item{$fix_pars}{Option to fix extra CPUE CV parameters, where
+#'     the user specifies the index value of the parameter they would like to
+#'     fix at the initial value. For example, if there are three CPUE survey
+#'     strata, and the user wants to fix the \code{logit_tau} for the second
+#'     stratum but estimate the \code{logit_tau} for the first and third strata
+#'     they would specify \code{fix_pars = c(2)}.}
+#'     \item{$upper_bound}{A vector of user-specified values for the upper bound
+#'     in real space of the estimated extra CPUE CV, where the default
+#'     upper bound is 1.5. For example, if there are three CPUE survey
+#'     strata, and the user wants to increase the upper bound of the extra
+#'     cpue CV from 1.5 to 2, they would specify \code{upper_bound = c(2.0,
+#'     2.0, 2.0)}.}
+#' }
+#'
+#' @param model_name name of stock or other identifier for REMA model
+#' @param multi_survey switch to run model in single or multi-survey mode. 0
+#'   (default) = single survey, 1 = multi-survey.
 #' @param admb_re list object returned from \code{\link{read_admb_re.R}}, which
 #'   includes biomass survey data (\code{admb_re$biomass_dat}), optional cpue
 #'   survey data (\code{admb_re$cpue_dat}), years for model predictions
@@ -272,6 +343,10 @@
 #'   CPUE observations, including treating zeros as NAs, changing the zeros to
 #'   small constants with fixed CVs, or modeling the zeros using a Tweedie
 #'   distribution (see details).
+#' @param extra_biomass_cv (optional) estimate additional observation error for
+#'   the biomass survey data (see details).
+#' @param extra_cpue_cv (optional) estimate additional observation error for
+#'   the CPUE survey data (see details).
 #'
 #' @return This function returns a named list with the following components:
 #'   \describe{
@@ -321,7 +396,9 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
                                wt_cpue = NULL,
                                PE_options = NULL,
                                q_options = NULL,
-                               zeros = NULL) {
+                               zeros = NULL,
+                               extra_biomass_cv = NULL,
+                               extra_cpue_cv = NULL) {
 
   # model_name = 'REMA for unnamed stock'
   # multi_survey = 0 # should this be 0 or FALSE instead of null?
@@ -337,6 +414,8 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
   # PE_options = NULL
   # q_options = NULL
   # zeros = NULL
+  # extra_biomass_cv = NULL
+  # extra_cpue_cv = NULL
 
   data = list()
   par = list()
@@ -494,6 +573,9 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
 
   # set tweedie starting values, user-defined options
   input <- set_tweedie(input, zeros)
+
+  # set options for extra biomass or CPUE survey CV (tau), user-defined options
+  input <- set_extra_cv(input, extra_biomass_cv, extra_cpue_cv)
 
   if(!is.null(wt_biomass)) {
     input$data$wt_biomass <- wt_biomass
