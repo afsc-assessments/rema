@@ -1,0 +1,5 @@
+url: https://janesullivan-noaa.github.io/rema/
+template:
+  bootstrap: 5
+  bootswatch: cerulean
+

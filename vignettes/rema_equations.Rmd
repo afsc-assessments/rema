@@ -1,11 +1,20 @@
 ---
-title: "rema-equations"
-output: word_document
-date: '2022-08-13'
+title: "REMA model equations"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{REMA model equations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+# devtools::build_rmd(files = 'vignettes/rema_equations.Rmd')
 ```
 
 # Basic model structure
@@ -36,7 +45,7 @@ In the updated REMA library, the total variance is estimated using the standard 
 
 ## Addition of an auxillary catch per unit effort (CPUE) survey
 
-In situations where an auxillary biomass or catch per unit effort (CPUE) survey ($I_{t,j}$) and associated variance ($\sigma_{I_{t,j}}$) are available, an additional scaling parameter $q$ can be estimated to facilitate the inclusion of this additional information into biomass predictions. The predicted annual CPUE survey index by strata $\hat{I}_{t,j}$ is calculated as
+In situations where an auxillary biomass or catch per unit effort (CPUE) survey ($I_{t,j}$) and associated variance ($\sigma_{I_{t,j}}$) are available, an additional scaling parameter $q$ can be estimated to facilitate the inclusion of this new information into biomass predictions. The predicted annual CPUE survey index by strata $\hat{I}_{t,j}$ is calculated as
 $$
 \hat{I}_{t,j} = q_j * e^{\hat{B}_{t,j}}
 $$
@@ -47,9 +56,9 @@ $$
 The REMA model allows for user-specification $q$ parameters by strata, including the options to estimate a single, shared $q$ across all strata, or define different CPUE and biomass survey strata. However, since the the auxiliary CPUE survey index is related to unobserved population biomass at the level of the biomass survey strata, the model can only accommodate scenarios where the CPUE survey strata have a coarser resolution or are equivalent to the biomass survey strata.
 
 ### The ADMB version of REMA
-During the development of REMA in ADMB, an error was introduced into the likelihood component of the CPUE survey index. Although all the equations in the ADMB template file are correctly defined, the specification of the $ln(\hat{I}_{t,j})$ outside (as opposed to inside) the likelihood component's `SEPARABLE_FUNCTION` resulted in an incorrectly specified model and invalid model results. This error was found while developing and testing the TMB version of the model and is explored in more detail using Markov Chain Monte Carlo methods instead of MLE methods usng the Laplace approximation. When the equation for $ln(\hat{I}_{t,j})$ is moved inside the `SEPARABLE_FUNCTION`, we were able to reproduce the results using TMB. Additionally, when using MCMC methods in both the "inside" and "outside" versions, we obtained identical model results that matched the TMB and "inside" method in ADMB, providing further proof that placing this simple calculation outside the `SEPARABLE_FUNCTION` resulted in erroneous results.
+During the multi-survey development of REMA in ADMB, an error was introduced into the likelihood component of the CPUE survey index. Although all the equations in the ADMB template file are correctly defined, the specification of the $ln(\hat{I}_{t,j})$ outside (as opposed to inside) the likelihood component's `SEPARABLE_FUNCTION` resulted in an incorrectly specified model and invalid model results. This error was found while developing and testing the TMB version of the model and was explored in more detail using Markov Chain Monte Carlo and MLE methods. When the equation for $ln(\hat{I}_{t,j})$ is moved inside the `SEPARABLE_FUNCTION`, we were able to reproduce the results using TMB. Additionally, when using MCMC methods in both the "inside" and "outside" versions, we obtained identical model results that matched the TMB and "inside" method in ADMB, providing further proof that placing this simple calculation outside the `SEPARABLE_FUNCTION` resulted in erroneous results. A reproducible example of this issue is hosted [Github](https://github.com/JaneSullivan-NOAA/separable_function).
 
-Currently two Tier 5 assessments (GOA shortspine thornyhead and GOA shortraker rockfish) and one Tier 3 apportionment strategy (GOA rougheye and blackspotted rockfish) uses the erroneous version of the ADMB REMA model. Unfortunately, the biomass predictions from the erroneous ADMB model exhibit significantly less inter-annual variability (i.e. lower process error variation) than the correctly-specified  REMA models. This result is attributed to the relatively low measurement error in the biomass and longline survey relative population weights (RPWs) fit in the model, which causes the PE variance estimates to be higher than one might expect for these long-lived, low productivity rockfish species. In the next section, we describe a new method for estimating additional observation error in REMA.
+Currently two Tier 5 assessments (GOA shortspine thornyhead and GOA shortraker rockfish) and one Tier 3 apportionment strategy (GOA rougheye and blackspotted rockfish) use the erroneous version of the ADMB REMA model. Unfortunately, the biomass predictions from the erroneous ADMB model exhibit significantly less inter-annual variability (i.e. lower process error variation) than the correctly-specified  REMA models. This result is attributed to the relatively low measurement error in the biomass and longline survey relative population weights (RPWs) fit in the model, which causes the PE variance estimates to be higher than one might expect for these long-lived, low productivity rockfish species. In the next section, we describe a new method for estimating additional observation error in REMA.
 
 ## Estimation of additional observation error
 

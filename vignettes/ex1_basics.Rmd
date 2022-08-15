@@ -23,7 +23,6 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 library(rema)
 library(ggplot2)
 library(dplyr)
-library(cowplot) # install.packages('cowplot') # helpful plotting utilities
 library(knitr)
 
 ggplot2::theme_set(cowplot::theme_cowplot(font_size = 14) +
