@@ -1,6 +1,5 @@
-# REMA <img src="man/logo.png" align="right" alt="" width="120" />
-
-##A generalized **R**andom **E**ffects model for fitting survey biomass estimates with the option of including **M**ultiple survey strata and an **A**dditional survey index
+# <img src="man/logo.png" align="right" alt="" width="175" />
+# REMA: A generalized *R*andom *E*ffects model for fitting survey biomass estimates with the option of including *M*ultiple survey strata and an *A*dditional survey index 
 
 The random effects (RE) model was developed by the North Pacific Fisheries Management Council (NPFMC) Groundfish Plan Team's Survey Averaging working group and has been used at the Alaska Fisheries Science Center (AFSC) since [2013](https://github.com/afsc-assessments/SurveyAverageRandomEffects/blob/013c9a937fa0133f594c7d66248677685ae77010/code/re.tpl) to estimate biomass in data-limited groundfish and crab stock assessments, and to apportion estimates of Acceptable Biological Catch by area. The RE model estimates biomassas a series of random effects and the underlying state dynamics are modeled as a random walk ([Oct 2013 Joint GPT minutes](https://meetings.npfmc.org/CommentReview/DownloadFile?p=11009549-068b-40cf-903d-67f90686db60.pdf&fileName=C4%20c1%20Joint%20Plan%20Team%20Minutes.pdf)). 
 
@@ -50,5 +49,3 @@ list.files(rema_examples)
 5.  Compare alternative REMA models and conduct model selection using `compare_rema_models()`. Output from this function includes a table of Akaike Information Criteria (AIC) when appropriate, figures, and tidied data frames. This function also accepts model output from the ADMB version of the RE model for easy comparison to past models.
 
 Taken together, these functions allow R users to quickly fit and interrogate a suite of simple statistical models in TMB without needing software-specific training or expertise.
-
-![standards](https://user-images.githubusercontent.com/68303089/174915022-e9b89cb4-79ed-4dcc-af93-3cd199b5f82c.png)
