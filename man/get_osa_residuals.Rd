@@ -24,7 +24,11 @@ a list of tidied data.frames containing the biomass and CPUE survey
 }
 \description{
 Takes list output from \code{\link{tidy_rema}} and returns a list of
-\code{ggplot2} objects to be plotted or saved.
+\code{ggplot2} objects to be plotted or saved. This feature is
+experimental, and OSA residuals are still in Beta mode in
+\code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}. The default "cdf"
+method sometimes results in NA values for residuals, especially when
+observation errors are small.
 }
 \examples{
 \dontrun{

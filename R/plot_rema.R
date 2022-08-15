@@ -36,8 +36,7 @@ plot_rema <- function(tidy_rema,
                       xlab = NULL,
                       biomass_ylab = 'Biomass',
                       cpue_ylab = 'CPUE') {
-  # DELETE ME
-  # tidy_rema = m_output
+  # tidy_rema = tidy_rema(m1)
   # save = FALSE
   # filetype = "png"
   # path = NULL
@@ -120,11 +119,29 @@ plot_rema <- function(tidy_rema,
       labs(x = xlab, y = cpue_ylab)
   }
 
+
+  if(!is.data.frame(tidy_rema$proportion_biomass_by_strata)) {
+    p6 <- "Proportion biomass by strata not available. Make sure the model converged and that there are no N/A values for biomass_by_strata."
+  } else {
+
+    p6 <- tidy_rema$proportion_biomass_by_strata %>%
+      filter(year > max(year) - 10) %>%
+      tidyr::pivot_longer(cols = -c(model_name, year)) %>%
+      ggplot(aes(x = factor(year), y = value, fill = reorder(name, (value)))) + #fill = reorder(area, desc(p)))) +
+      geom_bar(position="stack", stat="identity") +
+      scale_fill_brewer(palette = 'Greys') +
+      labs(x = NULL, y = NULL, fill = NULL,
+           title = 'Proportion biomass by strata') +
+      scale_y_continuous(expand = expansion(mult = c(0, 0)))
+
+  }
+
   rema_plots$biomass_by_strata <- p1
   rema_plots$cpue_by_strata <- p2
   rema_plots$biomass_by_cpue_strata <- p3
   rema_plots$total_predicted_biomass <- p4
   rema_plots$total_predicted_cpue <- p5
+  rema_plots$proportion_biomass_by_strata <- p6
 
   return(rema_plots)
 

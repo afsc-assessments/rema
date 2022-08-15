@@ -1,0 +1,91 @@
+---
+title: "Strategies for handling zero biomass observations"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Strategies for handling zero biomass observations}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+rema_path <- find.package("rema")
+knitr::opts_knit$set(root.dir = file.path(rema_path, "example_data"))
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+# devtools::build_rmd(files = 'vignettes/ex3_zeros.Rmd')
+```
+
+```{r setup, warning = FALSE, message = FALSE}
+library(rema)
+library(ggplot2)
+library(dplyr)
+library(cowplot) # install.packages('cowplot') # helpful plotting utilities
+library(knitr)
+
+ggplot2::theme_set(cowplot::theme_cowplot(font_size = 14) +
+                     cowplot::background_grid() +
+                     cowplot::panel_border())
+
+```
+
+A zero biomass observation occurs when a species is not detected in a survey strata, resulting in an estimated biomass equal to zero and no estimate of variance. These zeros are problematic in the REMA model because biomass is estimated in log-space, and therefore cannot handle zeros. Currently, the default method in REMA is to treat zeros as NAs, or missing values. The REMA package contains alternative methods that allow easy exploration of zero assumptions, including an option to add a user-defined constant (default small constant = 0.0001) and manually define a CV for the zero values (default CV = 1.5). 
+
+Here we compare these alternatives with a third, experimental method, using the Tweedie distribution to model observation errors. The Tweedie distribution is a positive, continuous distribution that accepts zeros and is therefore an ideal candidate for situations with zero biomass observations. The tradeoffs of this situation is that it requires the estimation of another parameter (the power parameter $\rho$), is computationally expensive, and at least in trial runs, appears to suffer from convergence issues.
+
+The following example uses BSAI non-shortspine thornyhead (non-SST) other rockfish in the EBS shelf bottom trawl survey. The time series of biomass has 13 zeros out of 38 total observations. 
+
+```{r data, warning = FALSE, message = FALSE}
+
+nonsst <- read.csv('ebsshelf_orox.csv')
+kable(nonsst)
+
+```
+
+## Model 1: Zeros as NAs
+
+```{r m1, warning = FALSE, message = FALSE}
+
+nonsst <- read.csv('ebsshelf_orox.csv')
+
+input1 <- prepare_rema_input(model_name = 'M1: Zeros as NAs',
+                             biomass_dat = nonsst,
+                             zeros = list(assumption = 'NA'))
+m1 <- fit_rema(input1)
+
+```
+
+## Model 2: Add a small constant
+```{r m2, warning = FALSE, message = FALSE}
+
+input2 <- prepare_rema_input(model_name = 'M2: Small constant=0.01, CV=1.5',
+                            biomass_dat = nonsst,
+                            zeros = list(assumption = 'small_constant',
+                                         # values: 1) small constant, 2) assumed CV
+                                         options_small_constant = c(0.01, 1.5)))
+m2 <- fit_rema(input2)
+```
+
+## Model 3: Tweedie distribution
+
+```{r m3, warning = FALSE, message = FALSE}
+
+input3 <- prepare_rema_input(model_name = 'M3: Tweedie',
+                             biomass_dat = nonsst,
+                             zeros = list(assumption = 'tweedie'))
+
+m3 <- fit_rema(input3)
+
+```
+
+## Compare model results
+
+```{r compare, warning = FALSE, message = FALSE, fig.height=4, fig.width=8.5}
+compare <- compare_rema_models(rema_models = list(m1, m2, m3))
+compare$plots$biomass_by_strata
+```
+
+Models 1 (Zeros as NAs) and 3 (Tweedie) have the most similar results. While the Tweedie appears to perform well in this case, it can be very slow to run and suffer from convergence issues, especially when observation errors are relatively small. The Tweedie alternative should be considered experimental until these issues can be resolved.

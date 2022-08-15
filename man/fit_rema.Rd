@@ -8,12 +8,9 @@ fit_rema(
   input,
   n.newton = 0,
   do.sdrep = TRUE,
-  do.retro = FALSE,
-  n.peels = 7,
   model = NULL,
   do.check = FALSE,
-  MakeADFun.silent = FALSE,
-  retro.silent = FALSE,
+  MakeADFun.silent = TRUE,
   do.fit = TRUE,
   save.sdrep = TRUE
 )
@@ -43,12 +40,6 @@ optimization. Not an option that is currently needed, but is passed to
 \item{do.sdrep}{T/F, calculate standard deviations of model parameters? See
 \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.}
 
-\item{do.retro}{T/F, do retrospective analysis? Default = \code{FALSE}.
-RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.}
-
-\item{n.peels}{integer, number of peels to use in retrospective analysis.
-Default = \code{7}.RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.}
-
 \item{model}{(optional), a previously fit rema model.}
 
 \item{do.check}{T/F, check if model parameters are identifiable? Passed to
@@ -57,11 +48,7 @@ originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper.
 Default = \code{TRUE}.}
 
 \item{MakeADFun.silent}{T/F, Passed to silent argument of
-\code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.}
-
-\item{retro.silent}{T/F, Passed to argument of internal retro function.
-Determines whether peel number is printed to screen. Default =
-\code{FALSE}.}
+\code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{TRUE}.}
 
 \item{do.fit}{T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}.}
 
@@ -77,8 +64,6 @@ a fit TMB model with additional output if specified:
     biomass)}
     \item{\code{$sdrep}}{Parameter estimates (and standard errors if
     \code{do.sdrep = TRUE})}
-    \item{\code{$peels}}{Retrospective analysis (if \code{do.retro = TRUE}).
-    RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.}
   }
 }
 \description{

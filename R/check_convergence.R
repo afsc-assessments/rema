@@ -31,11 +31,13 @@ check_convergence <- function(mod, ret = FALSE, f = ""){
   res$convergence <- mod$opt$convergence
   res$maxgr <- max(abs(mod$final_gradient))
   res$maxgr_par <- names(mod$par)[which.max(mod$final_gradient)]
+  res$runtime <- paste0(as.numeric(mod$runtime), " seconds")
   # print to screen
   if(res$convergence == 0){
-    cat("stats:nlminb thinks the model has converged: mod$opt$convergence == 0\n", file = f)
+    cat("Model runtime:", res$runtime,"\n", file = f, append = app)
+    cat("stats::nlminb thinks the model has converged: mod$opt$convergence == 0\n", file = f)
   } else {
-    cat("stats:nlminb thinks the model has NOT converged: mod$opt$convergence != 0\n", file = f, append = app)
+    cat("stats::nlminb thinks the model has NOT converged: mod$opt$convergence != 0\n", file = f, append = app)
   }
   cat("Maximum gradient component:",formatC(res$maxgr, format = "e", digits = 2),"\n", file = f, append = app)
   cat("Max gradient parameter:",res$maxgr_par,"\n", file = f, append = app)

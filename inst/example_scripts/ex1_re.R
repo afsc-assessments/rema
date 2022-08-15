@@ -12,7 +12,7 @@ library(ggplot2)
 library(dplyr)
 library(cowplot) # provides helpful plotting utilities
 
-ggplot2::theme_set(cowplot::theme_cowplot(font_size = 10) +
+ggplot2::theme_set(cowplot::theme_cowplot(font_size = 12) +
                      cowplot::background_grid() +
                      cowplot::panel_border())
 
@@ -107,16 +107,14 @@ names(compare$output)
 
 admb_re <- read_admb_re(filename = 'bsaisst_rwout.rep',
                       biomass_strata_names = c('AI survey', 'EBS slope survey', 'S. Bering Sea (AI survey)'),
-                      model_name = 'admb_rem_bsaisst')
+                      model_name = 'ADMB: single PE')
 
-input <- prepare_rema_input(model_name = 'tmb_rema_bsaisst',
+# the original ADMB model shared PE across all strata
+input1 <- prepare_rema_input(model_name = 'TMB: single PE',
                             admb_re = admb_re,
-                            zeros = list(assumption = 'NA'))
-
-m <- fit_rema(input)
-check_convergence(m)
-
-output <- tidy_rema(rema_model = m)
+                            PE_options = list(pointer_PE_biomass = c(1, 1, 1)))
+m1 <- fit_rema(input1)
+output <- tidy_rema(rema_model = m1)
 output$parameter_estimates # estimated fixed effects parameters
 output$biomass_by_strata # data.frame of predicted and observed biomass by stratum
 output$total_predicted_biomass
@@ -129,13 +127,30 @@ plots <- plot_rema(tidy_rema = output,
 plots$biomass_by_strata + facet_wrap(~strata, ncol = 1, scales = 'free_y')
 plots$total_predicted_biomass + ggplot2::ggtitle('BSAI Shortspine thornyhead predicted biomass')
 
-compare <- compare_rema_models(rema_models = list(m),
+compare <- compare_rema_models(rema_models = list(m1),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)')
 
 # Note different confidence intervals between the ADMB version (Marlow method) and the TMB version (Delta method)
 compare$plots$biomass_by_strata + facet_wrap(~strata, ncol = 1, scales = 'free_y')
-compare$plots$total_predicted_biomass
+compare$plots$total_predicted_biomass + ggplot2::ggtitle('BSAI Shortspine thornyhead predicted biomass')
+
+# Alternative model with strata-specific PE
+input2 <- prepare_rema_input(model_name = 'TMB: strata-specific PE',
+                            admb_re = admb_re) # default is PE_options = list(pointer_PE_biomass = c(1, 2, 3))
+
+
+m2 <- fit_rema(input2)
+output <- tidy_rema(rema_model = m2)
+output$parameter_estimates # estimated fixed effects parameters
+
+compare <- compare_rema_models(rema_models = list(m1, m2),
+                               biomass_ylab = 'Biomass (t)')
+
+# Note different confidence intervals between the ADMB version (Marlow method) and the TMB version (Delta method)
+compare$plots$biomass_by_strata + facet_wrap(~strata, ncol = 1, scales = 'free_y')
+compare$aic
+
 
 osa <- get_osa_residuals(m, options = list(method = "cdf"))
 cowplot::plot_grid(osa$plots$biomass_resids,
@@ -176,7 +191,6 @@ input$data$wt_biomass
 input$data$wt_cpue
 
 m <- fit_rema(input)
-check_convergence(m)
 
 osa <- get_osa_residuals(m, options = list(method = "cdf"))
 osa$residuals$biomass %>% filter(is.nan(residual))

@@ -1,7 +1,7 @@
 #' Prepare input data and parameters for REMA model
 #'
 #' After the data is read into R (either manually from a .csv or other data file
-#' or by using \code{\link{read_admb_re}}, this function prepares the data and
+#' or by using \code{\link{read_admb_re}}), this function prepares the data and
 #' parameter settings for \code{\link{fit_rema}}. The model can be set up to run
 #' in single survey mode with one or more strata, or in multi-survey mode, which
 #' uses an additional relative abundance index (i.e. cpue) to inform predicted

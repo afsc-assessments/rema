@@ -29,6 +29,7 @@ set_tweedie <- function(input, zeros) {
 
   if(zeros$assumption == 'tweedie') {
 
+    warning("The Tweedie distribution for observation error is experimental and can be very slow to run. This method frequently has convergence errors, especially when user-defined observation errors are small.")
     data$obs_error_type = 1
 
     # default tweedie - note that parameter initial values for tweedie were

@@ -37,20 +37,13 @@
 #'   \code{\link{fit_tmb}}. Default = \code{0}.
 #' @param do.sdrep T/F, calculate standard deviations of model parameters? See
 #'   \code{\link[TMB]{sdreport}}. Default = \code{TRUE}.
-#' @param do.retro T/F, do retrospective analysis? Default = \code{FALSE}.
-#'   RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.
-#' @param n.peels integer, number of peels to use in retrospective analysis.
-#'   Default = \code{7}.RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.
 #' @param model (optional), a previously fit rema model.
 #' @param do.check T/F, check if model parameters are identifiable? Passed to
 #'   \code{\link{fit_tmb}}. Runs internal function \code{check_estimability},
 #'   originally provided by https://github.com/kaskr/TMB_contrib_R/TMBhelper.
 #'   Default = \code{TRUE}.
 #' @param MakeADFun.silent T/F, Passed to silent argument of
-#'   \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{FALSE}.
-#' @param retro.silent T/F, Passed to argument of internal retro function.
-#'   Determines whether peel number is printed to screen. Default =
-#'   \code{FALSE}.
+#'   \code{\link[TMB:MakeADFun]{TMB::MakeADFun}}. Default = \code{TRUE}.
 #' @param do.fit T/F, fit the model using \code{fit_tmb}. Default = \code{TRUE}.
 #' @param save.sdrep T/F, save the full \code{\link[TMB]{TMB::sdreport}} object?
 #'   If \code{FALSE}, only save
@@ -63,8 +56,6 @@
 #'     biomass)}
 #'     \item{\code{$sdrep}}{Parameter estimates (and standard errors if
 #'     \code{do.sdrep = TRUE})}
-#'     \item{\code{$peels}}{Retrospective analysis (if \code{do.retro = TRUE}).
-#'     RETROSPECTIVE ANALYSIS NOT IMPLEMENTED.}
 #'   }
 #'
 #' @useDynLib rema
@@ -80,26 +71,18 @@
 fit_rema <- function(input,
                      n.newton = 0,
                      do.sdrep = TRUE,
-                     do.retro = FALSE,
-                     n.peels = 7,
-                     # do.osa = FALSE,
-                     # osa.opts = list(method = "cdf", parallel = TRUE),
                      model = NULL,
                      do.check = FALSE,
-                     MakeADFun.silent = FALSE,
-                     retro.silent = FALSE,
+                     MakeADFun.silent = TRUE,
                      do.fit = TRUE,
                      save.sdrep = TRUE) {
   # n.newton = 1
   # do.sdrep = TRUE
-  # do.retro = FALSE
-  # n.peels = 7
   # do.osa = TRUE
   # osa.opts = list(method = "cdf", parallel = TRUE)
   # model = NULL
   # do.check = FALSE
-  # MakeADFun.silent = FALSE
-  # retro.silent = FALSE
+  # MakeADFun.silent = TRUE
   # do.fit = TRUE
   # save.sdrep = TRUE
 
@@ -116,7 +99,7 @@ fit_rema <- function(input,
   if(do.fit){
     btime <- Sys.time()
     mod <- fit_tmb(mod, n.newton = n.newton, do.sdrep = FALSE, do.check = do.check, save.sdrep = save.sdrep)
-    mod$runtime <- round(difftime(Sys.time(), btime, units = "mins"), 2)
+    mod$runtime <- round(difftime(Sys.time(), btime, units = "s"), 1)
 
     # SEs for estimated parameters. Variance calculations use the delta method.
     if(do.sdrep) {
@@ -124,39 +107,12 @@ fit_rema <- function(input,
       mod$is_sdrep <- !is.character(mod$sdrep)
       if(mod$is_sdrep) mod$na_sdrep <- any(is.na(summary(mod$sdrep,"fixed")[,2])) else mod$na_sdrep = NA
       if(!save.sdrep) mod$sdrep <- summary(mod$sdrep) # only save summary to reduce model object size
+      check_convergence(mod)
     }
-
-    # retrospective analysis
-    if(do.retro){
-      warning("Retrospective analysis not currently implemented for REMA.")
-      # placeholder for future development. check wham code for good example.
-    }
-
-    # # one-step-ahead residuals
-    # if(do.osa){
-    #   warning("One-step-ahead (OSA) residuals are currently experimental...")
-    #   # placeholder for future development. check wham code for good example.
-    #
-    #   if(mod$is_sdrep){ # only do OSA residuals if sdrep ran
-    #     cat("Doing OSA residuals...\n");
-    #
-    #     input$osa$residual = NA
-    #     osa_resids <- suppressWarnings(TMB::oneStepPredict(obj = mod, observation.name = "obsvec",
-    #                                                            data.term.indicator = "keep",
-    #                                                            method = osa.opts$method))
-    #     input$osa$residual <- osa_resids$residual
-    #     mod$osa <- input$osa
-    #
-    #   } else warning(paste("","** Did not do OSA residual analyses. **",
-    #                        "Error during TMB::sdreport(). Check for unidentifiable parameters.","",sep='\n'))
-    #
-    # }
 
     # error message reporting
     if(!is.null(mod$err)) warning(paste("","** Error during model fit. **",
                                         "Check for unidentifiable parameters.","",mod$err,"",sep='\n'))
-    # if(!is.null(mod$err_retro)) warning(paste("","** Error during retrospective analysis. **",
-    #                                           paste0("Check for issues with last ",n.peels," model years."),"",mod$err_retro,"",sep='\n'))
   }
   else { # model not fit, but generate report and parList without fitted model. potential use for future development (e.g. projections?)
     mod$rep = mod$report() # par values don't matter because function has not been evaluated

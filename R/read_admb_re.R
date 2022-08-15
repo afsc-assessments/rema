@@ -274,6 +274,9 @@ read_admb_re <- function(filename,
     total_predicted_cpue <- "The rwout.rep file provided by the user did not have 'biom_TOT_LL', 'biom_TOT_LCI_LL', or 'biom_TOT_UCI_LL', the analagous variables in the ADMB version of the RE model to total_predicted_cpue. Please check the rwout.rep file."
   }
 
+  # get apportionment results
+  proportion_biomass_by_strata <- NULL
+
   # Join to the ADMB RE data
   if(is.data.frame(biomass_by_strata)){
 
@@ -291,6 +294,15 @@ read_admb_re <- function(filename,
                                        sd_log_obs = sqrt(log(obs_cv ^ 2 + 1)),
                                        obs_lci = exp(log_obs - qnorm(1 - alpha_ci/2) * sd_log_obs),
                                        obs_uci = exp(log_obs + qnorm(1 - alpha_ci/2) * sd_log_obs)))
+
+    proportion_biomass_by_strata <- biomass_by_strata %>%
+      dplyr::select(model_name, year, strata, predicted_biomass = pred) %>%
+      dplyr::left_join(biomass_by_strata  %>%
+                         dplyr::group_by(year) %>%
+                         dplyr::summarise(total_predicted_biomass = sum(pred))) %>%
+      dplyr::mutate(proportion = predicted_biomass / total_predicted_biomass) %>%
+      tidyr::pivot_wider(id_cols = c(model_name, year), names_from = strata, values_from = proportion)
+
   }
   parameter_estimates <- "The rwout.rep file does not contain parameter estimates, therefore they are not readily available for comparison with REMA models. Please contact the author(s) of this package for more information."
 
@@ -299,7 +311,8 @@ read_admb_re <- function(filename,
                           cpue_by_strata = cpue_by_strata,
                           biomass_by_cpue_strata = biomass_by_cpue_strata,
                           total_predicted_biomass = total_predicted_biomass,
-                          total_predicted_cpue = total_predicted_cpue)
+                          total_predicted_cpue = total_predicted_cpue,
+                          proportion_biomass_by_strata = proportion_biomass_by_strata)
 
   admb_re <- list(biomass_dat = biomass_dat,
                   cpue_dat = cpue_dat,

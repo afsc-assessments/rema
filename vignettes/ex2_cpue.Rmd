@@ -1,0 +1,149 @@
+---
+title: "Fitting to an additional CPUE survey"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fitting to an additional CPUE survey}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+rema_path <- find.package("rema")
+knitr::opts_knit$set(root.dir = file.path(rema_path, "example_data"))
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+# devtools::build_rmd(files = 'vignettes/ex2_cpue.Rmd')
+```
+
+```{r setup, warning = FALSE, message = FALSE}
+library(rema)
+library(ggplot2)
+library(dplyr)
+library(cowplot) # install.packages('cowplot') # helpful plotting utilities
+library(knitr)
+
+ggplot2::theme_set(cowplot::theme_cowplot(font_size = 14) +
+                     cowplot::background_grid() +
+                     cowplot::panel_border())
+
+```
+
+This vignette demonstrates how to fit the REMA model to a biomass survey and auxillary CPUE index. We show the transition from the formerly used ADMB REMA model, which was determined to have invalid statistical inference due to an error in the specification of the `SEPARABLE_FUNCTION`. We fit the correctly-specified version of the same model using `rema` and discuss the differences in the results and trade-offs between observation and process error (PE) variance. Finally, we introduce a model that estimates additional observation error for the biomass and CPUE surveys and compare these models using Akaike Information Criteria (AIC).
+
+This example uses GOA shortraker rockfish biomass estimates from the GOA bottom trawl survey and Relative Population Weights (RPWs) from the NMFS longline survey. The model is stratified by management area, fitting to data in the eastern GOA (EGOA), central GOA (CGOA), and western GOA (WGOA). The original model estimates a single, shared PE parameter across all strata but estimates unique scaling parameters $q$ for each strata. It applies a likelihood weight of 0.5 on the CPUE survey component of the likelihood. We have replicated this structure in the TMB model fit using `rema`.
+
+# Model 1: Fit to the biomass and CPUE survey through the estimation of a scaling parameter $q$
+```{r status-quo, warning = FALSE, message = FALSE, fig.height=6.5, fig.width=8.5}
+
+# read in the data using the report file from the original ADMB model
+admb_re <- read_admb_re(filename = 'goasr_rwout.rep',
+                        biomass_strata_names = c('CGOA', 'EGOA', 'WGOA'),
+                        cpue_strata_names = c('CGOA', 'EGOA', 'WGOA'),
+                        model_name = 'M0: ADMB status quo (invalid)')
+
+input <- prepare_rema_input(model_name = 'M1: TMB status quo',
+                            # fit to both biomass and CPUE survey data
+                            multi_survey = 1, 
+                            admb_re = admb_re,
+                            # the RPW index is summable across strata
+                            sum_cpue_index = TRUE,
+                            # likelihood weight 
+                            wt_cpue = 0.5,
+                            # one process error parameters (log_PE) estimated
+                            PE_options = list(pointer_PE_biomass = c(1, 1, 1)),
+                            # three scaling parameters (log_q) estimated, indexed as
+                            # follows for each biomass survey stratum:
+                            q_options = list(pointer_biomass_cpue_strata = c(1, 2, 3)))
+
+m1 <- fit_rema(input)
+output <- tidy_rema(m1)
+output$parameter_estimates
+
+plots <- plot_rema(output, biomass_ylab = 'Biomass (t)', cpue_ylab = 'Relative Population Weights')
+
+cowplot::plot_grid(plots$biomass_by_strata,
+                   plots$cpue_by_strata,
+                   ncol = 1)
+```
+
+## A comparison of the ADMB and TMB models
+
+When we compare the fits between the status quo ADMB model and the identically structured but correctly-specified version fit in TMB, we see large differences in model predictions. In particular the PE variance are very different, with the ADMB model producing a PE that is more than seven times the PE in the TMB model:
+M0: ADMB status quo (invalid) PE = `r round(exp(-3.75999), 4)`
+M1: TMB status quo PE = `r round(output$parameter_estimates %>% filter(parameter == 'process_error') %>% pull(estimate), 4)`
+
+```{r compare-status-quo, warning = FALSE, message = FALSE, fig.height=4, fig.width=8.5}
+
+compare <- compare_rema_models(rema_models = list(m1),
+                               admb_re = admb_re,
+                               biomass_ylab = 'Biomass (t)',
+                               cpue_ylab = 'Relative Population Weights')
+compare$plots$biomass_by_strata + theme(legend.position = 'top')
+
+```
+
+## Model 2: Estimating additional observation error in the two surveys
+
+The outcome in the TMB model is problematic because we would not expect shortraker rockfish, a notably long-lived species, to exhibit such extreme inter-annual variability. In part, this finding is attributed to relatively low observation error. In the following section we explore an alternative model that estimates additional biomass and CPUE survey observation error. We then use AIC to conduct model selection. 
+
+```{r extra-sd, warning = FALSE, message = FALSE, fig.height=6.5, fig.width=8.5}
+
+input2 <- prepare_rema_input(model_name = 'M2: TMB extra obs error',
+                            # fit to both biomass and CPUE survey data
+                            multi_survey = 1, 
+                            admb_re = admb_re,
+                            # the RPW index is summable across strata
+                            sum_cpue_index = TRUE,
+                            # likelihood weight 
+                            wt_cpue = 0.5,
+                            # one process error parameters (log_PE) estimated
+                            PE_options = list(pointer_PE_biomass = c(1, 1, 1)),
+                            # three scaling parameters (log_q) estimated, indexed as
+                            # follows for each biomass survey stratum:
+                            q_options = list(pointer_biomass_cpue_strata = c(1, 2, 3)),
+                            # estimate additional obs error on the biomass
+                            # survey (one additional CV shared across all 3
+                            # strata)
+                            extra_biomass_cv = list(assumption = 'extra_cv',
+                                                    pointer_extra_biomass_cv = c(1, 1, 1)),
+                            # estimate additional obs error on the CPUE
+                            # survey (one additional CV shared across all 3
+                            # strata)
+                            extra_cpue_cv = list(assumption = 'extra_cv',
+                                                 pointer_extra_cpue_cv = c(1, 1, 1)))
+
+m2 <- fit_rema(input2)
+
+```
+
+## Model selection 
+
+We compare the fits to both biomass and CPUE survey indices if we remove the `admb_re` object from the comparison function as demonstrated below. An examination of the parameter estimates shows that the M2 (extra observation error) estimates a much lower PE, approximately 50% of the M1 PE. Using AIC, we find that M2 has a superior fit to M1 and that there is statistical support for the additional parameters (note that this example is intended to be illustrative of the model fitting and model selection process and is not exhaustive).
+
+```{r compare-new, warning = FALSE, message = FALSE, fig.height=4, fig.width=8.5}
+
+compare <- compare_rema_models(rema_models = list(m1, m2),
+                               admb_re = admb_re,
+                               biomass_ylab = 'Biomass (t)',
+                               cpue_ylab = 'Relative Population Weights')
+compare$plots$biomass_by_strata + theme(legend.position = 'top')
+
+```
+
+```{r compare-new2, warning = FALSE, message = FALSE, fig.height=9, fig.width=8.5}
+
+compare <- compare_rema_models(rema_models = list(m1, m2),
+                               biomass_ylab = 'Biomass (t)',
+                               cpue_ylab = 'Relative Population Weights')
+
+cowplot::plot_grid(compare$plots$biomass_by_strata + theme(legend.position = 'top'),
+                   compare$plots$cpue_by_strata + theme(legend.position = 'none'),
+                   ncol = 1, rel_widths = c(0.65, 0.35))
+
+kable(compare$output$parameter_estimates)
+kable(compare$aic)
+```

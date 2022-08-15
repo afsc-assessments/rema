@@ -52,7 +52,7 @@ compare_rema_models <- function(rema_models,
                                 xlab = NULL,
                                 biomass_ylab = 'Biomass',
                                 cpue_ylab = 'CPUE') {
-  # rema_models <- list(m, m2)
+  # rema_models <- list(m1, m2)
   # admb_re = NULL
   # biomass_ylab <- 'ROV biomass'
   # cpue_ylab <- 'IPHC setline survey CPUE'
@@ -81,6 +81,7 @@ compare_rema_models <- function(rema_models,
   biomass_by_cpue_strata <- lapply(out, `[[`, 4)
   total_predicted_biomass <- lapply(out, `[[`, 5)
   total_predicted_cpue <- lapply(out, `[[`, 6)
+  proportion_biomass_by_strata <- lapply(out, `[[`, 7)
 
   # check if each model output data is structured the same or if some have
   # messages as output (e.g. one model has CPUE and the other doesn't, so one
@@ -92,6 +93,7 @@ compare_rema_models <- function(rema_models,
   tst_biomass_by_cpue_strata <- all(unlist(lapply(biomass_by_cpue_strata, is.data.frame)))
   tst_total_predicted_biomass <- all(unlist(lapply(total_predicted_biomass, is.data.frame)))
   tst_total_predicted_cpue <- all(unlist(lapply(total_predicted_cpue, is.data.frame)))
+  tst_proportion_biomass_by_strata <- all(unlist(lapply(proportion_biomass_by_strata, is.data.frame)))
 
   # output tidy parameter estimates
   if(tst_parameter_estimates) {
@@ -113,11 +115,28 @@ compare_rema_models <- function(rema_models,
     # test that biomass data are all equal
     tst_biomass_data <- lapply(biomass_by_strata, `[`, 8:9) # 8:9 = obs and obs_cv
     tst_biomass_data <- all(sapply(tst_biomass_data, identical, tst_biomass_data[[1]]))
-    tst_biomass_data <- TRUE
 
     if(isFALSE(tst_biomass_data)) {
-      out_biomass_by_strata <- "The REMA models selected for comparison were fit to different biomass data, and therefore the fits to the biomass data by strata cannot be compared."
-      p1 <- "The REMA models selected for comparison were fit to different biomass data, and therefore the fits to the biomass data by strata cannot be compared."
+
+      # out_biomass_by_strata <- "The REMA models selected for comparison were fit to different biomass data, and therefore the fits to the biomass data by strata cannot be compared."
+      # p1 <- "The REMA models selected for comparison were fit to different biomass data, and therefore the fits to the biomass data by strata cannot be compared."
+
+      p1 <- ggplot(data = out_biomass_by_strata,
+                   aes(x = year, y = pred,
+                       col = model_name)) +
+        geom_ribbon(aes(ymin = pred_lci, ymax = pred_uci,
+                        fill = model_name), col = NA,
+                    alpha = 0.25) +
+        geom_line() +
+        facet_wrap(~strata, nrow = NULL) +
+        geom_point(aes(x = year, y = obs, col = model_name, shape = model_name)) +
+        # geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
+        scale_y_continuous(labels = scales::comma, expand = c(0.01, 0), limits = c(0, NA)) +
+        labs(x = xlab, y = biomass_ylab,
+             fill = NULL, colour = NULL, shape = NULL) +
+        ggplot2::scale_fill_viridis_d(direction = 1) +
+        ggplot2::scale_colour_viridis_d(direction = 1)
+
     }
 
     if(isTRUE(tst_biomass_data)) {
@@ -130,15 +149,11 @@ compare_rema_models <- function(rema_models,
                     alpha = 0.25) +
         geom_line() +
         facet_wrap(~strata, nrow = NULL) +
-        # geom_point(aes(x = year, y = obs), col = 'black') +
-        # geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
-        geom_point(aes(x = year, y = obs, col = model_name, shape = model_name)) +
-        geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
-        scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
+        geom_point(aes(x = year, y = obs), col = 'black') +
+        geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
+        scale_y_continuous(labels = scales::comma, expand = c(0.01, 0), limits = c(0, NA)) +
         labs(x = xlab, y = biomass_ylab,
              fill = NULL, colour = NULL, shape = NULL) +
-        # ggplot2::scale_colour_brewer(palette = 'Set1') +
-        # ggplot2::scale_fill_brewer(palette = 'Set1')
         ggplot2::scale_fill_viridis_d(direction = 1) +
         ggplot2::scale_colour_viridis_d(direction = 1)
     }
@@ -160,11 +175,30 @@ compare_rema_models <- function(rema_models,
     # test that cpue data are all equal
     tst_cpue_data <- lapply(cpue_by_strata, `[`, 8:9) # 8:9 = obs and obs_cv
     tst_cpue_data <- all(sapply(tst_cpue_data, identical, tst_cpue_data[[1]]))
-    tst_cpue_data <- TRUE
+    # tst_cpue_data <- TRUE
 
     if(isFALSE(tst_cpue_data)) {
-      out_cpue_by_strata <- "The REMA models selected for comparison were fit to different CPUE data, and therefore the fits to the CPUE data by strata cannot be compared."
+      # out_cpue_by_strata <- "The REMA models selected for comparison were fit to different CPUE data, and therefore the fits to the CPUE data by strata cannot be compared."
+      # p2 <- "The REMA models selected for comparison were fit to different CPUE data, and therefore the fits to the CPUE data by strata cannot be compared."
+
+      p2 <- ggplot(data = out_cpue_by_strata,
+                   aes(x = year, y = pred,
+                       col = model_name)) +
+        geom_ribbon(aes(ymin = pred_lci, ymax = pred_uci,
+                        fill = model_name), col = NA,
+                    alpha = 0.25) +
+        geom_line() +
+        facet_wrap(~strata, nrow = NULL) +
+        geom_point(aes(x = year, y = obs, col = model_name, shape = model_name)) +
+        # geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
+        scale_y_continuous(labels = scales::comma, expand = c(0.01, 0), limits = c(0, NA)) +
+        labs(x = xlab, y = cpue_ylab,
+             fill = NULL, colour = NULL, shape = NULL) +
+        ggplot2::scale_fill_viridis_d(direction = 1) +
+        ggplot2::scale_colour_viridis_d(direction = 1)
+
     }
+
     if(isTRUE(tst_cpue_data)) {
 
       p2 <- ggplot(data = out_cpue_by_strata,
@@ -175,17 +209,14 @@ compare_rema_models <- function(rema_models,
                     alpha = 0.25) +
         geom_line() +
         facet_wrap(~strata, nrow = NULL) +
-        # geom_point(aes(x = year, y = obs), col = 'black') +
-        # geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
-        geom_point(aes(x = year, y = obs, col = model_name, shape = model_name)) +
-        geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
+        geom_point(aes(x = year, y = obs), col = 'black') +
+        geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
         scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
         labs(x = xlab, y = cpue_ylab,
              fill = NULL, colour = NULL, shape = NULL) +
         ggplot2::scale_fill_viridis_d(direction = 1) +
-        ggplot2::scale_colour_viridis_d(direction = 1) #+
-        # ggplot2::scale_colour_brewer(palette = 'Set1') +
-        # ggplot2::scale_fill_brewer(palette = 'Set1')
+        ggplot2::scale_colour_viridis_d(direction = 1)
+
     }
   } else {
     out_cpue_by_strata <- "One or more of the models selected for comparison were not fit to CPUE data and therefore cannot be compared."
@@ -204,17 +235,15 @@ compare_rema_models <- function(rema_models,
                   alpha = 0.25) +
       geom_line() +
       facet_wrap(~strata, nrow = NULL) +
-      # geom_point(aes(x = year, y = obs), col = 'black') +
-      # geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
-      geom_point(aes(x = year, y = obs, col = model_name, shape = model_name)) +
-      geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
+      geom_point(aes(x = year, y = obs), col = 'black') +
+      geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
+      # geom_point(aes(x = year, y = obs, col = model_name, shape = model_name)) +
+      # geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
       scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
       labs(x = xlab, y = biomass_ylab,
            fill = NULL, colour = NULL, shape = NULL) +
       ggplot2::scale_fill_viridis_d(direction = 1) +
       ggplot2::scale_colour_viridis_d(direction = 1)
-      # ggplot2::scale_colour_brewer(palette = 'Set1') +
-      # ggplot2::scale_fill_brewer(palette = 'Set1')
 
   } else {
     out_biomass_by_cpue_strata <- "'biomass_by_cpue_strata' is reserved for multi-survey scenarios when there are more biomass survey strata than CPUE survey strata, and the user wants predicted biomass at the same resolution as the CPUE survey index. One or more of the models selected for comparison did not meet this criterion."
@@ -241,8 +270,7 @@ compare_rema_models <- function(rema_models,
            fill = NULL, colour = NULL) +
       ggplot2::scale_fill_viridis_d(direction = 1) +
       ggplot2::scale_colour_viridis_d(direction = 1)
-      # ggplot2::scale_colour_brewer(palette = 'Set1') +
-      # ggplot2::scale_fill_brewer(palette = 'Set1')
+
   } else if(!is.null(admb_re)) {
     out_total_predicted_biomass <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
     p4 <- "Biomass estimates for the ADMB version of the RE model do not appear to be readily available for comparison with REMA models. Check the rwout.rep file and ?read_admb_re for more information."
@@ -270,12 +298,45 @@ compare_rema_models <- function(rema_models,
            fill = NULL, colour = NULL) +
       ggplot2::scale_fill_viridis_d(direction = 1) +
       ggplot2::scale_colour_viridis_d(direction = 1)
-      # ggplot2::scale_colour_brewer(palette = 'Set1') +
-      # ggplot2::scale_fill_brewer(palette = 'Set1')
 
   } else {
     out_total_predicted_cpue <- "Either one or more of the models selected for comparison were not fit to CPUE survey data OR the CPUE survey index was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."
     p5 <- "Either one or more of the models selected for comparison were not fit to CPUE survey data OR the CPUE survey index was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."
+  }
+
+  # proportion biomass by strata
+  if(tst_proportion_biomass_by_strata) {
+
+    tst_proportion_biomass_by_strata2 <- lapply(biomass_by_strata, function(x) {unique(x$strata)})
+    tst_proportion_biomass_by_strata2 <- all(sapply(tst_proportion_biomass_by_strata2, identical,
+                                                    tst_proportion_biomass_by_strata2[[1]]))
+
+    if(tst_proportion_biomass_by_strata2) {
+      out_proportion_biomass_by_strata <- do.call('rbind', proportion_biomass_by_strata)
+
+      p6 <- out_proportion_biomass_by_strata %>%
+        filter(year > max(year) - 3) %>%
+        tidyr::pivot_longer(cols = -c(model_name, year)) %>%
+        ggplot(aes(x = factor(year), y = value, fill = reorder(name, (value)))) +
+        geom_bar(position="stack", stat="identity") +
+        scale_fill_brewer(palette = 'Greys') +
+        facet_wrap(~model_name, nrow = 1) +
+        labs(x = NULL, y = NULL, fill = NULL,
+             title = 'Proportion biomass by strata') +
+        scale_y_continuous(expand = expansion(mult = c(0, 0)))
+
+      if(length(unique(proportion_biomass_by_strata$strata)) == 1) {
+        out_proportion_biomass_by_strata <- "Proportion biomass by strata not available because there is only one stratum."
+        p6 <- "Proportion biomass by strata not available because there is only one stratum."
+      }
+
+    } else {
+      out_proportion_biomass_by_strata <- "Proportion biomass by strata not available because the strata definitions are not consistent across all models."
+      p6 <- "Proportion biomass by strata not available because the strata definitions are not consistent across all models."
+    }
+  } else {
+    out_proportion_biomass_by_strata <- "Proportion biomass by strata not available because the strata definitions are not consistent across all models."
+    p6 <- "Proportion biomass by strata not available because the strata definitions are not consistent across all models."
   }
 
   # AIC calculations
@@ -313,12 +374,16 @@ compare_rema_models <- function(rema_models,
       2*(x$opt$obj + k)
     })
     model_names <- sapply(rema_models, function(x) {x$input$model_name})
+    npar <- sapply(rema_models, function(x) {length(x$opt$par)})
+    nll <- sapply(rema_models, function(x) {x$opt$obj})
     aic <- round(aic, 1)
     daic <- round(aic - min(aic), 1)
 
     out_aic <- data.frame(model_name = model_names,
+                          objective_function = nll,
+                          n_parameters = npar,
                           aic = aic,
-                          daic = daic) %>%
+                          delta_aic = daic) %>%
       dplyr::arrange(daic)
 
   }
@@ -330,12 +395,14 @@ compare_rema_models <- function(rema_models,
   compare_rema_output$biomass_by_cpue_strata <- out_biomass_by_cpue_strata
   compare_rema_output$total_predicted_biomass <- out_total_predicted_biomass
   compare_rema_output$total_predicted_cpue <- out_total_predicted_cpue
+  compare_rema_output$proportion_biomass_by_strata <- out_proportion_biomass_by_strata
 
   compare_rema_plots$biomass_by_strata <- p1
   compare_rema_plots$cpue_by_strata <- p2
   compare_rema_plots$biomass_by_cpue_strata <- p3
   compare_rema_plots$total_predicted_biomass <- p4
   compare_rema_plots$total_predicted_cpue <- p5
+  compare_rema_plots$proportion_biomass_by_strata <- p6
 
   compare_rema_aic <- out_aic
 

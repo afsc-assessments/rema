@@ -336,6 +336,19 @@ tidy_rema <- function(rema_model,
       dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci)
   }
 
+  # proportion biomass by strata (for apportionment)
+  if(!is.null(biomass_summary)) {
+
+    proportion <- biomass_summary %>%
+      dplyr::select(model_name, year, strata, predicted_biomass = pred) %>%
+      dplyr::left_join(biomass_summary  %>%
+                         dplyr::group_by(year) %>%
+                         dplyr::summarise(total_predicted_biomass = sum(pred))) %>%
+      dplyr::mutate(proportion = predicted_biomass / total_predicted_biomass) %>%
+      tidyr::pivot_wider(id_cols = c(model_name, year), names_from = strata, values_from = proportion)
+
+    }
+
   # Prepare final output
 
   if(is.null(parameter_estimates)) {
@@ -360,12 +373,17 @@ tidy_rema <- function(rema_model,
     biomass_by_cpue_strata <- "'biomass_by_cpue_strata' is reserved for multi-survey scenarios when there are more biomass survey strata than CPUE survey strata, and the user wants predicted biomass at the same resolution as the CPUE survey index."
   }
 
+  if(is.null(proportion)) {
+    proportion <- "Something went wrong... Make sure the model converged and that there are no NA values in biomass_by_strata$pred."
+  }
+
   output <- list(parameter_estimates = parameter_estimates,
                  biomass_by_strata = biomass_by_strata,
                  cpue_by_strata = cpue_by_strata,
                  biomass_by_cpue_strata = biomass_by_cpue_strata,
                  total_predicted_biomass = total_predicted_biomass,
-                 total_predicted_cpue = total_predicted_cpue)
+                 total_predicted_cpue = total_predicted_cpue,
+                 proportion_biomass_by_strata = proportion)
 
   return(output)
 }

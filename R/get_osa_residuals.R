@@ -1,7 +1,11 @@
 #' Get one-step-head (OSA)
 #'
 #' Takes list output from \code{\link{tidy_rema}} and returns a list of
-#' \code{ggplot2} objects to be plotted or saved.
+#' \code{ggplot2} objects to be plotted or saved. This feature is
+#' experimental, and OSA residuals are still in Beta mode in
+#' \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}. The default "cdf"
+#' method sometimes results in NA values for residuals, especially when
+#' observation errors are small.
 #'
 #' @param rema_model list out output from \code{\link{fit_rema}}, which includes
 #'   model results but also inputs. Of note to OSA residual calculations is the
@@ -138,6 +142,7 @@ get_osa_residuals <- function(rema_model,
                         cpue_qqplot = p2_cpue,
                         cpue_hist = p3_cpue,
                         cpue_fitted = p4_cpue)
+      warning("OSA residuals are experimental and underlying methods in TMB::oneStepPredict are still in Beta mode. The default 'cdf' method sometimes results in NA values for residuals, especially when observation errors are small.")
       return(out)
       }
 
