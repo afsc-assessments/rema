@@ -1,5 +1,4 @@
 Package: rema
-Type: Package
 Title: Random effects model for estimating biomass, with option to include an additional survey index
 Version: 0.1.0
 Author: person("Jane", "Sullivan", , "jane.sullivan@noaa.gov", role = c("aut", "cre"))
@@ -29,7 +28,8 @@ Imports:
 LinkingTo:
     TMB (>= 1.8.1),
     RcppEigen (>= 0.3.3.9.1)
-URL: https://janesullivan-noaa.github.io/rema/
+URL: https://github.com/JaneSullivan-NOAA/rema,
+    https://janesullivan-noaa.github.io/rema/
 BugReports: TBD
 License: GPL-3
 LazyData: true
