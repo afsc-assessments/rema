@@ -1,4 +1,9 @@
 url: https://janesullivan-noaa.github.io/rema/
 template:
   bootstrap: 5
+  bootswatch: zephyr
+home:
+  links:
+  - text: Browse source code
+    href: https://github.com/JaneSullivan-NOAA/rema/
 

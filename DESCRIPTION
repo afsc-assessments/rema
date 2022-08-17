@@ -30,7 +30,7 @@ LinkingTo:
     RcppEigen (>= 0.3.3.9.1)
 URL: https://github.com/JaneSullivan-NOAA/rema,
     https://janesullivan-noaa.github.io/rema/
-BugReports: TBD
+BugReports: https://github.com/JaneSullivan-NOAA/rema/issues
 License: GPL-3
 LazyData: true
 VignetteBuilder: knitr
