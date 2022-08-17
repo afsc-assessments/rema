@@ -91,12 +91,12 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header">
-<img src="logo.png" class="logo" alt=""><h1 id="rema-">REMA: <a class="anchor" aria-label="anchor" href="#rema-"></a>
+<img src="logo.png" class="logo" alt=""><h1 id="rema-">REMA <a class="anchor" aria-label="anchor" href="#rema-"></a>
 </h1>
 </div>
-<div class="section level2">
-<h2 id="a-generalized-random-effects-model-for-fitting-survey-biomass-estimates-with-the-option-of-including-multiple-survey-strata-and-an-additional-survey-index">A generalized <em>R</em>andom <em>E</em>ffects model for fitting survey biomass estimates with the option of including <em>M</em>ultiple survey strata and an <em>A</em>dditional survey index<a class="anchor" aria-label="anchor" href="#a-generalized-random-effects-model-for-fitting-survey-biomass-estimates-with-the-option-of-including-multiple-survey-strata-and-an-additional-survey-index"></a>
-</h2>
+<div class="section level3">
+<h3 id="a-generalized-random-effects-model-for-fitting-survey-biomass-estimates-with-the-options-of-including-multiple-survey-strata-and-an-additional-survey-index">A generalized Random Effects model for fitting survey biomass estimates with the options of including Multiple survey strata and an Additional survey index<a class="anchor" aria-label="anchor" href="#a-generalized-random-effects-model-for-fitting-survey-biomass-estimates-with-the-options-of-including-multiple-survey-strata-and-an-additional-survey-index"></a>
+</h3>
 <p>The random effects (RE) model was developed by the North Pacific Fisheries Management Council (NPFMC) Groundfish Plan Team’s Survey Averaging working group and has been used at the Alaska Fisheries Science Center (AFSC) since <a href="https://github.com/afsc-assessments/SurveyAverageRandomEffects/blob/013c9a937fa0133f594c7d66248677685ae77010/code/re.tpl" class="external-link">2013</a> to estimate biomass in data-limited groundfish and crab stock assessments, and to apportion estimates of Acceptable Biological Catch by area. The RE model estimates biomass as a series of random effects and the underlying state dynamics are modeled as a random walk (<a href="https://meetings.npfmc.org/CommentReview/DownloadFile?p=11009549-068b-40cf-903d-67f90686db60.pdf&amp;fileName=C4%20c1%20Joint%20Plan%20Team%20Minutes.pdf" class="external-link">Oct 2013 Joint GPT minutes</a>).</p>
 <p>There are several versions of the original single-strata (univariate) RE and the single-survey, multiple-strata (multivariate; REM) models currently in use at the AFSC. The RE and REM models were further extended in 2017 to include the addition of a second relative index of abundance (e.g., NMFS longline survey Relative Population Numbers) to inform the biomass trend through the estimation of additional scaling parameters (REMA; <a href="https://repository.library.noaa.gov/view/noaa/28174" class="external-link">Hulson et al. 2021</a>). Although the RE, REM, and REMA models share the same underlying state-space and random walk dynamics, <a href="https://meetings.npfmc.org/CommentReview/DownloadFile?p=86098951-a0ed-4021-a4e1-95abe5a357fe.pdf&amp;fileName=Tiers%204%20and%205%20assessment%20considerations.pdf" class="external-link">Monnahan et al. (2021)</a> found inconsistencies in the treatment of zero biomass observations, use of a prior or penalty on the process error parameter, and weighting of the observation error likelihood components.</p>
 <p>The purpose of the <code>rema</code> R library is to develop a unified random effects model that is flexible enough to accommodate the multitude of use cases at the AFSC. As presented here, the REMA model is generalized to include the RE and REM and allows users to quickly develop and evaluate more complex models or alternative parameterizations. The variable names have been updated from their original versions to increase interpretability and transparency, and the model has been rewritten in Template Model Builder (TMB; <a href="https://www.jstatsoft.org/article/view/v070i05" class="external-link">Kristensen et al. 2016</a>). Additionally, <code>rema</code> provides a flexible framework to do the following analyses:</p>
@@ -135,41 +135,16 @@
 <p>Taken together, these functions allow R users to quickly fit and interrogate a suite of simple statistical models in TMB without needing software-specific training or expertise.</p>
 </div>
 </div>
-  </main><aside class="col-md-3"><div class="links">
+  </main><aside class="col-md-3"><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://cloud.r-project.org/package=rema" class="external-link">View on CRAN</a></li>
 <li><a href="https://github.com/JaneSullivan-NOAA/rema/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/JaneSullivan-NOAA/rema/issues" class="external-link">Report a bug</a></li>
-<li><a href="https://github.com/JaneSullivan-NOAA/rema/" class="external-link">Browse source code</a></li>
-</ul>
-</div>
-
-<div class="license">
-<h2 data-toc-skip>License</h2>
-<ul class="list-unstyled">
-<li><a href="https://www.r-project.org/Licenses/GPL-3" class="external-link">GPL-3</a></li>
 </ul>
 </div>
 
 
-<div class="citation">
-<h2 data-toc-skip>Citation</h2>
-<ul class="list-unstyled">
-<li><a href="authors.html#citation">Citing rema</a></li>
-</ul>
-</div>
-
-<div class="developers">
-<h2 data-toc-skip>Developers</h2>
-<ul class="list-unstyled">
-<li>Jane Sullivan <br><small class="roles"> Maintainer </small>  </li>
-</ul>
-</div>
-
-
-
-  </aside>
+  </aside></aside>
 </div>
 
 
