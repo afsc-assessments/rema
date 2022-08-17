@@ -1,5 +1,5 @@
-# REMA: <img src="man/figures/logo.png" align="right" alt="" width="175" />
-## A generalized *R*andom *E*ffects model for fitting survey biomass estimates with the option of including *M*ultiple survey strata and an *A*dditional survey index 
+# REMA <img src="man/figures/logo.png" align="right" alt="" width="200" />
+### A generalized Random Effects model for fitting survey biomass estimates with the options of including Multiple survey strata and an Additional survey index 
 
 The random effects (RE) model was developed by the North Pacific Fisheries Management Council (NPFMC) Groundfish Plan Team's Survey Averaging working group and has been used at the Alaska Fisheries Science Center (AFSC) since [2013](https://github.com/afsc-assessments/SurveyAverageRandomEffects/blob/013c9a937fa0133f594c7d66248677685ae77010/code/re.tpl) to estimate biomass in data-limited groundfish and crab stock assessments, and to apportion estimates of Acceptable Biological Catch by area. The RE model estimates biomass as a series of random effects and the underlying state dynamics are modeled as a random walk ([Oct 2013 Joint GPT minutes](https://meetings.npfmc.org/CommentReview/DownloadFile?p=11009549-068b-40cf-903d-67f90686db60.pdf&fileName=C4%20c1%20Joint%20Plan%20Team%20Minutes.pdf)). 
 
