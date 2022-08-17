@@ -3,7 +3,14 @@ template:
   bootstrap: 5
   bootswatch: zephyr
 home:
-  links:
-  - text: Browse source code
-    href: https://github.com/JaneSullivan-NOAA/rema/
+  sidebar:
+    structure:
+    - links
+    - license
+    components:
+      links:
+      - text: Browse source code
+        href: https://github.com/JaneSullivan-NOAA/rema/
+      - text: Report a bug
+        href: https://github.com/JaneSullivan-NOAA/rema/issues
 
