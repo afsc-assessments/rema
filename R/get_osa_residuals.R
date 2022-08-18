@@ -63,8 +63,8 @@ get_osa_residuals <- function(rema_model,
       # geom_histogram() +
       geom_histogram(aes(y = ..density..), colour = "black", fill = "white")+
       geom_density(alpha = 0.2, fill = "#FF6666") +
-      facet_wrap(~strata) +
-      labs(x = 'Residual', y = 'Frequency')
+      facet_wrap(~strata, scales = 'free') +
+      labs(x = 'Residual', y = 'Density')
   }
 
   p_fitted <- function(dat) {
@@ -89,6 +89,7 @@ get_osa_residuals <- function(rema_model,
       r <- suppressWarnings(TMB::oneStepPredict(obj = rema_model,
                                                 observation.name = "obsvec",
                                                 data.term.indicator = "keep",
+                                                discrete = FALSE,
                                                 method = options$method))
       osa_resids$residual <- r$residual
 

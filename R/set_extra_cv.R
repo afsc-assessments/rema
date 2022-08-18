@@ -16,6 +16,7 @@ set_extra_cv <- function(input, extra_biomass_cv, extra_cpue_cv) {
     }
     if(extra_biomass_cv$assumption == 'extra_cv') {
       data$extra_biomass_cv <- 1
+      par$logit_tau_biomass <- rep(1, length(unique(data$pointer_extra_biomass_cv)))
       map$logit_tau_biomass <- as.factor(1:length(map$logit_tau_biomass))
     }
     if(extra_biomass_cv$assumption == 'none') {
@@ -28,6 +29,7 @@ set_extra_cv <- function(input, extra_biomass_cv, extra_cpue_cv) {
     }
     if(extra_cpue_cv$assumption == 'extra_cv') {
       data$extra_cpue_cv <- 1
+      par$logit_tau_cpue <- rep(1, length(unique(data$pointer_extra_cpue_cv)))
       map$logit_tau_cpue <- as.factor(1:length(map$logit_tau_cpue))
     }
     if(extra_cpue_cv$assumption == 'none') {

@@ -315,7 +315,7 @@ compare_rema_models <- function(rema_models,
       out_proportion_biomass_by_strata <- do.call('rbind', proportion_biomass_by_strata)
 
       p6 <- out_proportion_biomass_by_strata %>%
-        filter(year > max(year) - 3) %>%
+        dplyr::filter(year > max(year) - 3) %>%
         tidyr::pivot_longer(cols = -c(model_name, year)) %>%
         ggplot(aes(x = factor(year), y = value, fill = reorder(name, (value)))) +
         geom_bar(position="stack", stat="identity") +

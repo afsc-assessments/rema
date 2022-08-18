@@ -105,15 +105,14 @@ input2 <- prepare_rema_input(model_name = 'M2: TMB extra obs error',
                             # estimate additional obs error on the biomass
                             # survey (one additional CV shared across all 3
                             # strata)
-                            extra_biomass_cv = list(assumption = 'extra_cv',
-                                                    pointer_extra_biomass_cv = c(1, 1, 1)),
+                            extra_biomass_cv = list(assumption = 'extra_cv'),
                             # estimate additional obs error on the CPUE
                             # survey (one additional CV shared across all 3
                             # strata)
-                            extra_cpue_cv = list(assumption = 'extra_cv',
-                                                 pointer_extra_cpue_cv = c(1, 1, 1)))
+                            extra_cpue_cv = list(assumption = 'extra_cv'))
 
 m2 <- fit_rema(input2)
+tidy_rema(m2)$parameter_estimates
 
 ```
 

@@ -56,7 +56,7 @@ m1 <- fit_rema(input1)
 check_convergence(m1)
 output1 <- tidy_rema(m1)
 output1$parameter_estimates
-plots1 <- plot_rema(output1, biomass_ylab = 'ROV biomass', cpue_ylab = 'IPHC setline survey CPUE')
+plots1 <- plot_rema(tidy_rema = output1, biomass_ylab = 'ROV biomass', cpue_ylab = 'IPHC setline survey CPUE')
 plots1$biomass_by_strata
 plots1$cpue_by_strata
 cowplot::plot_grid(plots1$biomass_by_strata + facet_wrap(~strata, ncol = 1),

@@ -125,7 +125,7 @@ plot_rema <- function(tidy_rema,
   } else {
 
     p6 <- tidy_rema$proportion_biomass_by_strata %>%
-      filter(year > max(year) - 10) %>%
+      dplyr::filter(year > max(year) - 10) %>%
       tidyr::pivot_longer(cols = -c(model_name, year)) %>%
       ggplot(aes(x = factor(year), y = value, fill = reorder(name, (value)))) + #fill = reorder(area, desc(p)))) +
       geom_bar(position="stack", stat="identity") +
