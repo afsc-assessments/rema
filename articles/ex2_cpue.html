@@ -182,20 +182,33 @@
 <span>                            <span class="co"># estimate additional obs error on the biomass</span></span>
 <span>                            <span class="co"># survey (one additional CV shared across all 3</span></span>
 <span>                            <span class="co"># strata)</span></span>
-<span>                            extra_biomass_cv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>assumption <span class="op">=</span> <span class="st">'extra_cv'</span>,</span>
-<span>                                                    pointer_extra_biomass_cv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>                            extra_biomass_cv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>assumption <span class="op">=</span> <span class="st">'extra_cv'</span><span class="op">)</span>,</span>
 <span>                            <span class="co"># estimate additional obs error on the CPUE</span></span>
 <span>                            <span class="co"># survey (one additional CV shared across all 3</span></span>
 <span>                            <span class="co"># strata)</span></span>
-<span>                            extra_cpue_cv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>assumption <span class="op">=</span> <span class="st">'extra_cv'</span>,</span>
-<span>                                                 pointer_extra_cpue_cv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span>                            extra_cpue_cv <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>assumption <span class="op">=</span> <span class="st">'extra_cv'</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_rema.html">fit_rema</a></span><span class="op">(</span><span class="va">input2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Model runtime: 0.1 seconds </span></span>
+<span><span class="co">#&gt; Model runtime: 0.2 seconds </span></span>
 <span><span class="co">#&gt; stats::nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
 <span><span class="co">#&gt; Maximum gradient component: 1.03e-05 </span></span>
 <span><span class="co">#&gt; Max gradient parameter: log_q </span></span>
-<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span></code></pre></div>
+<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
+<span><span class="fu"><a href="../reference/tidy_rema.html">tidy_rema</a></span><span class="op">(</span><span class="va">m2</span><span class="op">)</span><span class="op">$</span><span class="va">parameter_estimates</span></span>
+<span><span class="co">#&gt;                model_name           parameter  estimate    std_err       lci</span></span>
+<span><span class="co">#&gt; 1 M2: TMB extra obs error       process_error 0.0811985 0.04144752 0.0298576</span></span>
+<span><span class="co">#&gt; 2 M2: TMB extra obs error scaling_parameter_q 0.4163632 0.07121549 0.2977702</span></span>
+<span><span class="co">#&gt; 3 M2: TMB extra obs error scaling_parameter_q 1.1272647 0.18618911 0.8155185</span></span>
+<span><span class="co">#&gt; 4 M2: TMB extra obs error scaling_parameter_q 2.0421163 0.38749244 1.4078767</span></span>
+<span><span class="co">#&gt; 5 M2: TMB extra obs error    extra_biomass_cv 0.5032296 0.12643787 0.2909269</span></span>
+<span><span class="co">#&gt; 6 M2: TMB extra obs error       extra_cpue_cv 0.2544341 0.06124321 0.1555960</span></span>
+<span><span class="co">#&gt;         uci</span></span>
+<span><span class="co">#&gt; 1 0.2208214</span></span>
+<span><span class="co">#&gt; 2 0.5821881</span></span>
+<span><span class="co">#&gt; 3 1.5581812</span></span>
+<span><span class="co">#&gt; 4 2.9620769</span></span>
+<span><span class="co">#&gt; 5 0.7715900</span></span>
+<span><span class="co">#&gt; 6 0.3974934</span></span></code></pre></div>
 <p>A comparison of the the three models shows that estimation of additional observation error substantially reduces PE variance, resulting in a smoother trajectory of biomass predictions.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
