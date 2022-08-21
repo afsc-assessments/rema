@@ -24,27 +24,27 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 
 The base REMA model can be represented as a simple state-space random
 walk model with added noise. The observation model is comprised of an
-index of log-transformed annual survey biomass $ln(B_t)$ estimates with
+index of log-transformed annual survey biomass estimates $ln(B_t)$ with
 associated standard deviations $\sigma_{ln(B_t)}$, where
 $\sigma_{ln(B_t)}$ is approximated using the coefficient of variation of
 $B_t$ ($\sigma_{B_t}/B_t$) such that $$
-\sigma_{ln(B_t)}=\sqrt{ln(\frac{\sigma_{B_t}}{B_t}^2+1)}
+\sigma_{ln(B_t)}=\sqrt{ln(\frac{\sigma_{B_t}}{B_t}^2+1)}.
 $$ The measurement or observation equation, which describes the
 relationship between the observed survey biomass $ln(B_t)$ and the
-latent state variable, the population biomass $ln(\hat{B}_t)$. The
+latent state variable, population biomass $ln(\hat{B}_t)$. The
 measurement equation is expressed as $$
 ln(B_t) = ln(\hat{B}_t) + \epsilon_{B}, \text{where } \epsilon_{B} \sim N(0, \sigma_{ln(B_t)}^2), 
 $$ while the state equation and associated process error variance
-($\sigma_{PE}^2$) is defined as $$
+$\sigma_{PE}^2$ is defined as $$
 ln(\hat{B}_{t+1}) = ln(\hat{B}_t)+\eta_t, \text{where } \eta_t \sim N(0, \sigma_{PE}^2). 
 $$ In the base model, the process error variance $\sigma_{PE}^2$ is the
 only fixed effect parameter estimated, and the unobserved population
 biomass $ln(\hat{B}_t)$ is estimated as a series of random effects. The
-model specified above is fit using maximum likelihood estimation, where
-the Laplace approximation is used to integrate out random effects in
-both TMB and ADMB. An example of the fitting the single stratum, single
-survey version of the model in TMB and comparing results with the ADMB
-is illustrated in example 1 of the ["REMA basics"
+model is fit using maximum likelihood estimation, where the Laplace
+approximation is used to approximate the marginal negative
+log-likelihood in both TMB and ADMB. An example of fitting the single
+stratum, single survey version of REMA and comparing results with the
+ADMB is illustrated in Example 1 of the ["REMA basics"
 vignette](https://janesullivan-noaa.github.io/rema/articles/ex1_basics.html).
 
 ## Extending to multiple biomass survey strata
@@ -72,17 +72,17 @@ applied, such that the total variance $\sigma_J^2$ is approximated as $$
 $$ In the updated REMA library, the total variance is estimated using
 the standard Delta method and can be replicated in ADMB using an
 `sdreport_number` and in TMB using the `ADREPORT` macro. As described in
-Monnahan et al. (2021), the exploration of methods for summing lognormal
-variables is a research topic that has potential impacts beyond the
-scope of REMA.
+Monnahan et al. (2021), the exploration of methods for summing
+log-normal variables is a research topic that has potential impacts
+beyond the scope of REMA.
 
 ## Addition of an auxiliary catch per unit effort (CPUE) survey
 
 In situations where an auxiliary biomass or catch per unit effort (CPUE)
 survey $I_{t}$ and associated variance $\sigma_{I_{t}}$ are available,
 an additional scaling parameter $q$ can be estimated to facilitate the
-inclusion of this new information into biomass predictions. The
-predicted annual CPUE survey index $\hat{I}_{t}$ is calculated as $$
+inclusion of the new information into biomass predictions. The predicted
+annual CPUE survey index $\hat{I}_{t}$ is calculated as $$
 \hat{I}_{t} = q * e^{\hat{B}_{t}}
 $$ and the CPUE survey observations has an additional measurement
 equation and likelihood component similar to the biomass survey: $$
@@ -105,45 +105,69 @@ vignette](https://janesullivan-noaa.github.io/rema/articles/ex2_cpue.html).
 
 ### The ADMB version of REMA
 
-During the multi-survey development of REMA in ADMB, an error was
-introduced into the likelihood component of the CPUE survey index.
-Although all the equations in the ADMB template file are correctly
-defined, the specification of the $ln(\hat{I}_{t})$ outside (as opposed
-to inside) the likelihood component's `SEPARABLE_FUNCTION` resulted in
-an incorrectly specified model and invalid model results. This error was
-found while developing and testing the TMB version of the model and was
-explored in more detail using Markov Chain Monte Carlo and MLE methods.
-When the equation for $ln(\hat{I}_{t})$ is moved inside the
-`SEPARABLE_FUNCTION`, the TMB and ADMB versions of the model produce
-identical results. Additionally, when using MCMC methods in both the
-"inside" and "outside" versions, we obtained identical model results
-that matched the TMB and "inside" method in ADMB, providing further
-evidence that placing this simple calculation outside the
-`SEPARABLE_FUNCTION` resulted in erroneous results. A reproducible
-example of this issue is hosted
-[Github](https://github.com/JaneSullivan-NOAA/separable_function).
+Separability, as implemented in the `SEPARABLE_FUNCTION` in ADMB and
+through automatic detection in TMB, increases computational efficiency
+of optimization routines by breaking complex, multivariate integrals
+into a product of simpler, univariate integrals (Fournier et al. 2012).
+The use of separability is particularly relevant for state-space models
+as it relates to the efficiency of the Laplace approximation of the
+marginal negative log-likelihood and integration of the random effects
+from the joint negative log-likelihood. In the random effects
+implementation of ADMB (ADMB-RE), parameters defined in the
+`PARAMETER_SECTION` of the template file cannot be used within the
+`SEPARABLE_FUNCTION` unless they are passed as arguments to the function
+(Skaug and Fournier 2013). In the ADMB version of REMA, the calculation
+of predicted CPUE [i.e. $ln(\hat{I}_{t})=ln(q)+ln(\hat{B})$] outside
+rather than inside the `SEPARABLE_FUNCTION` violates this rule, thus
+introducing an error into the program that prevents accurate
+implementation of the Laplace approximation.
+
+We explored this error in a simplified example of REMA in both ADMB and
+TMB, which is hosted on
+[Github](https://github.com/JaneSullivan-NOAA/separable_function). We
+were able to reproduce results from the TMB version of REMA in ADMB by
+passing $ln(q)$ as an argument to the SEPARABLE_FUNCTION and performing
+the $ln(\hat{I}_{t})$ calculation inside the function (Figure x).
+Additionally, when we used Markov Chain Monte Carlo (MCMC) methods for
+statistical inference instead of MLE, the results from both ADMB
+versions closely matched the correct version of REMA. Finally, a
+comparison of the individual negative log-likelihood (NLL) components,
+along with the joint and marginal NLLs, revealed that all were the same
+between the TMB model, correct "inside" ADMB version, and incorrect
+"outside" ADMB version, *except* the marginal NLL. Taken together, this
+analysis demonstrates an error in the calculations of the Laplace
+approximation in the "outside" version of the ADMB REMA model.
 
 Currently one Tier 3 apportionment model (GOA rougheye and blackspotted
 rockfish) and two Tier 5 assessments (GOA shortspine thornyhead and GOA
-shortraker rockfish) use the invalid version of the ADMB REMA model.
-Unfortunately, the biomass predictions from the erroneous ADMB model
-exhibit significantly less inter-annual variability (i.e. lower process
-error variation) than the correctly-specified REMA models. This result
-is attributed to the relatively low measurement error in the biomass and
-longline survey relative population weights (RPWs) fit in the model,
-which causes the PE variance estimates to be higher than one might
-expect for these long-lived, low productivity rockfish species. In the
-next section, we describe a new method for estimating additional
-observation error in REMA.
+shortraker rockfish) use the invalid version of the ADMB REMA model. The
+biomass predictions from this version exhibit significantly less
+inter-annual variability (i.e. lower PE variation) than the
+correctly-specified REMA models. In the correct versions of REMA, this
+result is attributed to the relatively high precision of the biomass and
+longline survey relative population weights (RPWs), which translates to
+high PE variance and model predictions that closely track inter-annual
+variability in the data. This model behavior is is biologically
+unrealistic for the long-lived, low productivity rockfish species that
+currently use the multi-survey version of REMA.
+
+One option for authors may be to remove the longline survey RPW index
+entirely from the model and only fit to trawl survey biomass. However,
+the species that currently use the two-survey model do so because they
+are well-sampled by the longline survey. Additionally, the two-survey
+approach may reduce data gaps following survey reductions. For example,
+the EBS Slope bottom trawl survey was last conducted in 2016. At least
+two species' stock assessments, shortspine thornyhead and shortraker
+rockfish, currently rely on the 2016 estimate from the EBS slope survey
+in that region to inform ABC calculations. Instead of omitting the
+longline survey from the model, we propose an alternative method for
+estimating additional observation error.
 
 ## Estimation of additional observation error
 
 Occasions arise when the assumed observation error variance for the
 biomass and/or CPUE survey is lower than may be biologically realistic
-given inter-annual variability of survey estimates. These observation
-errors are design-based estimates provided by the Alaska Fisheries
-Science Center's Groundfish Assessment Group (GAP), and do not account
-for variability in catchability of the survey gear. In these instances,
+given inter-annual variability of survey estimates. In these instances,
 the model estimates of $(\sigma_{B_{t,j}}+\sigma_{I_{t,j}})/\sigma_{PE}$
 may be lower than what should be expected based on an individual species
 life history traits. For example, if the ratio of observation to PE
@@ -221,37 +245,50 @@ tactical assessments at this time.
 
 The use of one-step ahead (OSA) residuals, also referred to as forecast
 residuals or prediction errors, is crucial for validation of state-space
-models like REMA (Thygesen et al. 2017). The OSA residual refers to the
-forecasted value based on all previous observations. Traditional
-residuals (e.g. Pearson's) are inappropriate for state-space models,
-because traditional residuals will be artificially small in cases where
-process error variance is overestimated (see Section 3 of Thygesen et
-al. 2017 for an example). Methods for calculating OSA residuals have
-been implemented in TMB through the `TMB::oneStepPredict()` function.
-While these methods are relatively easy to implement in TMB, they are
-computationally demanding and the validity (and accuracy) of the OSA
-residuals may vary by situation and method used.
+models like REMA (Thygesen et al. 2017). Instead of comparing the
+observed and expected values at the same time step, OSA residuals use
+forecasted values based on all previous observations (i.e. they exclude
+the observed value at the current time step from prediction).
+Traditional residuals (e.g. Pearson's residuals) are inappropriate for
+state-space models, because process error variance may be over-estimated
+in cases where the model is mispecified, thus leading to artificially
+small residuals (see Section 3 of Thygesen et al. 2017 for an example).
 
-Methods to implement OSA residuals in REMA are under development and
-should be considered experimental. Currently REMA implements OSA
-residuals using the `method = "cdf"` option in `TMB::oneStepPredict()`,
-which has the benefit of speeding up residual calculations by saving
-copies of the one-step cumulative density function at each data point
-and thus reducing the number of calculations at each function
-evaluation. While OSA residuals appear to be calculated correctly for
-some REMA models, occasionally `NaN` values for residuals are returned,
-especially in cases with small measurement errors. One potential cause
-of this error may lie in the initialization of the state process within
-REMA and will be explored further in future versions of this package.
-Finally, the algorithms underpinning `TMB::oneStepPredict()` methods are
-an area of active research, and therefore this function remains in Beta
-mode within the TMB package and is subject to future change.
+Methods for calculating OSA residuals have been implemented in TMB
+through the `TMB::oneStepPredict()` function. While these methods are
+relatively easy to implement in TMB, they are computationally demanding
+and the validity (and accuracy) of the OSA residuals may vary by
+situation and method used. Methods to implement OSA residuals in REMA
+are under development and should be considered experimental. Currently
+REMA implements OSA residuals using the `method = "cdf"` option in
+`TMB::oneStepPredict()`, which has the benefit of speeding up residual
+calculations by saving copies of the one-step cumulative density
+function at each data point and thus reducing the number of calculations
+at each function evaluation. While OSA residuals appear to be calculated
+correctly for some REMA models, occasionally `NaN` values for residuals
+are returned, especially in cases with small measurement errors. One
+potential cause of this error may lie in the initialization of the state
+process within REMA and will be explored further in future versions of
+this package. Finally, the algorithms underpinning
+`TMB::oneStepPredict()` methods are an area of active research, and
+therefore this function remains in Beta mode within the TMB package and
+is subject to future change.
 
 # References
+
+Fournier D. A., H. J. Skaug , J. Ancheta , J. Ianelli , A. Magnusson, M.
+N. Maunder , A. Nielsen, and J. Sibert. 2012. AD Model Builder: using
+automatic differentiation for statistical inference of highly
+parameterized complex nonlinear models, Optimization Methods and
+Software, 27:2, 33-249, DOI: 10.1080/10556788.2011.597854
 
 Marlow, NA. (Nov 1967). "A normal limit theorem for power sums of
 independent normal random variables". Bell System Technical Journal. 46
 (9): 2081--2089. <doi:10.1002/j.1538-7305.1967.tb04244.x>.
+
+Skaug H. and D. Fournier. 2013.
+Random effects in AD Model Builder: ADMB-RE User Guide.
+<http://ftp.admb-project.org/admb-11.2pre/admbre-11.2pre.pdf>
 
 Thygesen, U.H., Albertsen, C.M., Berg, C.W. *et al.* Validation of
 ecological state space models using the Laplace approximation. *Environ
