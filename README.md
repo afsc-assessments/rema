@@ -27,7 +27,7 @@ Use the `devtools` package to install the `rema` package from github. If you do 
 
 ```
 # install.packages("devtools")
-devtools::install_github("JaneSullivan-NOAA/rema", dependencies = TRUE)
+devtools::install_github("JaneSullivan-NOAA/rema", dependencies = TRUE, build_vignettes = TRUE)
 
 # Example R scripts are downloaded when `rema` is installed. Locate them on your computer by running the following commands:
 (rema_path <- find.package('rema'))
