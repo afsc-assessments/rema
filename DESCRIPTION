@@ -42,5 +42,6 @@ VignetteBuilder: knitr
 RoxygenNote: 7.2.0
 Encoding: UTF-8
 Suggests: 
-    testthat,
+    testthat (>= 3.0.0),
     cowplot (>= 1.1.1)
+Config/testthat/edition: 3
