@@ -1,7 +1,11 @@
 Package: rema
 Title: Random effects model for estimating biomass, with option to include an additional survey index
 Version: 0.1.0
-Author: person("Jane", "Sullivan", , "jane.sullivan@noaa.gov", role = c("aut", "cre"))
+Author: c(
+    person("Jane", "Sullivan", "jane.sullivan@noaa.gov", role = c("aut", "cre")),
+    person("Cole", "Monnahan", "cole.monnahan@noaa.gov", role = c("ctb")),
+    person("Pete", "Hulson", "pete.hulson@noaa.gov", role = c("ctb"))
+    )
 Maintainer: Jane Sullivan <jane.sullivan@noaa.gov>
 Description: A generalized framework to fit the "Random Effects (RE) model", 
     a state-space random walk model developed at the Alaska Fisheries Science 

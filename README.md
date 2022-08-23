@@ -9,11 +9,11 @@ The purpose of the `rema` R library is to develop a unified random effects model
 
 1.  Compare and bridge existing `ADMB` models currently used for Tiers 4 and 5 stock assessments and Tier 3 apportionment to REMA;
 
-2.  Perform model validation using appropriate diagnostic tools for latent variable models [e.g., reporting convergence criteria and conducting a one-step-ahead (OSA) residual analysis];
+2.  Visualize multiple model results simultaneously and conduct model selection when appropriate using Akaike Information Criteria (AIC);
 
-3.  Visualize multiple model results simultaneously and conduct model selection when appropriate using Akaike Information Criteria (AIC);
+3.  Analyze alternative approaches to handling zero biomass observations, including treating zeros as missing values or failed surveys, adding a small constant to zero values and manually defining the associated coefficient of variation for these values, or exploring an experimental option to model these observations using the Tweedie distribution, a positive, continuous distribution that accommodates zeros;
 
-4.  Analyze alternative approaches to handling zero biomass observations, including treating zeros as missing values or failed surveys, adding a small constant to zero values and manually defining the associated coefficient of variation for these values, or exploring an experimental option to model these observations using the Tweedie distribution, a positive, continuous distribution that accommodates zeros;
+4.  Perform model validation using appropriate diagnostic tools for latent variable models [e.g., reporting convergence criteria and conducting a one-step-ahead (OSA) residual analysis];
 
 5.  Evaluate the use of priors on process error and scaling parameter parameters, along with alternative likelihood penalties.
 
