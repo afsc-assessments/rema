@@ -115,7 +115,7 @@
 </h2>
 <p>Use the <code>devtools</code> package to install the <code>rema</code> package from github. If you do not have <code>devtools</code> installed, you must do that first.</p>
 <pre><code><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"JaneSullivan-NOAA/rema"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"JaneSullivan-NOAA/rema"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Example R scripts are downloaded when `rema` is installed. Locate them on your computer by running the following commands:</span></span>
 <span><span class="op">(</span><span class="va">rema_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">'rema'</span><span class="op">)</span><span class="op">)</span></span>
