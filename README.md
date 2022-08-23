@@ -34,6 +34,13 @@ devtools::install_github("JaneSullivan-NOAA/rema", dependencies = TRUE, build_vi
 (rema_examples <- file.path(rema_path, 'example_scripts'))
 list.files(rema_examples)
 
+# Vignettes
+library(rema)
+browseVignettes("rema")
+vignette(topic = "ex1_basics")
+vignette(topic = "ex2_cpue")
+vignette(topic = "ex3_zeros")
+vignette(topic = "rema_equations") # view technical details offline
 ```
 
 ## The `rema` worflow
