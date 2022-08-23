@@ -147,9 +147,9 @@ correctly-specified REMA models. In the correct versions of REMA, this
 result is attributed to the relatively high precision of the biomass and
 longline survey relative population weights (RPWs), which translates to
 high PE variance and model predictions that closely track inter-annual
-variability in the data. This model behavior is is biologically
-unrealistic for the long-lived, low productivity rockfish species that
-currently use the multi-survey version of REMA.
+variability in the data. This model behavior is biologically unrealistic
+for the long-lived, low productivity rockfish species that currently use
+the multi-survey version of REMA.
 
 One option for authors may be to remove the longline survey RPW index
 entirely from the model and only fit to trawl survey biomass. However,
@@ -256,9 +256,9 @@ small residuals (see Section 3 of Thygesen et al. 2017 for an example).
 
 Methods for calculating OSA residuals have been implemented in TMB
 through the `TMB::oneStepPredict()` function. While these methods are
-relatively easy to implement in TMB, they are computationally demanding
-and the validity (and accuracy) of the OSA residuals may vary by
-situation and method used. Methods to implement OSA residuals in REMA
+straight forward to implement in TMB, they are computationally
+demanding, and the validity (and accuracy) of the OSA residuals may vary
+by situation and method used. Methods to implement OSA residuals in REMA
 are under development and should be considered experimental. Currently
 REMA implements OSA residuals using the `method = "cdf"` option in
 `TMB::oneStepPredict()`, which has the benefit of speeding up residual

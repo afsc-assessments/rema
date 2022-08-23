@@ -15,7 +15,7 @@ library(ggplot2)
 # install.packages('cowplot')
 library(cowplot) # provides helpful plotting utilities like plot_grid() and nice ggplot2 themes
 
-ggplot2::theme_set(cowplot::theme_cowplot(font_size = 10) +
+ggplot2::theme_set(cowplot::theme_cowplot(font_size = 12) +
                      cowplot::background_grid() +
                      cowplot::panel_border())
 
@@ -53,7 +53,6 @@ input1 <- prepare_rema_input(model_name = 'REMA_SEO_YE_strataPE',
                             biomass_dat = biomass_dat,
                             cpue_dat = cpue_dat)
 m1 <- fit_rema(input1)
-check_convergence(m1)
 output1 <- tidy_rema(m1)
 output1$parameter_estimates
 plots1 <- plot_rema(tidy_rema = output1, biomass_ylab = 'ROV biomass', cpue_ylab = 'IPHC setline survey CPUE')
@@ -76,7 +75,6 @@ input2 <- prepare_rema_input(model_name = 'REMA_SEO_YE_singlePE',
                             # Model 1)
                             PE_options = list(pointer_PE_biomass = c(1, 1, 1, 1)))
 m2 <- fit_rema(input2)
-check_convergence(m2)
 output2 <- tidy_rema(m2)
 output2$parameter_estimates
 plots2 <- plot_rema(output2, biomass_ylab = 'ROV biomass', cpue_ylab = 'IPHC setline survey CPUE')
@@ -99,7 +97,6 @@ input3 <- prepare_rema_input(model_name = 'REMA_SEO_YE_northsouthPE',
                              # order using colnames(input2$data$biomass_obs)
                              PE_options = list(pointer_PE_biomass = c(1, 2, 2, 1)))
 m3 <- fit_rema(input3)
-check_convergence(m3)
 output3 <- tidy_rema(m3)
 output3$parameter_estimates
 plots3 <- plot_rema(output3, biomass_ylab = 'ROV biomass', cpue_ylab = 'IPHC setline survey CPUE')
@@ -132,7 +129,6 @@ input4 <- prepare_rema_input(model_name = 'REMA_SEO_YE_noCPUE_strataPE',
                              multi_survey = FALSE, # <--- removes CPUE
                              biomass_dat = biomass_dat)
 m4 <- fit_rema(input4)
-check_convergence(m4)
 output4 <- tidy_rema(m4)
 output4$parameter_estimates
 plots4 <- plot_rema(output4, biomass_ylab = 'ROV biomass')
@@ -145,7 +141,6 @@ input5 <- prepare_rema_input(model_name = 'REMA_SEO_YE_noCPUE_singlePE',
                              PE_options = list(pointer_PE_biomass = c(1, 1, 1, 1)) # <-- shared process error
                              )
 m5 <- fit_rema(input5)
-check_convergence(m5)
 output5 <- tidy_rema(m5)
 output5$parameter_estimates
 plots5 <- plot_rema(output5, biomass_ylab = 'ROV biomass')
@@ -160,4 +155,3 @@ compare$plots$total_predicted_biomass
 compare$plots$cpue_by_strata # does not exist...check output:
 compare$output$cpue_by_strata
 compare_rema_models(rema_models = list(m3, m4, m5))$aic
-

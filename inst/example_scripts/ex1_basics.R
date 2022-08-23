@@ -58,11 +58,7 @@ names(input)
 ?fit_rema
 m <- fit_rema(input)
 
-# (4) Check convergence criteria if you so wish
-?check_convergence
-check_convergence(m)
-
-# (5) Get tidied data.frames from the REMA model output
+# (4) Get tidied data.frames from the REMA model output
 ?tidy_rema
 output <- tidy_rema(rema_model = m)
 names(output)
@@ -70,14 +66,14 @@ output$parameter_estimates # estimated fixed effects parameters
 output$biomass_by_strata # data.frame of predicted and observed biomass by stratum
 output$total_predicted_biomass # total predicted biomass (same as biomass_by_strata for univariate models)
 
-# (6) Generate model plots
+# (5) Generate model plots
 ?plot_rema
 plots <- plot_rema(tidy_rema = output,
                    # optional y-axis label
                    biomass_ylab = 'Biomass (t)')
 plots$biomass_by_strata
 
-# (7) Get one-step-ahead (OSA) residuals
+# (6) Experimental one-step-ahead (OSA) residuals for model validation
 ?get_osa_residuals
 osa <- get_osa_residuals(m, options = list(method = "cdf"))
 cowplot::plot_grid(osa$plots$biomass_resids,
@@ -85,14 +81,8 @@ cowplot::plot_grid(osa$plots$biomass_resids,
                    osa$plots$biomass_hist,
                    osa$plots$biomass_fitted,
                    ncol = 1)
-osa$residuals$biomass %>% filter(is.nan(residual))
-osa <- get_osa_residuals(m, options = list(method = "oneStepGeneric"))
-osa <- get_osa_residuals(m, options = list(method = "fullGaussian"))
-osa <- get_osa_residuals(m, options = list(method = "oneStepGaussianOffMode"))
-osa <- get_osa_residuals(m, options = list(method = "oneStepGaussian"))
-osa$residuals$biomass
 
-# (8) Compare with ADMB RE model results
+# (7) Compare with ADMB RE model results
 compare <- compare_rema_models(rema_models = list(m),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)')
@@ -151,21 +141,6 @@ compare <- compare_rema_models(rema_models = list(m1, m2),
 compare$plots$biomass_by_strata + facet_wrap(~strata, ncol = 1, scales = 'free_y')
 compare$aic
 
-
-osa <- get_osa_residuals(m, options = list(method = "cdf"))
-cowplot::plot_grid(osa$plots$biomass_resids,
-                   osa$plots$biomass_qqplot,
-                   osa$plots$biomass_fitted,
-                   ncol = 1)
-osa$residuals$biomass %>% filter(is.nan(residual))
-osa <- get_osa_residuals(m, options = list(method = "oneStepGeneric"))
-osa <- get_osa_residuals(m, options = list(method = "fullGaussian"))
-osa <- get_osa_residuals(m, options = list(method = "oneStepGaussianOffMode"))
-osa$residuals$biomass %>% print(n = Inf)
-osa <- get_osa_residuals(m, options = list(method = "oneStepGaussian"))
-osa <- get_osa_residuals(m)
-osa$residuals$biomass %>% print(n = Inf)
-
 # Ex 3 REMA ----
 
 # Multi-survey and multi-strata version of the random effects model (REMA).
@@ -176,36 +151,18 @@ admb_re <- read_admb_re(filename = 'goasr_rwout.rep',
                         cpue_strata_names = c('CGOA', 'EGOA', 'WGOA'),
                         model_name = 'admb_rema_goasr')
 
-input <- prepare_rema_input(model_name = 'tmb_rema_goasr_cpue_wt=1',
+input <- prepare_rema_input(model_name = 'goasr_tmb',
                             multi_survey = 1,
                             admb_re = admb_re,
                             sum_cpue_index = TRUE,
-                            wt_cpue = 1,
+                            # likelihood weight (same as assessment)
+                            wt_cpue = 0.5,
                             # one process error parameters (log_PE) estimated
                             PE_options = list(pointer_PE_biomass = c(1, 1, 1)),
                             # three scaling parameters (log_q) estimated, indexed as
                             # follows for each biomass survey stratum:
                             q_options = list(pointer_biomass_cpue_strata = c(1, 2, 3)))
-
-input$data$wt_biomass
-input$data$wt_cpue
-
 m <- fit_rema(input)
-
-osa <- get_osa_residuals(m, options = list(method = "cdf"))
-osa$residuals$biomass %>% filter(is.nan(residual))
-osa$residuals$cpue %>% filter(is.nan(residual))
-osa <- get_osa_residuals(m, options = list(method = "oneStepGeneric"))
-osa <- get_osa_residuals(m, options = list(method = "fullGaussian"))
-osa <- get_osa_residuals(m, options = list(method = "oneStepGaussianOffMode"))
-osa$residuals$biomass
-osa <- get_osa_residuals(m, options = list(method = "oneStepGaussian"))
-# "oneStepGaussianOffMode", "fullGaussian", "oneStepGeneric",
-# "oneStepGaussian", "cdf"
-osa$residuals$biomass %>% print(n = Inf)
-osa$plots$biomass_resids
-osa$plots$cpue_resids
-osa$plots$cpue_qq
 
 output <- tidy_rema(m)
 output$parameter_estimates
@@ -221,19 +178,7 @@ plots$total_predicted_biomass
 plots$total_predicted_cpue
 plots$biomass_by_cpue_strata
 
-input2 <- prepare_rema_input(model_name = 'tmb_rema_goasr_cpue_wt=0.5',
-                            multi_survey = 1,
-                            admb_re = admb_re,
-                            sum_cpue_index = TRUE,
-                            wt_cpue = 0.5,
-                            # one process error parameters (log_PE) estimated
-                            PE_options = list(pointer_PE_biomass = c(1, 1, 1)),
-                            # three scaling parameters (log_q) estimated, indexed as
-                            # follows for each biomass survey stratum:
-                            q_options = list(pointer_biomass_cpue_strata = c(1, 2, 3)))
-m2 <- fit_rema(input2)
-
-compare <- compare_rema_models(rema_models = list(m, m2),
+compare <- compare_rema_models(rema_models = list(m),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)',
                                cpue_ylab = 'Relative Population Weights')
@@ -252,10 +197,8 @@ admb_re <- read_admb_re(filename = 'goasst_rwout.rep',
                                                'WGOA (0-500 m)', 'WGOA (501-700 m)', 'WGOA (701-1000 m)'),
                       cpue_strata_names = c('CGOA', 'EGOA', 'WGOA'),
                       model_name = 'admb_rema_goasst')
-admb_re$biomass_dat
-length(unique(admb_re$biomass_dat$strata))
-length(unique(admb_re$cpue_dat$strata))
-input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
+
+input <- prepare_rema_input(model_name = 'goasst_tmb',
                             multi_survey = 1,
                             admb_re = admb_re,
                             wt_cpue = 0.5,
@@ -270,18 +213,11 @@ input <- prepare_rema_input(model_name = 'tmb_rema_goasst',
                               pointer_q_cpue = c(1, 1, 1)), # equivalent of admb model, but maybe consider c(1, 2, 3) as best practice? i.e. why would scaling pars be shared across strata?
                             zeros = list(assumption = 'NA'))
 
-input$par$logit_tau_biomass <- -2.70805
-input$par$logit_tau_cpue <- -2.70805
-# input$map$logit_tau_biomass <- factor(NA)
-input$map$logit_tau_biomass <- factor(c(1))
-input$map$logit_tau_cpue <- factor(c(1))
-
 m <- fit_rema(input)
-m$report()
-m$sdrep
-check_convergence(m)
+
 output <- tidy_rema(m)
 output$parameter_estimates
+
 plots <- plot_rema(output, biomass_ylab = 'Biomass (t)',
                    cpue_ylab = 'Relative Population Weight')
 plots$biomass_by_strata
@@ -294,10 +230,6 @@ cowplot::plot_grid(plots$biomass_by_strata + facet_wrap(~strata, nrow = 1),
                    plots$cpue_by_strata, nrow = 2)
 cowplot::plot_grid(plots$biomass_by_cpue_strata, plots$cpue_by_strata, nrow = 2)
 
-osa <- get_osa_residuals(m, options = list(method = "cdf"))
-osa$residuals$biomass %>% filter(is.nan(residual))
-osa$residuals$cpue %>% filter(is.nan(residual))
-osa$plots$biomass_resids
 compare <- compare_rema_models(rema_models = list(m),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)',
