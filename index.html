@@ -115,7 +115,7 @@
 </h2>
 <p>Use the <code>devtools</code> package to install the <code>rema</code> package from github. If you do not have <code>devtools</code> installed, you must do that first.</p>
 <pre><code><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"JaneSullivan-NOAA/rema"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"afsc-assessments/rema"</span>, dependencies <span class="op">=</span> <span class="cn">TRUE</span>, build_vignettes <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Example R scripts are downloaded when `rema` is installed. Locate them on your computer by running the following commands:</span></span>
 <span><span class="op">(</span><span class="va">rema_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/find.package.html" class="external-link">find.package</a></span><span class="op">(</span><span class="st">'rema'</span><span class="op">)</span><span class="op">)</span></span>
@@ -136,7 +136,7 @@
 <ol style="list-style-type: decimal">
 <li><p>Load <code>rema</code> and data. The user can read biomass or other abundance index data from file (e.g. csv files), or they can use the <code>rwout.rep</code> report file from the ADMB version of the RE model using <code><a href="reference/read_admb_re.html">read_admb_re()</a></code>.</p></li>
 <li><p>Define the model structure and assumptions using <code><a href="reference/prepare_rema_input.html">prepare_rema_input()</a></code>. This function allows users to quickly transition from a single to two survey model, specify alternative process error structures, add likelihood penalties or priors on parameters, and evaluate alternative assumptions about zero biomass observations.</p></li>
-<li><p>Fit the specified REMA model using <code><a href="reference/fit_rema.html">fit_rema()</a></code> and determine whether the model has met basic convergence criteria using <code><a href="reference/check_convergence.html">check_convergence()</a></code>.</p></li>
+<li><p>Fit the specified REMA model using <code><a href="reference/fit_rema.html">fit_rema()</a></code> and determine whether the model has met basic convergence criteria.</p></li>
 <li><p>Extract <code>rema</code> model output into clean, consistently formatted data frames using <code><a href="reference/tidy_rema.html">tidy_rema()</a></code>. The user can visualize this model output using <code><a href="reference/plot_rema.html">plot_rema()</a></code>, or quickly format it into tables for a report.</p></li>
 <li><p>Compare alternative REMA models and conduct model selection using <code><a href="reference/compare_rema_models.html">compare_rema_models()</a></code>. Output from this function includes a table of Akaike Information Criteria (AIC) when appropriate, figures, and tidied data frames. This function also accepts model output from the ADMB version of the RE model for easy comparison to past models.</p></li>
 </ol>
