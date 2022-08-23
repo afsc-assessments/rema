@@ -1,69 +1,69 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/404.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/404.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/articles/ex1_basics.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/articles/ex1_basics.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/articles/ex2_cpue.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/articles/ex2_cpue.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/articles/ex3_zeros.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/articles/ex3_zeros.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/articles/index.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/articles/index.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/articles/rema_equations.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/articles/rema_equations.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/authors.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/authors.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/index.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/index.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/check_convergence.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/check_convergence.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/check_estimability.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/check_estimability.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/compare_rema_models.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/compare_rema_models.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/extract_fixed.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/extract_fixed.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/fit_rema.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/fit_rema.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/fit_tmb.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/fit_tmb.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/get_osa_residuals.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/get_osa_residuals.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/index.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/index.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/pipe.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/pipe.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/plot_rema.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/plot_rema.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/prepare_rema_input.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/prepare_rema_input.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/read_admb_re.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/read_admb_re.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/read_rep.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/read_rep.html</loc>
   </url>
   <url>
-    <loc>https://janesullivan-noaa.github.io/rema/reference/tidy_rema.html</loc>
+    <loc>https://afsc-assessments.github.io/rema/reference/tidy_rema.html</loc>
   </url>
 </urlset>
