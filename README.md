@@ -27,7 +27,7 @@ Use the `devtools` package to install the `rema` package from github. If you do 
 
 ```
 # install.packages("devtools")
-devtools::install_github("JaneSullivan-NOAA/rema", dependencies = TRUE, build_vignettes = TRUE)
+devtools::install_github("afsc-assessments/rema", dependencies = TRUE, build_vignettes = TRUE)
 
 # Example R scripts are downloaded when `rema` is installed. Locate them on your computer by running the following commands:
 (rema_path <- find.package('rema'))
@@ -49,7 +49,7 @@ vignette(topic = "rema_equations") # view technical details offline
 
 2.  Define the model structure and assumptions using `prepare_rema_input()`. This function allows users to quickly transition from a single to two survey model, specify alternative process error structures, add likelihood penalties or priors on parameters, and evaluate alternative assumptions about zero biomass observations.
 
-3.  Fit the specified REMA model using `fit_rema()` and determine whether the model has met basic convergence criteria using `check_convergence()`. 
+3.  Fit the specified REMA model using `fit_rema()` and determine whether the model has met basic convergence criteria.
 
 4.  Extract `rema` model output into clean, consistently formatted data frames using `tidy_rema()`. The user can visualize this model output using `plot_rema()`, or quickly format it into tables for a report.
 
