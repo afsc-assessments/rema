@@ -53,7 +53,7 @@ m2 <- fit_rema(input2)
 m2sum <- tidy_rema(m2)
 
 # m3: small constant = 0.1, cv = 3 ----
-input3 <- prepare_rema_input(model_name = 'small constant = 0.1, cv = 3',
+input3 <- prepare_rema_input(model_name = 'small constant = 0.1, cv = 3.0',
                              biomass_dat = nonsst,
                              zeros = list(assumption = 'small_constant',
                                           options_small_constant = c(0.1, 3)))
@@ -74,7 +74,9 @@ m4sum$parameter_estimates
 plot_rema(m4sum)$biomass_by_strata
 
 compare <- compare_rema_models(rema_models = list(m1, m2, m3, m4))
-compare$plots$total_predicted_biomass
+compare$plots$total_predicted_biomass +
+  geom_point(data = m4sum$biomass_by_strata,
+             aes(x = year, y = obs), col = 'black')
 
 # in log-space
 bind_rows(m1sum$biomass_by_strata,
