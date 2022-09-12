@@ -64,7 +64,7 @@ set_PE_options <- function(input, PE_options) {
 
     if(PE_options$penalty_options == 'squared_penalty') {
 
-      if(length(PE_options$penalty_values) == 1) stop("User has selected PE_options$penalty_options = 'squared_penalty' but has supplied an incorrect number of values to PE_options$penalty_values. Please provide a vector of numeric values with length equal to the number of PE parameters.")
+      if(length(PE_options$penalty_values) != length(unique(map$log_PE))) stop("User has selected PE_options$penalty_options = 'squared_penalty' but has supplied an incorrect number of values to PE_options$penalty_values. Please provide a vector of numeric values with length equal to the number of PE parameters.")
       if(!any(is.numeric(PE_options$penalty_values))) stop("User has selected PE_options$penalty_options = 'squared_penalty' but has supplied non-numeric values to PE_options$penalty_values. Please provide a vector of numeric values with length equal to the number of PE parameters.")
 
       data$PE_penalty_type <- 2
