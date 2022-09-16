@@ -176,6 +176,15 @@ Type objective_function<Type>::operator() ()
   matrix<Type> cpue_dispersion(nyrs, n_strata_cpue);
   cpue_dispersion.setZero();
 
+  // add wide prior for first predicted biomass, but only when computing osa
+  // residuals
+  if(CppAD::Variable(keep.sum())){
+    Type huge = 10;
+    for(int j = 0; j < n_strata_biomass; j++) {
+      jnll -= dnorm(biomass_pred(0, j), Type(0), huge, true);
+    }
+  }
+
   // random effects contribution to likelihood
   for(int i = 1; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
@@ -270,6 +279,15 @@ Type objective_function<Type>::operator() ()
         cpue_pred(i,j) = exp(log_q(pointer_q_cpue(j))) * biomass_pred_cpue_strata(i,j);
         log_cpue_pred(i,j) = log(cpue_pred(i,j));
         log_biomass_pred_cpue_strata(i,j) = log(biomass_pred_cpue_strata(i,j));
+      }
+    }
+
+    // add wide prior for first predicted biomass, but only when computing osa
+    // residuals
+    if(CppAD::Variable(keep.sum())){
+      Type huge = 10;
+      for(int j = 0; j < n_strata_cpue; j++) {
+        jnll -= dnorm(cpue_pred(0, j), Type(0), huge, true);
       }
     }
 
