@@ -1,15 +1,18 @@
 Package: rema
-Title: Random effects model for estimating biomass, with option to include an additional survey index
-Version: 0.1.0
-Author: c(
-    person("Jane", "Sullivan", "jane.sullivan@noaa.gov", role = c("aut", "cre")),
-    person("Cole", "Monnahan", "cole.monnahan@noaa.gov", role = c("ctb")),
-    person("Pete", "Hulson", "pete.hulson@noaa.gov", role = c("ctb"))
-    )
-Maintainer: Jane Sullivan <jane.sullivan@noaa.gov>
-Description: A generalized framework to fit the "Random Effects (RE) model", 
+Type: Package
+Title: A generalized framework to fit the random effects (RE) model, 
     a state-space random walk model developed at the Alaska Fisheries Science 
-    Center (AFSC) for apportionment and biomass estimation. REMA is a multivariate 
+    Center (AFSC) for apportionment and biomass estimation of groundfish and crab stocks.
+Version: 0.1.0
+Date: 2022-12-15
+Authors@R: c(
+    person("Jane", "Sullivan", email = "jane.sullivan@noaa.gov", role = c("aut", "cre")),
+    person("Cole", "Monnahan",  email = "cole.monnahan@noaa.gov", role = c("ctb")),
+    person("Pete", "Hulson",  email = "pete.hulson@noaa.gov", role = c("ctb"))
+    )
+Description: This package provides a generalized framework to fit the random effects (RE) model, 
+    a state-space random walk model developed at the Alaska Fisheries Science 
+    Center (AFSC) for smoothing survey biomass estimates and apportioning catch among management areas. REMA is a multivariate 
     extension of the original single-survey, single-strata RE model that allows 
     the use of multiple strata within a survey and an additional survey (e.g. CPUE 
     or relative population numbers) to inform the biomass trend (Hulson et al. 2021). 
@@ -33,7 +36,6 @@ LinkingTo:
     TMB (>= 1.8.1),
     RcppEigen (>= 0.3.3.9.1)
 URL: https://github.com/JaneSullivan-NOAA/rema,
-    https://janesullivan-noaa.github.io/rema/,
     https://afsc-assessments.github.io/rema/
 BugReports: https://github.com/JaneSullivan-NOAA/rema/issues
 License: GPL-3
