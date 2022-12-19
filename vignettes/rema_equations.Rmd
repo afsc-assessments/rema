@@ -20,7 +20,7 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 # devtools::build_rmd(files = 'vignettes/rema_equations.Rmd')
 ```
 
-# Basic model structure
+# Base model structure for a single survey and stratum
 
 The base REMA model can be represented as a simple state-space random
 walk model with added noise. The observation model is comprised of an
@@ -28,24 +28,30 @@ index of log-transformed annual survey biomass estimates $ln(B_t)$ with
 associated standard deviations $\sigma_{ln(B_t)}$, where
 $\sigma_{ln(B_t)}$ is approximated using the coefficient of variation of
 $B_t$ ($\sigma_{B_t}/B_t$) such that $$
-\sigma_{ln(B_t)}=\sqrt{ln(\frac{\sigma_{B_t}}{B_t}^2+1)}.
+\sigma_{ln(B_t)}=\sqrt{ln((\frac{\sigma_{B_t}}{B_t})^2+1)}.
 $$ The measurement or observation equation, which describes the
 relationship between the observed survey biomass $ln(B_t)$ and the
-latent state variable, population biomass $ln(\hat{B}_t)$. The
-measurement equation is expressed as $$
-ln(B_t) = ln(\hat{B}_t) + \epsilon_{B}, \text{where } \epsilon_{B} \sim N(0, \sigma_{ln(B_t)}^2), 
-$$ while the state equation and associated process error variance
+latent state variable, population biomass $ln(\hat{B}_t)$, is expressed
+as $$
+ln(B_t) = ln(\hat{B}_t) + \epsilon_{B}, \text{where } \epsilon_{B} \sim N(0, \sigma_{ln(B_t)}^2). 
+$$ The state equation and associated process error variance
 $\sigma_{PE}^2$ is defined as $$
-ln(\hat{B}_{t+1}) = ln(\hat{B}_t)+\eta_t, \text{where } \eta_t \sim N(0, \sigma_{PE}^2). 
-$$ In the base model, the process error variance $\sigma_{PE}^2$ is the
-only fixed effect parameter estimated, and the unobserved population
-biomass $ln(\hat{B}_t)$ is estimated as a series of random effects. The
-model is fit using maximum likelihood estimation, where the Laplace
-approximation is used to approximate the marginal negative
-log-likelihood in both TMB and ADMB. An example of fitting the single
-stratum, single survey version of REMA and comparing results with the
-ADMB is illustrated in Example 1 of the ["REMA basics"
-vignette](https://janesullivan-noaa.github.io/rema/articles/ex1_basics.html).
+ln(\hat{B}_{t}) = ln(\hat{B}_{t-1})+\eta_{t-1}, \text{where } \eta_t \sim N(0, \sigma_{PE}^2), 
+$$
+
+where the initial $ln\hat{B}_{1}$ is constrained by the random walk
+process. In the base model, the process error variance $\sigma_{PE}^2$
+is the only fixed effect parameter estimated, and the unobserved
+population biomass $ln(\hat{B}_t)$ is estimated as a series of random
+effects. The model is fit using marginal maximum likelihood estimation,
+where the marginal negative log-likelihood is obtained via the Laplace
+approximation (Skaug and Fournier 2006).
+
+A reproducible example of fitting the univariate (i.e., single stratum,
+single survey) version of the TMB model and comparing those results to
+ADMB is available in the [REMA
+basics](https://afsc-assessments.github.io/rema/articles/ex1_basics.html)
+vignette.
 
 ## Extending to multiple biomass survey strata
 
@@ -55,26 +61,31 @@ inclusion of multiple strata in the same model is advantageous in
 scenarios where the apportionment of biomass among areas is a desired
 result. This extension assumes no correlation in the observation errors
 among survey strata, though PE variance can be shared or estimated
-independently among strata. An example of using Akaike Information
-Criterion (AIC) to explore the inclusion of strata-specific PE variances
-versus a single, shared PE is outlined in example 2 of the ["REMA
-basics"
-vignette](https://janesullivan-noaa.github.io/rema/articles/ex1_basics.html).
+independently among strata.
 
-The ADMB and TMB versions of REMA utilize different methods for
-estimating variance of the total predicted biomass. Therefore, while
+The ADMB and TMB versions of the REMA model utilize different methods
+for estimating variance of the total predicted biomass. Therefore, while
 strata-specific estimates of predicted biomass and associated confidence
-intervals will be identical between the ADMB and TMB versions of the
-model, the confidence intervals of the total predicted biomass will
-differ slightly. In the original ADMB code, the Marlow (1967) method is
-applied, such that the total variance $\sigma_J^2$ is approximated as $$
+intervals will be close to identical between the ADMB and TMB versions
+of the model, the confidence intervals of the total predicted biomass
+will differ slightly. In the original ADMB code, the Marlow (1967)
+method is applied, such that the total variance $\sigma_J^2$ is
+approximated as $$
 \sigma_J^2 = ln\Bigg(\frac{\sum{e^{2 \hat{B}_j + \sigma_{\hat{B}_j}^2} (e^{\sigma_{\hat{B}_j}^2 - 1})}} {(\sum{e^{\hat{B}_j + \sigma_{\hat{B}_j}^2/2}})^2} + 1\Bigg).
-$$ In the updated REMA library, the total variance is estimated using
+$$ In the updated *rema* package, the total variance is estimated using
 the standard Delta method and can be replicated in ADMB using an
 `sdreport_number` and in TMB using the `ADREPORT` macro. As described in
 Monnahan et al. (2021), the exploration of methods for summing
 log-normal variables is a research topic that has potential impacts
-beyond the scope of REMA.
+beyond the scope of this package.
+
+A reproducible example of fitting the multivariate version of the REMA
+model in TMB and a comparison of results to ADMB is available in the
+[REMA
+basics](https://afsc-assessments.github.io/rema/articles/ex1_basics.html)
+vignette. In this example, we also show how Akaike Information Criteria
+(AIC) can be used to explore the inclusion of strata-specific versus a
+single, shared process error variance.
 
 ## Addition of an auxiliary catch per unit effort (CPUE) survey
 
@@ -87,126 +98,115 @@ annual CPUE survey index $\hat{I}_{t}$ is calculated as $$
 $$ and the CPUE survey observations has an additional measurement
 equation and likelihood component similar to the biomass survey: $$
 ln(I_{t}) = ln(\hat{I}_{t}) + \epsilon_{I}, \text{where } \epsilon_{I} \sim N(0, \sigma_{ln(I_t)}^2), 
-$$ By default, REMA estimates a single $q$ for each stratum. REMA allows
-for user-specification of $q$ parameters by strata, including the option
-to estimate a single, shared $q$ across all strata. If the strata
-definitions are not the same for the biomass and CPUE surveys (e.g.
-biomass is estimated at a finer geographic resolution that CPUE), the
-user must manually define the mapping between the two surveys' strata.
-However, since the the auxiliary CPUE survey index is related to
-unobserved population biomass at the level of the biomass survey strata,
-the REMA can only accommodate scenarios where the CPUE survey strata
-have a coarser resolution or are equivalent to the biomass survey
-strata.
+$$ By default, *rema* estimates a single $q$ for each stratum; however,
+users can alternatively specify shared $q$ parameters among strata. If
+the strata definitions are not the same for t,he biomass and CPUE
+surveys (e.g. biomass is estimated at a finer geographic resolution that
+CPUE), the user can define the relationship between the two surveys'
+strata using the `q_options` argument to the
+[`prepare_rema_input()`](https://afsc-assessments.github.io/rema/reference/prepare_rema_input.html)
+function (see `q_options` and `pointer_biomass_cpue_strata)`. However,
+since the the auxiliary CPUE survey index is related to unobserved
+population biomass at the level of the biomass survey strata, the REMA
+model can only accommodate scenarios where the CPUE survey strata have a
+coarser resolution or are equivalent to the biomass survey strata.
 
-An example with GOA shortraker is outlined in the ["Fitting to an
-additional CPUE survey"
-vignette](https://janesullivan-noaa.github.io/rema/articles/ex2_cpue.html).
+A reproducible example of fitting to the two-survey version of the REMA
+model is provided in the [Fitting to an additional CPUE survey
+vignette](https://afsc-assessments.github.io/rema/articles/ex2_cpue.html).
+This example also describes an error in the previously used ADMB version
+of the REMA model, and presents several alternative models that estimate
+additional observation error. These topics are described in more detail
+in the following two sections.
 
 ### The ADMB version of REMA
 
 Separability, as implemented in the `SEPARABLE_FUNCTION` in ADMB and
-through automatic detection in TMB, increases computational efficiency
-of optimization routines by breaking complex, multivariate integrals
-into a product of simpler, univariate integrals (Fournier et al. 2012).
-The use of separability is particularly relevant for state-space models
-as it relates to the efficiency of the Laplace approximation of the
-marginal negative log-likelihood and integration of the random effects
-from the joint negative log-likelihood. In the random effects
-implementation of ADMB (ADMB-RE), parameters defined in the
+through automatic detection in TMB, increases the computational
+efficiency of the Laplace approximation by breaking complex,
+multivariate integrals into a product of simpler, univariate integrals
+(Fournier et al. 2012). The use of separability is particularly relevant
+for state-space models as it relates to the efficiency of the Laplace
+approximation of the marginal negative log-likelihood and integration of
+the random effects from the joint negative log-likelihood. In the random
+effects implementation of ADMB, parameters defined inside the
 `PARAMETER_SECTION` of the template file cannot be used within the
 `SEPARABLE_FUNCTION` unless they are passed as arguments to the function
-(Skaug and Fournier 2013). In the ADMB version of REMA, the calculation
-of predicted CPUE [i.e. $ln(\hat{I}_{t})=ln(q)+ln(\hat{B})$] outside
-rather than inside the `SEPARABLE_FUNCTION` violates this rule, thus
-introducing an error into the program that prevents accurate
-implementation of the Laplace approximation.
+(Skaug and Fournier 2013). In the ADMB version of the REMA model, the
+calculation of predicted CPUE [i.e. $ln(\hat{I}_{t})=ln(q)+ln(\hat{B})$]
+occurred outside rather than inside the `SEPARABLE_FUNCTION`, and as a
+results, violated this rule and affecting the accuracy of the Laplace
+approximation.
 
-We explored this error in a simplified example of REMA in both ADMB and
-TMB, which is hosted on
-[Github](https://github.com/JaneSullivan-NOAA/separable_function). We
-were able to reproduce results from the TMB version of REMA in ADMB by
-passing $ln(q)$ as an argument to the SEPARABLE_FUNCTION and performing
-the $ln(\hat{I}_{t})$ calculation inside the function (Figure x).
-Additionally, when we used Markov Chain Monte Carlo (MCMC) methods for
-statistical inference instead of MLE, the results from both ADMB
-versions closely matched the correct version of REMA. Finally, a
-comparison of the individual negative log-likelihood (NLL) components,
-along with the joint and marginal NLLs, revealed that all were the same
-between the TMB model, correct "inside" ADMB version, and incorrect
-"outside" ADMB version, *except* the marginal NLL. Taken together, this
-analysis demonstrates an error in the calculations of the Laplace
-approximation in the "outside" version of the ADMB REMA model.
-
-Currently one Tier 3 apportionment model (GOA rougheye and blackspotted
-rockfish) and two Tier 5 assessments (GOA shortspine thornyhead and GOA
-shortraker rockfish) use the invalid version of the ADMB REMA model. The
-biomass predictions from this version exhibit significantly less
-inter-annual variability (i.e. lower PE variation) than the
-correctly-specified REMA models. In the correct versions of REMA, this
-result is attributed to the relatively high precision of the biomass and
-longline survey relative population weights (RPWs), which translates to
-high PE variance and model predictions that closely track inter-annual
-variability in the data. This model behavior is biologically unrealistic
-for the long-lived, low productivity rockfish species that currently use
-the multi-survey version of REMA.
-
-One option for authors may be to remove the longline survey RPW index
-entirely from the model and only fit to trawl survey biomass. However,
-the species that currently use the two-survey model do so because they
-are well-sampled by the longline survey. Additionally, the two-survey
-approach may reduce data gaps following survey reductions. For example,
-the EBS Slope bottom trawl survey was last conducted in 2016. At least
-two species' stock assessments, shortspine thornyhead and shortraker
-rockfish, currently rely on the 2016 estimate from the EBS slope survey
-in that region to inform ABC calculations. Instead of omitting the
-longline survey from the model, we propose an alternative method for
-estimating additional observation error.
+We explored this error in a [simplified
+example](https://github.com/JaneSullivan-NOAA/separable_function) of the
+REMA model in both ADMB and TMB. We were able to reproduce results from
+the TMB version of REMA in ADMB by passing $ln(q)$ as an argument to the
+`SEPARABLE_FUNCTION` and performing the $ln(\hat{I}_{t})$ calculation
+inside the `SEPARABLE_FUNCTION`. When we used Markov Chain Monte Carlo
+(MCMC) methods for statistical inference instead of MLE, the results
+from both ADMB versions closely matched the correct version of REMA.
+Finally, a comparison of the individual negative log-likelihood (NLL)
+components, along with the joint and marginal NLLs, revealed that all
+were the same between the TMB model, correct "inside" ADMB version, and
+incorrect "outside" ADMB version, *except* the marginal NLL. Taken
+together, this analysis confirms there is a bug in the "outside" ADMB
+version, which affects the accuracy of the Laplace approximation and
+model results.
 
 ## Estimation of additional observation error
 
-Occasions arise when the assumed observation error variance for the
-biomass and/or CPUE survey is lower than may be biologically realistic
-given inter-annual variability of survey estimates. In these instances,
-the model estimates of $(\sigma_{B_{t,j}}+\sigma_{I_{t,j}})/\sigma_{PE}$
-may be lower than what should be expected based on an individual species
-life history traits. For example, if the ratio of observation to PE
-variation is low, model predictions of population biomass may exhibit
-high inter-annual variability. This behavior would be unexpected in low
-productivity species, which should exhibit low inter-annual variation in
-biomass (i.e. low PE variance), especially in situations when fishing
+Based on experience gained using alternative observed index estimates
+(e.g., relative CPUE indices), there appears to be cases where the
+estimates of observation error variances for the biomass and/or CPUE
+survey are too low (e.g., Echave et al. 2020). That is, there is a
+mismatch between biologically reasonable
+inter-annual variability and the precision of index estimates. In these
+instances, the model estimates of
+$(\sigma^2_{B_{t,j}}+\sigma^2_{I_{t,j}})/\sigma^2_{PE}$ may be lower
+than what should be expected based on an individual species life history
+traits. For example, if the ratio of observation to PE variation is low,
+model predictions of population biomass may exhibit high inter-annual
+variability. This behavior would be unexpected in low productivity
+species, which should exhibit low inter-annual variation in biomass
+(i.e. low PE variance), especially in situations when fishing
 exploitation is low.
 
 One approach to addressing this issue is to estimate additional
-observation error. This is not a novel approach; it is regularly
-implemented in Alaskan crab stock assessments and has been explored in
-several groundfish assessments as well. Using the biomass survey
-variance as an example, the extra estimated error ($\sigma_{\tau}$) is
-specified as:
+observation error. This method is commonly implemented in Stock
+Synthesis, has been implemented in Alaskan crab stock assessments (Zheng
+and Siddeek 2020), and has been explored in several groundfish
+assessments as well. Using the biomass survey variance as an example,
+the extra estimated error ($\sigma_{\tau}$) is specified as:
 
 $$
-\sigma_{ln(B_t)}=\sqrt{ln(\frac{\sigma_{B_t}}{B_t}^2+{\sigma_{\tau}}^2+1)}.
+\sigma_{ln(B_t)}=\sqrt{ln((\frac{\sigma_{B_t}}{B_t})^2+{\sigma_{\tau}}^2+1)}.
 $$ This approach is a new method for Tier 5 stock assessments and
-apportionment methods at the AFSC. An example with GOA shortraker is
-outlined in the ["Fitting to an additional CPUE survey"
-vignette](https://janesullivan-noaa.github.io/rema/articles/ex2_cpue.html),
-which demonstrates that the estimation of additional observation error
-for the biomass and CPUE survey observations results in a better fit by
-AIC than status quo approaches and results in a more biologically
-realistic trend in population biomass.
+apportionment methods at the AFSC. A reproducible example with GOA
+shortraker is outlined in the [Fitting to an additional CPUE
+survey](https://afsc-assessments.github.io/rema/articles/ex2_cpue.html).
+In this example, the estimation of additional observation error for the
+biomass and CPUE survey resulted in a better fit by AIC than status quo
+approaches and has a more biologically realistic trend in predicted
+population biomass.
 
-## Exploration of the Tweedie distribution for modeling observation error in cases with zero biomass observations
+## Exploration of the Tweedie distribution for zero biomass observations
 
-The Tweedie distribution is a positive and continuous distribution that
-includes zero values, thus more naturally handling survey time series
-with one or more zero observations. The Tweedie distribution is defined
+The [Tweedie
+distributions](https://en.wikipedia.org/wiki/Tweedie_distribution) are a
+family of probability distributions that can be generalized to include
+the Gaussian, inverse Gaussian, gamma, Poisson, and compound
+Poisson-gamma distributions. The Tweedie distribution can be defined
 with three parameters, a mean ($\mu$), power parameter ($\rho$), and
-dispersion ($\phi$). The relationship between the variance and these
-parameters is defined by $\sigma^2=\phi\mu^\rho$. In REMA, the Tweedie
-is constrained using a logit-transformation on $\rho$, which bounds this
-parameter between 1 and 2. Values of $\rho$ on these bounds are special
-cases of the Tweedie distribution, where $\rho$=1 is equivalent to a
-Poisson distribution and $\rho$=2 is a gamma distribution.
+dispersion ($\phi$), where the relationship between the variance and
+these parameters is defined by $\sigma^2=\phi\mu^\rho$. When $\rho$ is
+bounded between 1 and 2, the Tweedie is a positive, continuous
+distribution that can handle zero values, thus allowing it to more
+naturally handle survey time series with one or more zero observations.
+Values of $\rho$ on these bounds are special cases of the Tweedie
+distribution, where $\rho$=1 is equivalent to a Poisson distribution and
+$\rho$=2 is a gamma distribution. In *rema*, the Tweedie $\rho$ is
+constrained between 1 and 2 using a logit-transformation.
 
 Similar to the normal distribution, observation error variances are
 treated as known for the Tweedie distribution in the REMA model. Using
@@ -226,18 +226,19 @@ zeros, they would define
 `zeros = list(assumption = 'tweedie', options_tweedie = list(zeros_cv = 2.0))`
 within the `prepare_rema_input()` function.
 
-An example of using the Tweedie distribution for observation error is
-outlined in the ["Strategies for handling zero biomass observations"
-vignette](https://janesullivan-noaa.github.io/rema/articles/ex3_zeros.html)
-using BSAI other rockfish in the EBS shelf bottom trawl survey. In this
-example, 13 of 38 biomass observations are zeros. While the Tweedie
+A reproducible example using the Tweedie distribution for observation
+error is outlined in the [Strategies for handling zero biomass
+observations](https://janesullivan-noaa.github.io/rema/articles/ex3_zeros.html)
+vignette. We use the non-shortspine thornyhead component of the Bering
+Sea/Aleutian Islands other rockfish stock, which is unique in that 13 of
+38 bottom trawl survey biomass estimates are zeros. While the Tweedie
 performs well for this case, further exploration revealed that the
 Tweedie models can be very slow to run and often did not converge,
 especially in instances where the observation error variance estimates
 were low. It is possible that further development on estimating
 additional observation error variance (e.g. ${\tau}^2$ in the previous
 section) could alleviate these convergence errors. However, in the
-interim, the Tweedie distribution in REMA should be considered
+interim, the Tweedie distribution in *rema* should be considered
 experimental, and we do not recommend it as a viable alternative for
 tactical assessments at this time.
 
@@ -258,23 +259,26 @@ Methods for calculating OSA residuals have been implemented in TMB
 through the `TMB::oneStepPredict()` function. While these methods are
 straight forward to implement in TMB, they are computationally
 demanding, and the validity (and accuracy) of the OSA residuals may vary
-by situation and method used. Methods to implement OSA residuals in REMA
-are under development and should be considered experimental. Currently
-REMA implements OSA residuals using the `method = "cdf"` option in
-`TMB::oneStepPredict()`, which has the benefit of speeding up residual
-calculations by saving copies of the one-step cumulative density
-function at each data point and thus reducing the number of calculations
-at each function evaluation. While OSA residuals appear to be calculated
-correctly for some REMA models, occasionally `NaN` values for residuals
-are returned, especially in cases with small measurement errors. One
-potential cause of this error may lie in the initialization of the state
-process within REMA and will be explored further in future versions of
-this package. Finally, the algorithms underpinning
-`TMB::oneStepPredict()` methods are an area of active research, and
-therefore this function remains in Beta mode within the TMB package and
-is subject to future change.
+by situation and method used. Methods to implement OSA residuals in
+*rema* are under development and should be considered experimental.
+Currently, OSA residuals are implemented using the `method = "cdf"`
+option in `TMB::oneStepPredict()`, which has the benefit of speeding up
+residual calculations by saving copies of the one-step cumulative
+density function at each data point and thus reducing the number of
+calculations at each function evaluation. While OSA residuals appear to
+be calculated correctly for some REMA models, occasionally `NaN` values
+for residuals are returned, especially in cases with small measurement
+errors. One potential cause of this error may lie in the initialization
+of the state process within the REMA model and will be explored further
+in future versions of this package.
 
 # References
+
+Echave, K. B., P. J. F. Hulson, and K. A. Siwicke. 2020. Assessment of
+the Thornyhead stock complex in the Gulf of Alaska. In: Stock assessment
+and fishery evaluation report for the groundfish resources of the Gulf
+of Alaska as projected for 2021. North Pacific Fishery Management
+Council, 605 W. 4th. Avenue, Suite 306, Anchorage, AK 99501.
 
 Fournier D. A., H. J. Skaug , J. Ancheta , J. Ianelli , A. Magnusson, M.
 N. Maunder , A. Nielsen, and J. Sibert. 2012. AD Model Builder: using
@@ -282,15 +286,31 @@ automatic differentiation for statistical inference of highly
 parameterized complex nonlinear models, Optimization Methods and
 Software, 27:2, 33-249, DOI: 10.1080/10556788.2011.597854
 
-Marlow, NA. (Nov 1967). "A normal limit theorem for power sums of
-independent normal random variables". Bell System Technical Journal. 46
-(9): 2081--2089. <doi:10.1002/j.1538-7305.1967.tb04244.x>.
+Marlow, N. A. 1967. A normal limit theorem for power sums of independent
+normal random variables. Bell System Technical Journal. 46 (9):
+2081--2089. <doi:10.1002/j.1538-7305.1967.tb04244.x>.
 
-Skaug H. and D. Fournier. 2013.
-Random effects in AD Model Builder: ADMB-RE User Guide.
+Methot, R. D. and Wetzel, C. R. 2013. Stock Synthesis: A biological and
+statistical framework for fish stock assessment and fishery management.
+Fisheries Research, 142: 86-99.
+<https://doi.org/10.1016/j.fishres.2012.10.012>
+
+Skaug H. and D. Fournier. 2013. Random effects in AD Model Builder:
+ADMB-RE User Guide.
 <http://ftp.admb-project.org/admb-11.2pre/admbre-11.2pre.pdf>
 
-Thygesen, U.H., Albertsen, C.M., Berg, C.W. *et al.* Validation of
-ecological state space models using the Laplace approximation. *Environ
-Ecol Stat* **24,** 317--339 (2017).
+Skaug, H. J. and D. A. Fournier. 2006. Automatic approximation of the
+marginal likelihood in non-Gaussian hierarchical models. Computational
+Statistics & Data Analysis, 51(2): 699--709.
+<https://doi.org/10.1016/j.csda.2006.03.005>
+
+Thygesen, U. H., Albertsen, C. M., Berg, C. W*.,* Kristensen, K.,
+Nielsen, A. 2017. Validation of ecological state space models using the
+Laplace approximation. Environ Ecol Stat 24**,** 317--339.
 <https://doi.org/10.1007/s10651-017-0372-4>
+
+Zheng, J., and M. S. M. Siddeek. 2020. Bristol Bay red king crab stock
+assessment in fall 2020. In: Stock assessment and fishery evaluation
+report the king and tanner crab fisheries of the Bering Sea and Aleutian
+Islands regions. North Pacific Fishery
+Management Council, 605 W 4th Ave, Suite 306 Anchorage, AK 99501.
