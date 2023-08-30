@@ -160,16 +160,15 @@ Based on experience gained using alternative observed index estimates
 (e.g., relative CPUE indices), there appears to be cases where the
 estimates of observation error variances for the biomass and/or CPUE
 survey are too low (e.g., Echave et al. 2020). That is, there is a
-mismatch between biologically reasonable
-inter-annual variability and the precision of index estimates. In these
-instances, the model estimates of
-$(\sigma^2_{B_{t,j}}+\sigma^2_{I_{t,j}})/\sigma^2_{PE}$ may be lower
-than what should be expected based on an individual species life history
-traits. For example, if the ratio of observation to PE variation is low,
-model predictions of population biomass may exhibit high inter-annual
-variability. This behavior would be unexpected in low productivity
-species, which should exhibit low inter-annual variation in biomass
-(i.e. low PE variance), especially in situations when fishing
+mismatch between biologically reasonable inter-annual variability and
+the precision of index estimates. In these instances, the model
+estimates of $(\sigma^2_{B_{t,j}}+\sigma^2_{I_{t,j}})/\sigma^2_{PE}$ may
+be lower than what should be expected based on an individual species
+life history traits. For example, if the ratio of observation to PE
+variation is low, model predictions of population biomass may exhibit
+high inter-annual variability. This behavior would be unexpected in low
+productivity species, which should exhibit low inter-annual variation in
+biomass (i.e. low PE variance), especially in situations when fishing
 exploitation is low.
 
 One approach to addressing this issue is to estimate additional
@@ -312,5 +311,5 @@ Laplace approximation. Environ Ecol Stat 24**,** 317--339.
 Zheng, J., and M. S. M. Siddeek. 2020. Bristol Bay red king crab stock
 assessment in fall 2020. In: Stock assessment and fishery evaluation
 report the king and tanner crab fisheries of the Bering Sea and Aleutian
-Islands regions. North Pacific Fishery
-Management Council, 605 W 4th Ave, Suite 306 Anchorage, AK 99501.
+Islands regions. North Pacific Fishery Management Council, 605 W 4th
+Ave, Suite 306 Anchorage, AK 99501.
