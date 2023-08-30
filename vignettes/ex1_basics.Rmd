@@ -88,6 +88,7 @@ m <- fit_rema(input)
 
 4.  Get tidied model output and plot results
 
+Note that the 95% confidence intervals of the observations (i.e., `obs_lci` and `obs_uci` in `output$biomass_by_strata` are based on the assumption of normality in log-space; therefore, they are asymmetric on the arithmetic scale.
 ```{r rema-output, echo=TRUE, message=FALSE, warning=FALSE}
 # ?tidy_rema
 output <- tidy_rema(rema_model = m)
