@@ -112,9 +112,25 @@ input2 <- prepare_rema_input(model_name = 'M2: TMB extra obs error',
                             extra_cpue_cv = list(assumption = 'extra_cv'))
 
 m2 <- fit_rema(input2)
-tidy_rema(m2)$parameter_estimates
+out2 <- tidy_rema(m2)
 
 ```
+
+The following figure shows the fits to the data as before; however, here we used the `tidy_extra_cv()` and `plot_extra_cv()` functions to obtain the total 95% confidence intervals for survey biomass or CPUE observations (i.e., fixed + estimated observation error). Note that the 95% confidence intervals of the observations (i.e., `obs_lci`/`obs_uci` and `tot_obs_lci`/`tot_obs_uci` in `output$biomass_by_strata` and `output$cpue_by_strata` are based on the assumption of normality in log-space; therefore, they are asymmetric on the arithmetic scale.
+
+In the figure below, the error bars around the survey observations show the 95% confidence intervals based on the assumed design-based estimates (in bold with whiskers) and the 95% confidence intervals based on the total observation error (design-based estimates of CV + additional estimated CV; no whiskers).
+
+```{r plot-extra-sd, warning = FALSE, message = FALSE, fig.height=6.5, fig.width=8.5}
+# adds new columns with total observation error and 95% confidence intervals to
+# the biomass_by_strata and cpue_by_strata
+out2 <- tidy_extra_cv(out2)
+cvplots <- plot_extra_cv(out2)
+cowplot::plot_grid(cvplots$biomass_by_strata,
+                   cvplots$cpue_by_strata,
+                   ncol = 1)
+```
+
+## Model comparison
 
 A comparison of the the three models shows that estimation of additional observation error substantially reduces PE variance, resulting in a smoother trajectory of biomass predictions.
 
@@ -124,6 +140,7 @@ compare <- compare_rema_models(rema_models = list(m1, m2),
                                admb_re = admb_re,
                                biomass_ylab = 'Biomass (t)',
                                cpue_ylab = 'Relative Population Weights')
+
 compare$plots$biomass_by_strata + theme(legend.position = 'top')
 
 ```
