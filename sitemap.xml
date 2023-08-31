@@ -52,6 +52,9 @@
     <loc>https://afsc-assessments.github.io/rema/reference/pipe.html</loc>
   </url>
   <url>
+    <loc>https://afsc-assessments.github.io/rema/reference/plot_extra_cv.html</loc>
+  </url>
+  <url>
     <loc>https://afsc-assessments.github.io/rema/reference/plot_rema.html</loc>
   </url>
   <url>
@@ -62,6 +65,9 @@
   </url>
   <url>
     <loc>https://afsc-assessments.github.io/rema/reference/read_rep.html</loc>
+  </url>
+  <url>
+    <loc>https://afsc-assessments.github.io/rema/reference/tidy_extra_cv.html</loc>
   </url>
   <url>
     <loc>https://afsc-assessments.github.io/rema/reference/tidy_rema.html</loc>
