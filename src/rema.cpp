@@ -188,7 +188,14 @@ Type objective_function<Type>::operator() ()
   // random effects contribution to likelihood
   for(int i = 1; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
+
       jnll(0) -= dnorm(log_biomass_pred(i-1,j), log_biomass_pred(i,j), exp(log_PE(pointer_PE_biomass(j))), 1);
+
+      // simulation block
+      SIMULATE {
+        log_biomass_pred(i,j) = rnorm(log_biomass_pred(i-1,j), exp(log_PE(pointer_PE_biomass(j))));
+      }
+
     }
   }
   switch(PE_penalty_type) {
@@ -233,6 +240,12 @@ Type objective_function<Type>::operator() ()
           jnll(1) -= keep(keep_biomass_obs(i,j)) * dnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j), 1);
           jnll(1) -= keep.cdf_lower(keep_biomass_obs(i,j)) * log(squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j))));
           jnll(1) -= keep.cdf_upper(keep_biomass_obs(i,j)) * log(1.0 - squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j))));
+
+          // simulation block
+          SIMULATE {
+            log_biomass_obs(i,j) = rnorm(log_biomass_pred(i,j), log_biomass_sd(i,j));
+          }
+
         }
 
       }
@@ -248,6 +261,11 @@ Type objective_function<Type>::operator() ()
           biomass_sd(i,j) = biomass_cv(i,j) * biomass_pred(i,j);
           biomass_dispersion(i,j) = (biomass_sd(i,j) * biomass_sd(i,j)) / pow(biomass_pred(i,j), tweedie_p(0));
           jnll(1) -= dtweedie(biomass_obs(i,j), biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
+
+          // simulation block
+          SIMULATE {
+            log_biomass_obs(i,j) = rtweedie(log_biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0));
+          }
         }
 
       }
@@ -303,6 +321,11 @@ Type objective_function<Type>::operator() ()
             jnll(2) -= keep(keep_cpue_obs(i,j)) * dnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j), 1);
             jnll(2) -= keep.cdf_lower(keep_cpue_obs(i,j)) * log(squeeze(pnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j))));
             jnll(2) -= keep.cdf_upper(keep_cpue_obs(i,j)) * log(1.0 - squeeze(pnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j))));
+
+            // simulation block
+            SIMULATE {
+              log_cpue_obs(i,j) = rnorm(log_cpue_pred(i,j), log_cpue_sd(i,j));
+            }
           }
 
         }
@@ -317,6 +340,11 @@ Type objective_function<Type>::operator() ()
             cpue_sd(i,j) = cpue_cv(i,j) * cpue_pred(i,j);
             cpue_dispersion(i,j) = (cpue_sd(i,j) * cpue_sd(i,j)) / pow(cpue_pred(i,j), tweedie_p(1));
             jnll(2) -= dtweedie(cpue_obs(i,j), cpue_pred(i,j), cpue_dispersion(i,j), tweedie_p(1), 1);
+
+            // simulation block
+            SIMULATE {
+              log_cpue_obs(i,j) = rtweedie(log_cpue_pred(i,j), cpue_dispersion(i,j), tweedie_p(0));
+            }
           }
 
         }
@@ -384,6 +412,12 @@ Type objective_function<Type>::operator() ()
   REPORT(cpue_sd);
   REPORT(cpue_dispersion);
   REPORT(jnll);
+
+  SIMULATE {
+    REPORT(log_biomass_pred);
+    REPORT(log_biomass_obs);
+    REPORT(log_cpue_obs);
+  }
 
   // jnll = dummy * dummy;        // Uncomment when debugging code
   nll = jnll.sum();
