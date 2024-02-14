@@ -8,7 +8,7 @@ library(readr)
 library(dplyr)
 library(ggplot2)
 library(TMB)
-library(rema)
+# library(rema)
 library(cowplot)
 
 ggplot2::theme_set(cowplot::theme_cowplot(font_size = 12) +

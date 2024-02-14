@@ -1,4 +1,4 @@
-# currently on the diagnostics branch!
+# currently on the diagnostics branch
 
 # resources and references:
 # https://github.com/NOAA-FIMS/TMB_training/tree/main
@@ -16,8 +16,8 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 12) +
                      cowplot::panel_border())
 
 # dyn.unload(dynlib(here::here('src', 'rema')))
-# TMB::compile(here::here('src', 'rema.cpp'))
-# dyn.load(dynlib(here::here('src', 'rema')))
+TMB::compile(here::here('src', 'rema.cpp'))
+dyn.load(dynlib(here::here('src', 'rema')))
 
 biomass_dat <- read_csv('inst/example_data/goa_sst_biomass.csv')
 cpue_dat <- read_csv('inst/example_data/goa_sst_rpw.csv')
@@ -108,9 +108,9 @@ ggplot(simout, aes(x = estimate)) +
 
 # Notes on simulations:
 #
-# > I'm not too sure about the posterior predictive checks or other uses for
-# simulations in this particular case but if you want to dig into them more that
-# would be great
+# > Pursue posterior predictive checks
+#
+# > Add flags for simulating process error vs. observations?
 #
 # > How many simulations do we need to test bias? I don't know. Also can we get
 # rid of all the dplyr junk printed to the screen?
@@ -149,8 +149,12 @@ tidy_rema(m1)$parameter_estimates
 
 # Checking the Laplace approximation ----
 
-# TMB allows the user to test whether the Laplace approximation of the marginal
-# log-likelihood and joint log-likelihood is "ok." TMB::checkConsistency simulates
+# Flagging this paper, which outlines another potential method we can use to
+# test the accuracy of the Laplace approximation:
+# https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0197954#pone-0197954-g001
+
+# TMB allows the user to test accuracy of the Laplace approximation of the marginal
+# log-likelihood and joint log-likelihood. TMB::checkConsistency simulates
 # data and calculates the gradients for each of the simulated data sets. If the
 # average gradient is approximately zero, then the Laplace approximation is
 # assumed to be ok. A chi-square test for gradient bias is performed for the
@@ -159,14 +163,19 @@ tidy_rema(m1)$parameter_estimates
 # chi-square test for bias.
 check <- TMB::checkConsistency(m1)
 check
-# In this case the simulation does not appear to be correct!!
+# In this case the simulation does not appear to be correct!! We tried turning
+# off SIMULATE block on random effects and that caused the entire thing to fail.
 
 # in other case I'm not able to invert the information matrix
-# (same as the Hessian here right?!)
+# (same as the Hessian here right?)
 summary(check)
 
 # One-step-ahead residuals ----
 
+# TO DO:
+# > Change default in OSA function to 'generic' based on Kasper's recommendation
+# (via Cole)
+#
 # I've built a wrapper function (not to say it couldn't use some work!) to do this get_osa_residuals() but
 # consistently have issues with residual patterns... I guess they may in fact
 # reflect true model misspecification!
@@ -209,4 +218,3 @@ compare <- compare_rema_models(list(m1, newm1))
 compare$plots$total_predicted_biomass # gives identical results from a management perspective
 compare$plots$biomass_by_strata + facet_wrap(~strata, scales = 'free_y')
 compare$plots$cpue_by_strata + facet_wrap(~strata, scales = 'free_y')
-
