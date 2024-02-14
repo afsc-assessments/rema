@@ -1,4 +1,9 @@
-# currently on the diagnostics branch
+# Diagnostic tools for the REMA model
+#
+# The purpose of this script is to explore and develop model
+# diagnostic functions for rema users
+
+# **currently on the diagnostics branch**
 
 # resources and references:
 # https://github.com/NOAA-FIMS/TMB_training/tree/main
@@ -15,6 +20,7 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 12) +
                      cowplot::background_grid() +
                      cowplot::panel_border())
 
+# compile model locally
 # dyn.unload(dynlib(here::here('src', 'rema')))
 TMB::compile(here::here('src', 'rema.cpp'))
 dyn.load(dynlib(here::here('src', 'rema')))
@@ -22,7 +28,6 @@ dyn.load(dynlib(here::here('src', 'rema')))
 biomass_dat <- read_csv('inst/example_data/goa_sst_biomass.csv')
 cpue_dat <- read_csv('inst/example_data/goa_sst_rpw.csv')
 
-# library(rema)
 unique(biomass_dat$strata)
 input <- prepare_rema_input(model_name = 'GOA thornyhead',
                             biomass_dat = biomass_dat,
@@ -78,7 +83,7 @@ set.seed(415)
 
 # this is going to be a headache to generalize different strata, multi survey
 # version, tweedie, extra CV. we can discuss.
-for(i in 1:200) {
+for(i in 1:150) {
   sim <- m1$simulate(complete = TRUE)
   names(sim)
   newinput <- input
@@ -108,12 +113,17 @@ ggplot(simout, aes(x = estimate)) +
 
 # Notes on simulations:
 #
-# > Pursue posterior predictive checks
+# > Pursue posterior predictive checks. unclear if the self-check is a good
+# diagnostic tool (maybe just better for checking code for errors or poor
+# convergence?)... there did not seem to be good agreement within the ssmesa
+# group about the utility of the simulation self-check as a model validation
+# tool
 #
-# > Add flags for simulating process error vs. observations?
+# > Add flags for simulating process error vs. observations in the cpp file
 #
-# > How many simulations do we need to test bias? I don't know. Also can we get
-# rid of all the dplyr junk printed to the screen?
+# > How many simulations do we need to test bias?
+#
+# > Get rid of all the dplyr junk printed to the screen
 #
 # > Output bias statistic e.g., relative error?
 
