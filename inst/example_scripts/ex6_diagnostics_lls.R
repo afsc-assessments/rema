@@ -18,6 +18,7 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 12) +
 # dyn.unload(dynlib(here::here('src', 'rema')))
 # TMB::compile(here::here('src', 'rema.cpp'))
 # dyn.load(dynlib(here::here('src', 'rema')))
+
 biomass_dat <- read_csv('inst/example_data/goa_sst_biomass.csv')
 cpue_dat <- read_csv('inst/example_data/goa_sst_rpw.csv')
 
@@ -25,19 +26,45 @@ cpue_dat <- read_csv('inst/example_data/goa_sst_rpw.csv')
 unique(biomass_dat$strata)
 input <- prepare_rema_input(model_name = 'GOA thornyhead',
                             biomass_dat = biomass_dat,
-                            # shared process error SD across all strata
+                            cpue_dat = cpue_dat,
+                            multi_survey = TRUE,
+                            # Process error variation alternation configurations:
+                            # (1) shared process error SD across all strata
                             # PE_options = list(pointer_PE_biomass = c(rep(1,9)))
-                            # shared process error SD within regions
-                            PE_options = list(pointer_PE_biomass = c(rep(1,3), rep(2,3), rep(3,3)))
+                            # (2) shared process error SD within an area
+                            PE_options = list(pointer_PE_biomass = c(rep(1,3), rep(2,3), rep(3,3))),
+                            # (3) one process error SD for 0-500 shared across
+                            # areas, and one process error SD for > 500 m shared
+                            # across all areas (the idea being that younger at
+                            # shallower depths may be more variable than older
+                            # fish at deeper depths)
+                            # PE_options = list(pointer_PE_biomass = rep(c(1,2,2),3)),
+                            # LLS scaling parameter: reminder that that the bts
+                            # and lls are not stratified in the same way... so
+                            # this pointer allows the user to map biomass strata
+                            # to cpue strata
+                            q_options = list(pointer_biomass_cpue_strata = c(rep(1,3), rep(2,3), rep(3,3))),
+                            # estimate additional obs error on the LLS
+                            extra_cpue_cv = list(assumption = 'extra_cv'),
+                            # rpns and rpws are summable
+                            sum_cpue_index = TRUE
                             )
 
 m1 <- fit_rema(input)
 out1 <- tidy_rema(m1)
-param <- out1$parameter_estimates %>% dplyr::mutate(region = c('CGOA', 'EGOA', 'WGOA')) # always lists the strata in alphabetical order!
+
+# note on this "region_input": not sure if this could be gleaned from the
+# pointers in the prepare_rema_input or an argument to tidy_rema... TBD
+region_input <- c(rep(c('CGOA', 'EGOA', 'WGOA'), 2), "COMBINED") # always lists the strata in alphabetical order!
+param <- out1$parameter_estimates %>% dplyr::mutate(region = region_input)
 param
 plots1 <- plot_rema(tidy_rema = out1)
-plots1$biomass_by_strata
-plots1$total_predicted_biomass
+plots1$biomass_by_strata + facet_wrap(~strata, scales = 'free_y', dir = 'v')
+plots1$cpue_by_strata + facet_wrap(~strata, scales = 'free_y')
+
+# plot the additional estimated observation error on the LLS
+out1cv <- tidy_extra_cv(out1)
+plot_extra_cv(out1cv)$cpue_by_strata
 
 # Simulation self-check ----
 
@@ -58,25 +85,26 @@ for(i in 1:200) {
   tmp <- matrix(data = exp(sim$log_biomass_obs), ncol = ncol(input$data$biomass_obs), nrow = nrow(input$data$biomass_obs))
   colnames(tmp) <- colnames(input$data$biomass_obs)
   newinput$data$biomass_obs <- tmp
+  tmp <- matrix(data = exp(sim$log_cpue_obs), ncol = ncol(input$data$cpue_obs), nrow = nrow(input$data$cpue_obs))
+  colnames(tmp) <- colnames(input$data$cpue_obs)
+  newinput$data$cpue_obs <- tmp
   # is there a reason we'd want to output and plot the simulated data?
   newm1 <- fit_rema(newinput)
   newout1 <- tidy_rema(newm1)
   if(i == 1) {
-    simout <- newout1$parameter_estimates %>%
-      dplyr::mutate(region = c('CGOA', 'EGOA', 'WGOA'),
-                    sim = i)
+    simout <- newout1$parameter_estimates %>% dplyr::mutate(region = region_input, sim = i)
   } else {
-    simout <- simout %>%
-      dplyr::bind_rows(newout1$parameter_estimates %>%
-                         dplyr::mutate(region = c('CGOA', 'EGOA', 'WGOA'),
-                                       sim = i))
+    simout <- simout %>% dplyr::bind_rows(newout1$parameter_estimates %>% dplyr::mutate(region = region_input, sim = i))
   }
 }
+
+simout <- simout %>% dplyr::mutate(name = paste0(region, "_", parameter))
+param <- param %>% dplyr::mutate(name = paste0(region, "_", parameter))
 
 ggplot(simout, aes(x = estimate)) +
   geom_histogram(fill = 'white', col = 'black') +
   geom_vline(data = param, aes(xintercept = estimate), col = 'red', size = 2) +
-  facet_wrap(~region, scales = 'free_x')
+  facet_wrap(~name, scales = 'free_x')
 
 # Notes on simulations:
 #
@@ -87,7 +115,7 @@ ggplot(simout, aes(x = estimate)) +
 # > How many simulations do we need to test bias? I don't know. Also can we get
 # rid of all the dplyr junk printed to the screen?
 #
-# > Output bias statistic e.g. relative error?
+# > Output bias statistic e.g., relative error?
 
 # Identifiability and Uncertainty -----
 
@@ -97,9 +125,13 @@ ggplot(simout, aes(x = estimate)) +
 # A note about TMB::tmbprofile: Because parameters have the same name, need to
 # use this "lincomb" argument. The line below is a likelihood profile (and
 # confidence interval, etc.) for the second stratum's log_PE
-profile <- TMB::tmbprofile(m1, lincomb = c(0,1,0))
-plot(profile)
-confint(profile)
+profile <- TMB::tmbprofile(m1, lincomb = c(0,1,0,0,0,0,0))
+plot(profile);confint(profile)
+profile <- TMB::tmbprofile(m1, lincomb = c(0,0,0,0,0,0,1))
+plot(profile);confint(profile)
+# can also look at the difference between parameters
+profile <- TMB::tmbprofile(m1, lincomb = c(0,0,1,0,0,-1,0))
+plot(profile);confint(profile)
 # ^ note this is an alternative way of calculating variance to the standard
 # method (see below) which relies on the delta method and assumes asymptotic
 # approximation. the likelihood profile does not make the asymptotic normal
@@ -118,7 +150,7 @@ tidy_rema(m1)$parameter_estimates
 # Checking the Laplace approximation ----
 
 # TMB allows the user to test whether the Laplace approximation of the marginal
-# log-likelihood and joint log-likelihood is ok. TMB::checkConsistency simulates
+# log-likelihood and joint log-likelihood is "ok." TMB::checkConsistency simulates
 # data and calculates the gradients for each of the simulated data sets. If the
 # average gradient is approximately zero, then the Laplace approximation is
 # assumed to be ok. A chi-square test for gradient bias is performed for the
@@ -127,13 +159,15 @@ tidy_rema(m1)$parameter_estimates
 # chi-square test for bias.
 check <- TMB::checkConsistency(m1)
 check
-# Its very concerning to me that we are unable to invert the information matrix
+# In this case the simulation does not appear to be correct!!
+
+# in other case I'm not able to invert the information matrix
 # (same as the Hessian here right?!)
 summary(check)
 
 # One-step-ahead residuals ----
 
-# I've already built a wrapper function (not to say it couldn't use some work!) to do this get_osa_residuals() but
+# I've built a wrapper function (not to say it couldn't use some work!) to do this get_osa_residuals() but
 # consistently have issues with residual patterns... I guess they may in fact
 # reflect true model misspecification!
 resids <- get_osa_residuals(m1)  # uses cdf methods
@@ -142,6 +176,7 @@ resids$residuals
 # always the case but usually.
 resids$residuals$biomass %>% filter(is.nan(residual))
 cowplot::plot_grid(resids$plots$biomass_resids, resids$plots$biomass_qqplot, ncol = 1)
+cowplot::plot_grid(resids$plots$cpue_resids, resids$plots$cpue_qqplot, ncol = 1)
 
 # One thought i've had is that these issues have to due with our initial
 # conditions. To test this we can try fixing the first biomass observation using
@@ -166,9 +201,12 @@ newresids$residuals
 # sure enough, at least in this case it got rid of the NaNs.... yikes!
 newresids$residuals$biomass %>% filter(is.nan(residual))
 cowplot::plot_grid(newresids$plots$biomass_resids, newresids$plots$biomass_qqplot, ncol = 1)
+cowplot::plot_grid(resids$plots$cpue_resids, resids$plots$cpue_qqplot, ncol = 1)
 
 TMB::checkConsistency(newm1) # but this still fails, so that's good :)
 
 compare <- compare_rema_models(list(m1, newm1))
 compare$plots$total_predicted_biomass # gives identical results from a management perspective
 compare$plots$biomass_by_strata + facet_wrap(~strata, scales = 'free_y')
+compare$plots$cpue_by_strata + facet_wrap(~strata, scales = 'free_y')
+
