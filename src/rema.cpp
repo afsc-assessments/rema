@@ -106,6 +106,8 @@ Type objective_function<Type>::operator() ()
     tau_cpue(i) = tau_cpue_upper(i) / (Type(1.0) + exp(-logit_tau_cpue(i)));
   }
 
+  // PARAMETER_VECTOR(init_log_biomass); // vector equal to the length of unique strata
+
   // random effects of predicted biomass
   PARAMETER_MATRIX(log_biomass_pred);
 
@@ -176,20 +178,28 @@ Type objective_function<Type>::operator() ()
   matrix<Type> cpue_dispersion(nyrs, n_strata_cpue);
   cpue_dispersion.setZero();
 
-  // add wide prior for first predicted biomass, but only when computing osa
-  // residuals
-  if(CppAD::Variable(keep.sum())){
-    Type huge = 10;
-    for(int j = 0; j < n_strata_biomass; j++) {
-      jnll -= dnorm(biomass_pred(0, j), Type(0), huge, true);
-    }
-  }
+  // // add wide prior for first predicted biomass, but only when computing osa
+  // // residuals
+  // if(CppAD::Variable(keep.sum())){
+  //   Type huge = 10;
+  //   for(int j = 0; j < n_strata_biomass; j++) {
+  //     jnll -= dnorm(biomass_pred(0, j), Type(0), huge, true);
+  //   }
+  // }
+
+  // initial condition for the predicted biomass
+  // for(int j = 0; j < n_strata_biomass; j++) {
+  //   jnll(0) -= dnorm(log_biomass_pred(0,j), init_log_biomass(j), exp(log_PE(pointer_PE_biomass(j))), 1);
+  // }
 
   // random effects contribution to likelihood
   for(int i = 1; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
 
-      jnll(0) -= dnorm(log_biomass_pred(i-1,j), log_biomass_pred(i,j), exp(log_PE(pointer_PE_biomass(j))), 1);
+      // OLD, wrong
+      // jnll(0) -= dnorm(log_biomass_pred(i-1,j), log_biomass_pred(i,j), exp(log_PE(pointer_PE_biomass(j))), 1);
+      // FIXED
+      jnll(0) -= dnorm(log_biomass_pred(i,j), log_biomass_pred(i-1,j), exp(log_PE(pointer_PE_biomass(j))), 1);
 
       // simulation block
       SIMULATE {
@@ -302,12 +312,12 @@ Type objective_function<Type>::operator() ()
 
     // add wide prior for first predicted biomass, but only when computing osa
     // residuals
-    if(CppAD::Variable(keep.sum())){
-      Type huge = 10;
-      for(int j = 0; j < n_strata_cpue; j++) {
-        jnll -= dnorm(cpue_pred(0, j), Type(0), huge, true);
-      }
-    }
+    // if(CppAD::Variable(keep.sum())){
+    //   Type huge = 10;
+    //   for(int j = 0; j < n_strata_cpue; j++) {
+    //     jnll -= dnorm(cpue_pred(0, j), Type(0), huge, true);
+    //   }
+    // }
 
     // get data likelihood for cpue survey
     switch(obs_error_type) {
