@@ -28,9 +28,10 @@
 #' # placeholder for example
 #' }
 get_osa_residuals <- function(rema_model,
-                              options = list(method = "cdf",
-                                             # "oneStepGaussianOffMode", "fullGaussian", "oneStepGeneric",
-                                             # "oneStepGaussian", "cdf"
+                              options = list(method =  "oneStepGeneric",
+                                             # "cdf","oneStepGaussianOffMode",
+                                             # , "fullGaussian",
+                                             # "oneStepGaussian"),
                                              parallel = TRUE)) {
 
   # rema_model = m
@@ -143,7 +144,6 @@ get_osa_residuals <- function(rema_model,
                         cpue_qqplot = p2_cpue,
                         cpue_hist = p3_cpue,
                         cpue_fitted = p4_cpue)
-      warning("OSA residuals are experimental and underlying methods in TMB::oneStepPredict are still in Beta mode. The default 'cdf' method sometimes results in NA values for residuals, especially when observation errors are small.")
       return(out)
       }
 

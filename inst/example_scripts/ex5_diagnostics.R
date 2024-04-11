@@ -11,6 +11,7 @@ library(TMB)
 # library(rema)
 library(cowplot)
 library(tidyverse)
+library(devtools)
 
 ggplot2::theme_set(cowplot::theme_cowplot(font_size = 12) +
                      cowplot::background_grid() +
@@ -18,12 +19,13 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 12) +
 
 # dyn.unload(dynlib(here::here('src', 'rema')))
 TMB::compile(here::here('src', 'rema.cpp'))
-# dyn.load(dynlib(here::here('src', 'rema')))
+dyn.load(dynlib(here::here('src', 'rema')))
 biomass_dat <- read_csv('inst/example_data/goa_sst_biomass.csv')
 cpue_dat <- read_csv('inst/example_data/goa_sst_rpw.csv')
 
 # library(rema)
 unique(biomass_dat$strata)
+devtools::document()
 input <- prepare_rema_input(model_name = 'GOA thornyhead',
                             biomass_dat = biomass_dat,
                             # shared process error SD across all strata
@@ -31,11 +33,13 @@ input <- prepare_rema_input(model_name = 'GOA thornyhead',
                             # shared process error SD within regions
                             PE_options = list(pointer_PE_biomass = c(rep(1,3), rep(2,3), rep(3,3)))
                             )
+input$par$log_biomass_pred
 
 m1 <- fit_rema(input)
 out1 <- tidy_rema(m1)
 param <- out1$parameter_estimates %>% dplyr::mutate(region = c('CGOA', 'EGOA', 'WGOA')) # always lists the strata in alphabetical order!
 param
+m1$sdrep
 plots1 <- plot_rema(tidy_rema = out1)
 plots1$biomass_by_strata
 plots1$total_predicted_biomass
@@ -261,8 +265,9 @@ ggplot(post.all.long, aes(value, value_comp, col = sim_type)) +
   geom_point(pch = 1, size = 0.5) + facet_grid(rows = vars(as.factor(parameter)), cols = vars(as.factor(parameter_comp))) +
   geom_point(data = post.means, size = 1.2, pch = 1, color = "black") +
   theme_classic() + scale_color_manual(values = c(alpha("lightpink", 0.5), alpha("lightblue", 0.5)))
-# or use dependency for plot
-ggpairs(rbind(post.la, post.mcmc), aes(color = sim_type)) +
+# or use GGally dependency for plot
+library(GGally)
+GGally::ggpairs(rbind(post.la, post.mcmc), aes(color = sim_type)) +
   scale_color_manual(values = c(alpha("lightpink", 0.8), alpha("lightblue", 0.8))) +
   scale_fill_manual(values = c(alpha("lightpink", 0.8), alpha("lightblue", 0.8)))
 # so again, this is a plot that kind of works (emphasis on kind of), but not a metric....
@@ -280,11 +285,11 @@ t.test(post.la$`log_PE[3]`, post.mcmc$`log_PE[3]`)
 # consistently have issues with residual patterns... I guess they may in fact
 # reflect true model misspecification!
 resids <- get_osa_residuals(m1)  # uses cdf methods
-resids$residuals
+resids$residuals$biomass$residual
 # check out the NaNs! in this case its always the first observation. this isn't
 # always the case but usually.
 resids$residuals$biomass %>% filter(is.nan(residual))
-cowplot::plot_grid(resids$plots$biomass_resids, resids$plots$biomass_qqplot, ncol = 1)
+cowplot::plot_grid(resids$plots$biomass_resids)#, resids$plots$biomass_qqplot, ncol = 1)
 
 # One thought i've had is that these issues have to due with our initial
 # conditions. To test this we can try fixing the first biomass observation using

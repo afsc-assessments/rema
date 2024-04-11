@@ -106,7 +106,7 @@ Type objective_function<Type>::operator() ()
     tau_cpue(i) = tau_cpue_upper(i) / (Type(1.0) + exp(-logit_tau_cpue(i)));
   }
 
-  // PARAMETER_VECTOR(init_log_biomass); // vector equal to the length of unique strata
+  PARAMETER_VECTOR(init_log_biomass); // vector equal to the length of unique strata
 
   // random effects of predicted biomass
   PARAMETER_MATRIX(log_biomass_pred);
@@ -188,17 +188,18 @@ Type objective_function<Type>::operator() ()
   // }
 
   // initial condition for the predicted biomass
-  // for(int j = 0; j < n_strata_biomass; j++) {
-  //   jnll(0) -= dnorm(log_biomass_pred(0,j), init_log_biomass(j), exp(log_PE(pointer_PE_biomass(j))), 1);
-  // }
+  for(int j = 0; j < n_strata_biomass; j++) {
+    jnll(0) -= dnorm(log_biomass_pred(0,j), init_log_biomass(j), exp(log_PE(pointer_PE_biomass(j))), 1);
+  }
 
   // random effects contribution to likelihood
-  for(int i = 1; i < nyrs; i++) {
+  for(int i = 1; i < nyrs-1; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
 
-      // OLD, wrong
+      // OLD, pretty confident this is wrong.
       // jnll(0) -= dnorm(log_biomass_pred(i-1,j), log_biomass_pred(i,j), exp(log_PE(pointer_PE_biomass(j))), 1);
-      // FIXED
+
+      // CORRECT?
       jnll(0) -= dnorm(log_biomass_pred(i,j), log_biomass_pred(i-1,j), exp(log_PE(pointer_PE_biomass(j))), 1);
 
       // simulation block
@@ -233,9 +234,12 @@ Type objective_function<Type>::operator() ()
 
   // likelihood for observation error of biomass survey data
 
-  for(int i = 0; i < nyrs; i++) {
+  for(int j = 0; j < n_strata_biomass; j++) {
+    biomass_pred(0,j) = exp(init_log_biomass(j));
+  }
+  for(int i = 0; i < nyrs-1; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
-      biomass_pred(i,j) = exp(log_biomass_pred(i,j));
+      biomass_pred(i+1,j) = exp(log_biomass_pred(i,j));
     }
   }
 
@@ -247,13 +251,23 @@ Type objective_function<Type>::operator() ()
       for(int j = 0; j < n_strata_biomass; j++) {
 
         if(biomass_obs(i,j) > 0) {
-          jnll(1) -= keep(keep_biomass_obs(i,j)) * dnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j), 1);
-          jnll(1) -= keep.cdf_lower(keep_biomass_obs(i,j)) * log(squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j))));
-          jnll(1) -= keep.cdf_upper(keep_biomass_obs(i,j)) * log(1.0 - squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j))));
+
+          if(i == 0) {
+            jnll(1) -= keep(keep_biomass_obs(i,j)) * dnorm(log_biomass_obs(i,j), init_log_biomass(j), log_biomass_sd(i,j), 1);
+            // jnll(1) -= keep.cdf_lower(keep_biomass_obs(i,j)) * log(squeeze(pnorm(log_biomass_obs(i,j), init_log_biomass(j), log_biomass_sd(i,j))));
+            // jnll(1) -= keep.cdf_upper(keep_biomass_obs(i,j)) * log(1.0 - squeeze(pnorm(log_biomass_obs(i,j), init_log_biomass(j), log_biomass_sd(i,j))));
+          }
+
+          jnll(1) -= keep(keep_biomass_obs(i,j)) * dnorm(log_biomass_obs(i,j), log_biomass_pred(i-1,j), log_biomass_sd(i,j), 1);
+          // jnll(1) -= keep.cdf_lower(keep_biomass_obs(i,j)) * log(squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i-1,j), log_biomass_sd(i,j))));
+          // jnll(1) -= keep.cdf_upper(keep_biomass_obs(i,j)) * log(1.0 - squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i-1,j), log_biomass_sd(i,j))));
 
           // simulation block
           SIMULATE {
-            log_biomass_obs(i,j) = rnorm(log_biomass_pred(i,j), log_biomass_sd(i,j));
+            if(i == 0) {
+            log_biomass_obs(i,j) = rnorm(init_log_biomass(j), log_biomass_sd(i,j));
+            }
+            log_biomass_obs(i,j) = rnorm(log_biomass_pred(i-1,j), log_biomass_sd(i,j));
           }
 
         }
@@ -262,172 +276,172 @@ Type objective_function<Type>::operator() ()
     }
     break;
 
-  case 1: // Tweedie
-
-    for(int i = 0; i < nyrs; i++) {
-      for(int j = 0; j < n_strata_biomass; j++) {
-
-        if(biomass_obs(i,j) >= 0) {
-          biomass_sd(i,j) = biomass_cv(i,j) * biomass_pred(i,j);
-          biomass_dispersion(i,j) = (biomass_sd(i,j) * biomass_sd(i,j)) / pow(biomass_pred(i,j), tweedie_p(0));
-          jnll(1) -= dtweedie(biomass_obs(i,j), biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
-
-          // simulation block
-          SIMULATE {
-            log_biomass_obs(i,j) = rtweedie(log_biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0));
-          }
-        }
-
-      }
-    }
-    break;
+  // case 1: // Tweedie
+  //
+  //   for(int i = 0; i < nyrs; i++) {
+  //     for(int j = 0; j < n_strata_biomass; j++) {
+  //
+  //       if(biomass_obs(i,j) >= 0) {
+  //         biomass_sd(i,j) = biomass_cv(i,j) * biomass_pred(i,j);
+  //         biomass_dispersion(i,j) = (biomass_sd(i,j) * biomass_sd(i,j)) / pow(biomass_pred(i,j), tweedie_p(0));
+  //         jnll(1) -= dtweedie(biomass_obs(i,j), biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
+  //
+  //         // simulation block
+  //         SIMULATE {
+  //           log_biomass_obs(i,j) = rtweedie(log_biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0));
+  //         }
+  //       }
+  //
+  //     }
+  //   }
+  //   break;
   }
 
   jnll(1) = jnll(1) * wt_biomass;
 
-  // If in multi-survey mode (1=on, 0=off), calculate predicted cpue and data
-  // likelihood for cpue survey observations
-  if(multi_survey == 1) {
+  // // If in multi-survey mode (1=on, 0=off), calculate predicted cpue and data
+  // // likelihood for cpue survey observations
+  // if(multi_survey == 1) {
+  //
+  //   // get predicted biomass at the strata level for cpue (i.e. account for the
+  //   // scenario when you may have biomass at a higher resolution than cpue; e.g.
+  //   // 4 biomass strata that are represented by 2 cpue strata; note: currently
+  //   // you cannot have a scenario where survey cpue has more strata than biomass
+  //   // survey)
+  //   for(int i = 0; i < nyrs; i++) {
+  //
+  //     for(int j = 0; j < n_strata_biomass; j++) {
+  //       if(pointer_biomass_cpue_strata(j) >= 0) {
+  //         biomass_pred_cpue_strata(i,pointer_biomass_cpue_strata(j)) += biomass_pred(i,j);
+  //       }
+  //     }
+  //
+  //     // get predicted cpue, log-transform for variance estimates
+  //     for(int j = 0; j < n_strata_cpue; j++) {
+  //       cpue_pred(i,j) = exp(log_q(pointer_q_cpue(j))) * biomass_pred_cpue_strata(i,j);
+  //       log_cpue_pred(i,j) = log(cpue_pred(i,j));
+  //       log_biomass_pred_cpue_strata(i,j) = log(biomass_pred_cpue_strata(i,j));
+  //     }
+  //   }
+  //
+  //   // add wide prior for first predicted biomass, but only when computing osa
+  //   // residuals
+  //   // if(CppAD::Variable(keep.sum())){
+  //   //   Type huge = 10;
+  //   //   for(int j = 0; j < n_strata_cpue; j++) {
+  //   //     jnll -= dnorm(cpue_pred(0, j), Type(0), huge, true);
+  //   //   }
+  //   // }
 
-    // get predicted biomass at the strata level for cpue (i.e. account for the
-    // scenario when you may have biomass at a higher resolution than cpue; e.g.
-    // 4 biomass strata that are represented by 2 cpue strata; note: currently
-    // you cannot have a scenario where survey cpue has more strata than biomass
-    // survey)
-    for(int i = 0; i < nyrs; i++) {
-
-      for(int j = 0; j < n_strata_biomass; j++) {
-        if(pointer_biomass_cpue_strata(j) >= 0) {
-          biomass_pred_cpue_strata(i,pointer_biomass_cpue_strata(j)) += biomass_pred(i,j);
-        }
-      }
-
-      // get predicted cpue, log-transform for variance estimates
-      for(int j = 0; j < n_strata_cpue; j++) {
-        cpue_pred(i,j) = exp(log_q(pointer_q_cpue(j))) * biomass_pred_cpue_strata(i,j);
-        log_cpue_pred(i,j) = log(cpue_pred(i,j));
-        log_biomass_pred_cpue_strata(i,j) = log(biomass_pred_cpue_strata(i,j));
-      }
-    }
-
-    // add wide prior for first predicted biomass, but only when computing osa
-    // residuals
-    // if(CppAD::Variable(keep.sum())){
-    //   Type huge = 10;
-    //   for(int j = 0; j < n_strata_cpue; j++) {
-    //     jnll -= dnorm(cpue_pred(0, j), Type(0), huge, true);
-    //   }
-    // }
-
-    // get data likelihood for cpue survey
-    switch(obs_error_type) {
-
-    case 0: // lognormal
-
-      for(int i = 0; i < nyrs; i++) {
-        for(int j = 0; j < n_strata_cpue; j++) {
-
-          if(cpue_obs(i,j) > 0) {
-            jnll(2) -= keep(keep_cpue_obs(i,j)) * dnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j), 1);
-            jnll(2) -= keep.cdf_lower(keep_cpue_obs(i,j)) * log(squeeze(pnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j))));
-            jnll(2) -= keep.cdf_upper(keep_cpue_obs(i,j)) * log(1.0 - squeeze(pnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j))));
-
-            // simulation block
-            SIMULATE {
-              log_cpue_obs(i,j) = rnorm(log_cpue_pred(i,j), log_cpue_sd(i,j));
-            }
-          }
-
-        }
-      }
-      break;
-
-    case 1: // Tweedie
-      for(int i = 0; i < nyrs; i++) {
-        for(int j = 0; j < n_strata_cpue; j++) {
-
-          if(cpue_obs(i,j) >= 0) {
-            cpue_sd(i,j) = cpue_cv(i,j) * cpue_pred(i,j);
-            cpue_dispersion(i,j) = (cpue_sd(i,j) * cpue_sd(i,j)) / pow(cpue_pred(i,j), tweedie_p(1));
-            jnll(2) -= dtweedie(cpue_obs(i,j), cpue_pred(i,j), cpue_dispersion(i,j), tweedie_p(1), 1);
-
-            // simulation block
-            SIMULATE {
-              log_cpue_obs(i,j) = rtweedie(log_cpue_pred(i,j), cpue_dispersion(i,j), tweedie_p(0));
-            }
-          }
-
-        }
-      }
-      break;
-    }
-
-    jnll(2) = jnll(2) * wt_cpue;
-
-    // optional penalty or prior on log_q
-    switch(q_penalty_type) {
-
-    case 0: // no penalty
-      jnll(2) = jnll(2);
-      break;
-
-    case 1: // normal prior
-      for(int k = 0; k < log_q.size(); k++) {
-        jnll(2) -= dnorm(log_q(k), pmu_log_q(k), psig_log_q(k), 1);
-      }
-      break;
-    }
-  }
-
-  // report section
-  ADREPORT(log_biomass_pred);
-
-  if(n_strata_biomass > 1) {
-    vector<Type> tot_biomass_pred;
-    tot_biomass_pred = biomass_pred.rowwise().sum();
-    vector<Type> log_tot_biomass_pred;
-    log_tot_biomass_pred = log(tot_biomass_pred);
-    ADREPORT(log_tot_biomass_pred);
-  }
-
-  if(multi_survey == 1) {
-    ADREPORT(log_cpue_pred);
-
-    // only sum cpue index if its appropriate for that index (e.g. appropriate
-    // for relative popn numbers, not appropriate for nominal cpue).
-    if(sum_cpue_index == 1 && n_strata_cpue > 1){
-
-      vector<Type> tot_cpue_pred;
-      tot_cpue_pred = cpue_pred.rowwise().sum();
-      vector<Type> log_tot_cpue_pred;
-      log_tot_cpue_pred = log(tot_cpue_pred);
-      REPORT(log_tot_cpue_pred);
-      ADREPORT(log_tot_cpue_pred);
-
-    }
-
-    // report biomass at the cpue strata level (and get SDs) if they have
-    // different strata definitions
-    if(n_strata_biomass > n_strata_cpue) {
-      REPORT(log_biomass_pred_cpue_strata);
-      ADREPORT(log_biomass_pred_cpue_strata);
-    }
-  }
-
-  REPORT(log_biomass_pred);
-  REPORT(tweedie_p);
-  REPORT(biomass_pred);
-  REPORT(biomass_sd);
-  REPORT(biomass_dispersion);
-  REPORT(cpue_sd);
-  REPORT(cpue_dispersion);
-  REPORT(jnll);
-
-  SIMULATE {
-    REPORT(log_biomass_pred);
-    REPORT(log_biomass_obs);
-    REPORT(log_cpue_obs);
-  }
+  //   // get data likelihood for cpue survey
+  //   switch(obs_error_type) {
+  //
+  //   case 0: // lognormal
+  //
+  //     for(int i = 0; i < nyrs; i++) {
+  //       for(int j = 0; j < n_strata_cpue; j++) {
+  //
+  //         if(cpue_obs(i,j) > 0) {
+  //           jnll(2) -= keep(keep_cpue_obs(i,j)) * dnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j), 1);
+  //           jnll(2) -= keep.cdf_lower(keep_cpue_obs(i,j)) * log(squeeze(pnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j))));
+  //           jnll(2) -= keep.cdf_upper(keep_cpue_obs(i,j)) * log(1.0 - squeeze(pnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j))));
+  //
+  //           // simulation block
+  //           SIMULATE {
+  //             log_cpue_obs(i,j) = rnorm(log_cpue_pred(i,j), log_cpue_sd(i,j));
+  //           }
+  //         }
+  //
+  //       }
+  //     }
+  //     break;
+  //
+  //   case 1: // Tweedie
+  //     for(int i = 0; i < nyrs; i++) {
+  //       for(int j = 0; j < n_strata_cpue; j++) {
+  //
+  //         if(cpue_obs(i,j) >= 0) {
+  //           cpue_sd(i,j) = cpue_cv(i,j) * cpue_pred(i,j);
+  //           cpue_dispersion(i,j) = (cpue_sd(i,j) * cpue_sd(i,j)) / pow(cpue_pred(i,j), tweedie_p(1));
+  //           jnll(2) -= dtweedie(cpue_obs(i,j), cpue_pred(i,j), cpue_dispersion(i,j), tweedie_p(1), 1);
+  //
+  //           // simulation block
+  //           SIMULATE {
+  //             log_cpue_obs(i,j) = rtweedie(log_cpue_pred(i,j), cpue_dispersion(i,j), tweedie_p(0));
+  //           }
+  //         }
+  //
+  //       }
+  //     }
+  //     break;
+  //   }
+  //
+  //   jnll(2) = jnll(2) * wt_cpue;
+  //
+  //   // optional penalty or prior on log_q
+  //   switch(q_penalty_type) {
+  //
+  //   case 0: // no penalty
+  //     jnll(2) = jnll(2);
+  //     break;
+  //
+  //   case 1: // normal prior
+  //     for(int k = 0; k < log_q.size(); k++) {
+  //       jnll(2) -= dnorm(log_q(k), pmu_log_q(k), psig_log_q(k), 1);
+  //     }
+  //     break;
+  //   }
+  // }
+  //
+  // // report section
+  // ADREPORT(log_biomass_pred);
+  //
+  // if(n_strata_biomass > 1) {
+  //   vector<Type> tot_biomass_pred;
+  //   tot_biomass_pred = biomass_pred.rowwise().sum();
+  //   vector<Type> log_tot_biomass_pred;
+  //   log_tot_biomass_pred = log(tot_biomass_pred);
+  //   ADREPORT(log_tot_biomass_pred);
+  // }
+  //
+  // if(multi_survey == 1) {
+  //   ADREPORT(log_cpue_pred);
+  //
+  //   // only sum cpue index if its appropriate for that index (e.g. appropriate
+  //   // for relative popn numbers, not appropriate for nominal cpue).
+  //   if(sum_cpue_index == 1 && n_strata_cpue > 1){
+  //
+  //     vector<Type> tot_cpue_pred;
+  //     tot_cpue_pred = cpue_pred.rowwise().sum();
+  //     vector<Type> log_tot_cpue_pred;
+  //     log_tot_cpue_pred = log(tot_cpue_pred);
+  //     REPORT(log_tot_cpue_pred);
+  //     ADREPORT(log_tot_cpue_pred);
+  //
+  //   }
+  //
+  //   // report biomass at the cpue strata level (and get SDs) if they have
+  //   // different strata definitions
+  //   if(n_strata_biomass > n_strata_cpue) {
+  //     REPORT(log_biomass_pred_cpue_strata);
+  //     ADREPORT(log_biomass_pred_cpue_strata);
+  //   }
+  // }
+  //
+  // REPORT(log_biomass_pred);
+  // REPORT(tweedie_p);
+  // REPORT(biomass_pred);
+  // REPORT(biomass_sd);
+  // REPORT(biomass_dispersion);
+  // REPORT(cpue_sd);
+  // REPORT(cpue_dispersion);
+  // REPORT(jnll);
+  //
+  // SIMULATE {
+  //   REPORT(log_biomass_pred);
+  //   REPORT(log_biomass_obs);
+  //   REPORT(log_cpue_obs);
+  // }
 
   // jnll = dummy * dummy;        // Uncomment when debugging code
   nll = jnll.sum();

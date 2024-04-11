@@ -607,7 +607,7 @@ prepare_rema_input <- function(model_name = 'REMA for unnamed stock',
     input$cpue_dat <- NULL
   }
 
-  if(length(input$data$model_yrs) != nrow(input$par$log_biomass_pred)) {
+  if(length(input$data$model_yrs)-1 != nrow(input$par$log_biomass_pred)) {
     stop(paste0("Incorrect model dimensions! The number of rows for the log_biomass_pred input (nrow = ", nrow(input$par$log_biomass_pred), ") starting values (i.e. 'biomsd' in the rwout.rep file) and length of model years (", length(input$data$model_yrs), ") must match. The user can adjust the model 'start_year' and 'end_year' as needed."))
   }
 

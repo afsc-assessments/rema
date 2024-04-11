@@ -4,7 +4,10 @@
 \alias{get_osa_residuals}
 \title{Get one-step-head (OSA)}
 \usage{
-get_osa_residuals(rema_model, options = list(method = "cdf", parallel = TRUE))
+get_osa_residuals(
+  rema_model,
+  options = list(method = "oneStepGeneric", parallel = TRUE)
+)
 }
 \arguments{
 \item{rema_model}{list out output from \code{\link{fit_rema}}, which includes
