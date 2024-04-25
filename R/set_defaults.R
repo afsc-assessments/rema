@@ -65,30 +65,23 @@ set_defaults <- function(input, admb_re = NULL) {
   par$logit_tau_biomass <- rep(-Inf, length(unique(data$pointer_extra_biomass_cv)))
   par$logit_tau_cpue <- rep(-Inf, length(unique(data$pointer_extra_cpue_cv)))
 
-  par$init_log_biomass <- if(!is.null(admb_re)) {
-    par$init_log_biomass <- rep(mean(admb_re$init_log_biomass_pred), ncol(data$biomass_obs))
-  } else {
-    par$init_log_biomass <- rep(log(mean(data$biomass_obs, na.rm=TRUE)), ncol(data$biomass_obs))
-  }
   # if admb_re is provided using read_admb_re(), use log biomass predictions as
   # initial values for the model. if not, use linear interpolation to initiate
   # starting values if none are supplied. rule = 2 means the value at the
   # closest data extreme is used. for the purposes of linear interpolation,
   # remove the very small values artificially generated for zero values
+
   if(!is.null(admb_re)) {
     par$log_biomass_pred <- admb_re$init_log_biomass_pred
   } else {
-  tmp <- data$biomass_obs
-  tmp[tmp < 0.01] <- NA # just for starting values
-  par$log_biomass_pred <- log(apply(X = tmp,
-                                    MARGIN = 2,
-                                    FUN = zoo::na.approx, maxgap = 100, rule = 2))
+    tmp <- data$biomass_obs
+    tmp[tmp < 0.01] <- NA # just for starting values
+    par$log_biomass_pred <- log(apply(X = tmp,
+                                      MARGIN = 2,
+                                      FUN = zoo::na.approx, maxgap = 100, rule = 2))
   }
-  #  initial value estimated as fixed effect, drop first value from random
-  #  effects
-  par$log_biomass_pred <- par$log_biomass_pred[2:nrow(par$log_biomass_pred), ]
 
-  # set map -----
+  # set map
   map <- par
   map$log_PE <- as.factor(1:length(map$log_PE))
 
@@ -103,8 +96,6 @@ set_defaults <- function(input, admb_re = NULL) {
   map$logit_tau_biomass <- fill_vals(par$logit_tau_biomass, NA)
 
   map$logit_tau_cpue <- fill_vals(par$logit_tau_cpue, NA)
-
-  map$init_log_biomass <- as.factor(1:ncol(data$biomass_obs))
 
   map$log_biomass_pred <- as.factor(1:length(map$log_biomass_pred))
 

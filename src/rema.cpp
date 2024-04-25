@@ -106,8 +106,6 @@ Type objective_function<Type>::operator() ()
     tau_cpue(i) = tau_cpue_upper(i) / (Type(1.0) + exp(-logit_tau_cpue(i)));
   }
 
-  PARAMETER_VECTOR(init_log_biomass); // vector equal to the length of unique strata
-
   // random effects of predicted biomass
   PARAMETER_MATRIX(log_biomass_pred);
 
@@ -178,28 +176,19 @@ Type objective_function<Type>::operator() ()
   matrix<Type> cpue_dispersion(nyrs, n_strata_cpue);
   cpue_dispersion.setZero();
 
-  // // add wide prior for first predicted biomass, but only when computing osa
-  // // residuals
+  // add wide prior for first predicted biomass, but only when computing osa
+  // residuals
   // if(CppAD::Variable(keep.sum())){
-  //   Type huge = 10;
-  //   for(int j = 0; j < n_strata_biomass; j++) {
-  //     jnll -= dnorm(biomass_pred(0, j), Type(0), huge, true);
-  //   }
+    Type huge = 10;
+    for(int j = 0; j < n_strata_biomass; j++) {
+      // jnll -= dnorm(log_biomass_pred(0, j), log_biomass_obs(0, j), huge, true);
+      jnll -= dnorm(log_biomass_pred(0, j), Type(10), huge, true);
+    }
   // }
 
-  // initial condition for the predicted biomass
-  for(int j = 0; j < n_strata_biomass; j++) {
-    jnll(0) -= dnorm(log_biomass_pred(0,j), init_log_biomass(j), exp(log_PE(pointer_PE_biomass(j))), 1);
-  }
-
   // random effects contribution to likelihood
-  for(int i = 1; i < nyrs-1; i++) {
+  for(int i = 1; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
-
-      // OLD, pretty confident this is wrong.
-      // jnll(0) -= dnorm(log_biomass_pred(i-1,j), log_biomass_pred(i,j), exp(log_PE(pointer_PE_biomass(j))), 1);
-
-      // CORRECT?
       jnll(0) -= dnorm(log_biomass_pred(i,j), log_biomass_pred(i-1,j), exp(log_PE(pointer_PE_biomass(j))), 1);
 
       // simulation block
@@ -234,12 +223,9 @@ Type objective_function<Type>::operator() ()
 
   // likelihood for observation error of biomass survey data
 
-  for(int j = 0; j < n_strata_biomass; j++) {
-    biomass_pred(0,j) = exp(init_log_biomass(j));
-  }
-  for(int i = 0; i < nyrs-1; i++) {
+  for(int i = 0; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
-      biomass_pred(i+1,j) = exp(log_biomass_pred(i,j));
+      biomass_pred(i,j) = exp(log_biomass_pred(i,j));
     }
   }
 
@@ -251,50 +237,39 @@ Type objective_function<Type>::operator() ()
       for(int j = 0; j < n_strata_biomass; j++) {
 
         if(biomass_obs(i,j) > 0) {
-
-          if(i == 0) {
-            jnll(1) -= keep(keep_biomass_obs(i,j)) * dnorm(log_biomass_obs(i,j), init_log_biomass(j), log_biomass_sd(i,j), 1);
-            // jnll(1) -= keep.cdf_lower(keep_biomass_obs(i,j)) * log(squeeze(pnorm(log_biomass_obs(i,j), init_log_biomass(j), log_biomass_sd(i,j))));
-            // jnll(1) -= keep.cdf_upper(keep_biomass_obs(i,j)) * log(1.0 - squeeze(pnorm(log_biomass_obs(i,j), init_log_biomass(j), log_biomass_sd(i,j))));
-          }
-
-          jnll(1) -= keep(keep_biomass_obs(i,j)) * dnorm(log_biomass_obs(i,j), log_biomass_pred(i-1,j), log_biomass_sd(i,j), 1);
-          // jnll(1) -= keep.cdf_lower(keep_biomass_obs(i,j)) * log(squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i-1,j), log_biomass_sd(i,j))));
-          // jnll(1) -= keep.cdf_upper(keep_biomass_obs(i,j)) * log(1.0 - squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i-1,j), log_biomass_sd(i,j))));
+          jnll(1) -= keep(keep_biomass_obs(i,j)) * dnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j), 1);
+          jnll(1) -= keep.cdf_lower(keep_biomass_obs(i,j)) * log(squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j))));
+          jnll(1) -= keep.cdf_upper(keep_biomass_obs(i,j)) * log(1.0 - squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j))));
 
           // simulation block
           SIMULATE {
-            if(i == 0) {
-            log_biomass_obs(i,j) = rnorm(init_log_biomass(j), log_biomass_sd(i,j));
-            }
-            log_biomass_obs(i,j) = rnorm(log_biomass_pred(i-1,j), log_biomass_sd(i,j));
+            log_biomass_obs(i,j) = rnorm(log_biomass_pred(i,j), log_biomass_sd(i,j));
           }
-
         }
 
       }
     }
     break;
 
-  // case 1: // Tweedie
-  //
-  //   for(int i = 0; i < nyrs; i++) {
-  //     for(int j = 0; j < n_strata_biomass; j++) {
-  //
-  //       if(biomass_obs(i,j) >= 0) {
-  //         biomass_sd(i,j) = biomass_cv(i,j) * biomass_pred(i,j);
-  //         biomass_dispersion(i,j) = (biomass_sd(i,j) * biomass_sd(i,j)) / pow(biomass_pred(i,j), tweedie_p(0));
-  //         jnll(1) -= dtweedie(biomass_obs(i,j), biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
-  //
-  //         // simulation block
-  //         SIMULATE {
-  //           log_biomass_obs(i,j) = rtweedie(log_biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0));
-  //         }
-  //       }
-  //
-  //     }
-  //   }
-  //   break;
+  case 1: // Tweedie
+
+    for(int i = 0; i < nyrs; i++) {
+      for(int j = 0; j < n_strata_biomass; j++) {
+
+        if(biomass_obs(i,j) >= 0) {
+          biomass_sd(i,j) = biomass_cv(i,j) * biomass_pred(i,j);
+          biomass_dispersion(i,j) = (biomass_sd(i,j) * biomass_sd(i,j)) / pow(biomass_pred(i,j), tweedie_p(0));
+          jnll(1) -= dtweedie(biomass_obs(i,j), biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
+
+          // simulation block
+          SIMULATE {
+            log_biomass_obs(i,j) = rtweedie(log_biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0));
+          }
+        }
+
+      }
+    }
+    break;
   }
 
   jnll(1) = jnll(1) * wt_biomass;
@@ -323,15 +298,6 @@ Type objective_function<Type>::operator() ()
         log_biomass_pred_cpue_strata(i,j) = log(biomass_pred_cpue_strata(i,j));
       }
     }
-
-    // add wide prior for first predicted biomass, but only when computing osa
-    // residuals
-    // if(CppAD::Variable(keep.sum())){
-    //   Type huge = 10;
-    //   for(int j = 0; j < n_strata_cpue; j++) {
-    //     jnll -= dnorm(cpue_pred(0, j), Type(0), huge, true);
-    //   }
-    // }
 
     // get data likelihood for cpue survey
     switch(obs_error_type) {
@@ -436,12 +402,6 @@ Type objective_function<Type>::operator() ()
   REPORT(cpue_sd);
   REPORT(cpue_dispersion);
   REPORT(jnll);
-
-  SIMULATE {
-    REPORT(log_biomass_pred);
-    REPORT(log_biomass_obs);
-    REPORT(log_cpue_obs);
-  }
 
   // jnll = dummy * dummy;        // Uncomment when debugging code
   nll = jnll.sum();

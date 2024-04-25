@@ -182,6 +182,13 @@ summary(check)
 
 # One-step-ahead residuals ----
 
+TMB::oneStepPredict(obj = m1,
+                    observation.name = "obsvec",
+                    data.term.indicator = "keep",
+                    # discrete = FALSE,
+                    method = "cdf")
+
+
 # TO DO:
 # > Change default in OSA function to 'generic' based on Kasper's recommendation
 # (via Cole)
@@ -189,7 +196,7 @@ summary(check)
 # I've built a wrapper function (not to say it couldn't use some work!) to do this get_osa_residuals() but
 # consistently have issues with residual patterns... I guess they may in fact
 # reflect true model misspecification!
-resids <- get_osa_residuals(m1)  # uses cdf methods
+resids <- get_osa_residuals(m1, options = list(method = "cdf"))  # uses cdf methods
 resids$residuals
 # check out the NaNs! in this case its always the first observation. this isn't
 # always the case but usually.
@@ -228,3 +235,4 @@ compare <- compare_rema_models(list(m1, newm1))
 compare$plots$total_predicted_biomass # gives identical results from a management perspective
 compare$plots$biomass_by_strata + facet_wrap(~strata, scales = 'free_y')
 compare$plots$cpue_by_strata + facet_wrap(~strata, scales = 'free_y')
+

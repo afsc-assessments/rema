@@ -6,7 +6,7 @@
 \usage{
 get_osa_residuals(
   rema_model,
-  options = list(method = "oneStepGeneric", parallel = TRUE)
+  options = list(method = "fullGaussian", parallel = F)
 )
 }
 \arguments{
