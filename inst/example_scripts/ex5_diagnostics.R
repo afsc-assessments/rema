@@ -282,20 +282,9 @@ t.test(post.la$`log_PE[3]`, post.mcmc$`log_PE[3]`)
 
 # One-step-ahead residuals ----
 
-# Y <- input$data$biomass_obs[,1]
-# s <- input$data$biomass_cv[,1]
-# X <- input$par$log_biomass_pred[,1]
-# out <- list(Y=Y,s=s,X=X)
-# save(out, file = 'sst.RData')
-#
-# m2obj <- MakeADFun(data = input$data, parameters = input$par, map = input$map, random = input$random, DLL = 'rema')
-# m2opt <- stats::nlminb(m2obj$par, m2obj$fn, m2obj$gr, control = list(iter.max = 1000, eval.max = 1000))
-# m2obj$env$spHess(random=TRUE)
-
 TMB::oneStepPredict(obj = m2obj,
                     observation.name = "obsvec",
                     data.term.indicator = "keep",
-                    # discrete = FALSE,
                     method = "fullGaussian")#oneStepGaussianOffMode
 
 
