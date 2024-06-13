@@ -179,11 +179,11 @@ Type objective_function<Type>::operator() ()
   // add wide prior for first predicted biomass, but only when computing osa
   // residuals
   // if(CppAD::Variable(keep.sum())){
-    Type huge = 10;
-    for(int j = 0; j < n_strata_biomass; j++) {
-      // jnll -= dnorm(log_biomass_pred(0, j), log_biomass_obs(0, j), huge, true);
-      jnll -= dnorm(log_biomass_pred(0, j), Type(10), huge, true);
-    }
+  Type huge = 10;
+  for(int j = 0; j < n_strata_biomass; j++) {
+    // jnll -= dnorm(log_biomass_pred(0, j), log_biomass_obs(0, j), huge, true);
+    jnll -= dnorm(log_biomass_pred(0, j), Type(10), huge, true);
+  }
   // }
 
   // random effects contribution to likelihood
@@ -244,6 +244,7 @@ Type objective_function<Type>::operator() ()
           // simulation block
           SIMULATE {
             log_biomass_obs(i,j) = rnorm(log_biomass_pred(i,j), log_biomass_sd(i,j));
+            REPORT(log_biomass_obs);
           }
         }
 

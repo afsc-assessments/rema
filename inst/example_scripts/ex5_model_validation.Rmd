@@ -1,0 +1,341 @@
+### think something like this to start....
+title: "REMA basics"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{REMA basics}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+
+TO DO: 
+-- clean code: make as simple as possible
+-- make graphs look nice... could do base r (lol)
+-- add refs
+-- code out stan portion
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+rema_path <- find.package("rema")
+knitr::opts_knit$set(root.dir = file.path(rema_path, "example_data"))
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+
+# devtools::build_rmd(files = 'vignettes/ex1_basics.Rmd')
+```
+
+```{r setup, warning = FALSE, message = FALSE}
+
+library(rema)
+library(ggplot2)
+library(dplyr)
+library(knitr)
+library(devtools)
+library(TMB)
+library(tidyverse)
+library(tmbstan)
+
+ggplot2::theme_set(cowplot::theme_cowplot(font_size = 14) +
+                     cowplot::background_grid() +
+                     cowplot::panel_border())
+
+```
+
+### testing framework
+In this vignette, we will be testing that (1) the REMA model is working as expected and (2) the assumptions we have made to create the REMA model are valid. We will use several example stocks with different levels of stock and estimation complexity: 
+
+-- A simple case, with one process error: Chill_Rockfish
+-- A more complex case, with multiple process errors: Cool_Rockfish
+-- A very complex case, with multiple survey types and process errors: Wild_Rockfish
+
+Testing the REMA model across this range of complexity helps ensure that model and model assumptions are valid in a variety of realistic, management-relevent cases. 
+
+It is important to note that model validation does not mean the model is ``more right'' or ``more correct;'' model validation does not help choose between models or ensure the model makes ``better'' predictions. Rather, model validation is a way to ensure that the model is operating as expected, without introducing bias or violating statistical assumptions which the model is based upon. In particular, the key things we will test are:
+
+-- Does the model introduce bias: Using a simulation self-check, we will show that the model is coded correctly and is able to recover known paraemters. 
+-- Is the model identifiable: Using the likelihood profile, we will show the the model paraemters are identifiable. 
+-- Are assumptions of normality valid: Using a lapalace approximation via MCMC, we will show that the distribution of things are normal. Additionally, using OSA residuals, we will show that something is normal. 
+
+### Prepare data for each stock here -- will hide
+
+This will probably be background code (include == FALSE) which just sets up the data packages for each of the next parts. 
+
+So this should really be a function that fits the model and assigns it a unique variable name
+
+```{r data and model prep}
+
+# compile everything
+# dyn.unload(dynlib(here::here('src', 'rema')))
+TMB::compile(here::here('src', 'rema.cpp'))
+dyn.load(dynlib(here::here('src', 'rema')))
+
+set.seed(415) # for repetability, use a seed
+
+# first, get the P-Cod data set up
+pcod_bio_dat <- read_csv("inst/example_data/ai_pcod_2022_biomass_dat.csv")
+pcod_input <- prepare_rema_input(model_name = "p_cod",
+                                 biomass_dat = pcod_bio_dat,
+                                 PE_options = list(pointer_PE_biomass = 1)
+                                 # one strata
+                                 )
+# run the model
+pcod_mod <- fit_rema(pcod_input) 
+
+# next, get the thornyhead data set up
+thrn_bio_dat <- read_csv("inst/example_data/goa_thornyhead_2022_biomass_dat.csv")
+thrn_cpue_dat <- read_csv("inst/example_data/goa_thornyhead_2022_cpue_dat.csv")
+thrn_input <- prepare_rema_input(model_name = 'thrnhead_rockfish',
+                                multi_survey = TRUE,
+                                biomass_dat = thrn_bio_dat,
+                                cpue_dat = thrn_cpue_dat,
+                                # RPWs are a summable/area-weighted effort index
+                                sum_cpue_index = TRUE, 
+                                # three process error parameters (log_PE) estimated,
+                                # indexed as follows for each biomass survey stratum
+                                # (shared within an area across depths):
+                                PE_options = list(pointer_PE_biomass = c(1, 1, 1, 2, 2, 2, 3, 3, 3)),
+                                # scaling parameter options:
+                                q_options = list(
+                                # longline survey strata (n=3) indexed as follows for the
+                                # biomass strata (n=9)
+                                pointer_biomass_cpue_strata = c(1, 1, 1, 2, 2, 2, 3, 3, 3),
+                                # one scaling parameters (log_q) estimated, shared
+                                # over all three LLS strata
+                                pointer_q_cpue = c(1, 1, 1)),
+                                # estimate extra trawl survey observation error
+                                extra_biomass_cv = list(assumption = 'extra_cv'),
+                                # estimate extra longline survey observation error
+                                extra_cpue_cv = list(assumption = 'extra_cv'))
+
+# run the model
+thrn_mod <- fit_rema(thrn_input) 
+
+# save both models
+saveRDS(pcod_mod, file = "inst/example_scripts/pcod_mod.rda")
+saveRDS(thrn_mod, file = "inst/example_scripts/thrn_mod.rda")
+
+```
+
+### 1. Simulation self-check: Can we recover parameters without bias?
+
+Simulation self-checking is an important step to ensure the model has been properly coded and is consistent in its running. First, we use the REMA model to estimate parameters (e.g., process error variance) from data. Next, we use the estimated parameters to simulate new data using the REMA equations. Finally, we use the REMA model to recover the parameters from the simulated data, which has a known process error variance. Models fail simulation testing when the recovered parameters deviate consistently (median of recovered parameters is far from true process error) or strongly (span of recovered parameters is large) from the true values used to simulate data.
+
+```{r simulation testing function}
+
+inv_logit <- function(x) {
+  return(exp(x)/(1+exp(x)))
+}
+
+# this will run sim testing
+sim_test <- function(mod_name, n_try, cpue) {
+  
+  # storage things
+  re_est <- matrix(NA, n_try, length(mod_name$par))
+  
+  # go through the model
+  suppressMessages(for(i in 1:n_try) {
+    
+    sim <- mod_name$simulate(complete = TRUE) # simulates the data
+    # biomass data
+    tmp_biomass <- matrix(data = exp(sim$log_biomass_obs), ncol = ncol(mod_name$input$data$biomass_obs))
+    colnames(tmp_biomass) <- colnames(mod_name$data$biomass_obs)
+    # if there's cpue data, add that too
+    if (cpue) {tmp_cpue <- matrix(data = (sim$cpue_obs), ncol = ncol(mod_name$input$data$cpue_obs))
+               colnames(tmp_cpue) <- colnames(mod_name$data$cpue_obs)}
+    # set up new data for input
+    newinput <- mod_name$input
+    newinput$data$biomass_obs <- tmp_biomass
+    if (cpue) {newinput$data$cpue_obs <- tmp_cpue}
+    # refit model 
+    mod_new <- fit_rema(newinput, do.sdrep = F)
+    # add to data frame
+    re_est[i, ] <- mod_new$env$last.par[1: length(mod_name$par)]
+    
+    })
+  
+  re_est <- as.data.frame(re_est); re_est$type <- rep("recovered")
+  
+  return(re_est)
+  
+}
+# sometimes spits out: In stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000,...: NA/NaN function evaluation
+
+# run for pcod and prep data frame
+mod_ests <- data.frame(V1 = exp(pcod_mod$env$last.par[1]), 
+                       type = "model")
+par_ests <- sim_test(pcod_mod, 200, F)
+par_ests <- cbind(exp(par_ests[1]), par_ests[2])
+pcod_ests <- rbind(mod_ests, par_ests); pcod_ests$sp <- rep("pacific cod")
+# save things
+saveRDS(par_ests, file = "inst/example_scripts/pcod_par_ests.rda")
+
+# run for thorny and prep data frame
+mod_ests <- data.frame(V1 = exp(thrn_mod$env$last.par[1]),
+                       V2 = exp(thrn_mod$env$last.par[2]), 
+                       V3 = exp(thrn_mod$env$last.par[3]), 
+                       V4 = exp(thrn_mod$env$last.par[4]), 
+                       V5 = inv_logit(thrn_mod$env$last.par[5]), 
+                       V6 = inv_logit(thrn_mod$env$last.par[6]), 
+                       type = "model")
+par_ests <- sim_test(thrn_mod, 200, T) # some warnings??
+par_ests <- cbind(exp(par_ests[1:4]), inv_logit(par_ests[5:6]), par_ests[7])
+thrn_ests <- rbind(mod_ests, par_ests); thrn_ests$sp <- rep("thornyhead rockfish")
+# save things
+saveRDS(par_ests, file = "inst/example_scripts/thrn_par_ests.rda")
+
+# plot
+# reogranize data
+thrn_tmp <- thrn_ests %>% pivot_longer(1:6, names_to = "parameter")
+pcod_tmp <- pcod_ests %>% pivot_longer(1, names_to = "parameter")
+dat_tmp <- rbind(thrn_tmp, pcod_tmp)
+# plotting parameter number v. value
+ggplot(NULL, aes(parameter, value)) + 
+  # add distribution of recovered parameters
+  geom_violin(data = dat_tmp %>% filter(type == "recovered"), 
+              fill = "#fbb61a", draw_quantiles = c(0.5)) +
+  # add "true values" from original model
+  geom_point(data = dat_tmp %>% filter(type == "model"), 
+             size = 3, col = "black") + 
+  # seperate by species 
+  facet_grid(. ~ sp, scales = "free", space = "free") + 
+  # make cute
+  labs(x = "Parameter", 
+       y = "Process error (natural scale)") +
+  theme_classic()
+
+```
+
+[DISCRIBE WHY THE LONG TAIL] only simulate with R side -- want to use precision matrix to basically hold random effects where they are
+
+### 2. Likelihood profile: Is the model identifible? 
+
+A likelihood profile is a way to visualize model identifiablility. A model is identifiable if there is a particular combination of parameters which most increases the model's log-likelihood compared to all other parameter combinations. We can plot a model's log-likelihoods across different parameter values; in the simplest REMA context with one process error, this means calculating the model's log-likelihood across a vector of process errors for the single survey strata. Ideally, we want the model's likelhood profile to be smooth with a single peak; this indicates that there is a local maximum the model consistantly converges towards. 
+
+[WHAT DO GRAY LINES MEAN -- CONF INTERVAL PART]
+[DEAL WITH MAX/MIN WORDING AND PLOT]
+
+```{r}
+
+# create profiles -- force quiet?
+pcod_profile <- TMB::tmbprofile(pcod_mod, lincomb = c(1))
+pcod_profile$sp <- rep("pacific cod")
+thrn_profile <- TMB::tmbprofile(thrn_mod, lincomb = c(1:6))
+thrn_profile$sp <- rep("thornyhead rockfish")
+# save things
+saveRDS(pcod_profile, file = "inst/example_scripts/pcod_profile.rda")
+saveRDS(thrn_profile, file = "inst/example_scripts/thrn_profile.rda")
+
+# we add some confidence intervals -- data for those... messy but works
+pcod_conf_edge <- as.data.frame(confint(pcod_profile))
+pcod_conf_edge$sp <- rep("pacific cod")
+pcod_conf_horiz <- data.frame(value  = pcod_profile$value[which(trunc(pcod_profile$parameter*10^2)/10^2 == trunc(pcod_conf_edge$upper*10^2)/10^2)[1]]) # get the closest option to use for horizontal line
+pcod_conf_horiz$sp <- rep("pacific cod")
+thrn_conf_edge <- as.data.frame(confint(thrn_profile))
+thrn_conf_edge$sp <- rep("thornyhead rockfish")
+thrn_conf_horiz <- data.frame(value  = thrn_profile$value[which(trunc(thrn_profile$parameter*10^2)/10^2 == trunc(thrn_conf_edge$upper*10^2)/10^2)[1]]) # get the closest option to use for horizontal line
+thrn_conf_horiz$sp <- rep("thornyhead rockfish")
+# combine for plots
+profile_dat <- rbind(pcod_profile, thrn_profile)
+conf_edge <- rbind(pcod_conf_edge, thrn_conf_edge)
+conf_horiz <- rbind(pcod_conf_horiz, thrn_conf_horiz)
+
+# plot
+ggplot(NULL, aes(parameter, value)) + 
+  # plot intervals
+  geom_vline(data = conf_edge, aes(xintercept = lower), col = "lightgray") + 
+  geom_vline(data = conf_edge, aes(xintercept = upper), col = "lightgray") + 
+  geom_hline(data = conf_horiz, aes(yintercept = value), col = "lightgray") +
+  # plot likelihood profile
+  geom_path(data = profile_dat, lwd = 1.1) + 
+  facet_wrap(. ~ sp, scales = "free") + 
+  # pref for theme and labs
+  theme_classic() + labs(x = "Combined parameters", y = "Scaled log-likelihood")
+
+```
+
+### 3. Laplace appoximation: Are the model assumptions reasonable? 
+
+```{r}
+
+# function to (1) run models and (2) return posterior data frames and the traceplots
+mcmc_comp <- function(mod_name) {
+  
+  it_num <- 5000
+  
+  mod_la <- tmbstan(obj = mod_name, chains = 4, init = mod_name$par, laplace = T, iter = it_num)
+  mod_mcmc <- tmbstan(obj = mod_name, chains = 4, init = mod_name$par, laplace = F, iter = it_num) 
+  
+  # posteriors as data frame
+  post_la <- as.data.frame(mod_la); post_la$type <- ("la")
+  post_mcmc <- as.data.frame(mod_mcmc); post_mcmc <- post_mcmc[, c(1:length(mod_name$par), dim(post_mcmc)[2])]; post_mcmc$type <- rep("mcmc")
+  post_la$chain <- c(rep(1, it_num/2), rep(2, it_num/2), rep(3, it_num/2), rep(4, it_num/2))
+  post_la$iter_num <- rep(1:(it_num/2), 4)
+  post_mcmc$chain <- c(rep(1, it_num/2), rep(2, it_num/2), rep(3, it_num/2), rep(4, it_num/2))
+  post_mcmc$iter_num <- rep(1:(it_num/2), 4)
+  post_draws <- rbind(post_la, post_mcmc)
+
+  # get quantiles
+  qv <- seq(from = 0, to = 1, by = 0.01)
+  quant_dat <- data.frame(quant = NULL, 
+                          la = NULL, 
+                          mcmc = NULL, 
+                          par = NULL)
+  
+  for (i in 1:(dim(post_la)[2]-4)) { # post_la has type, chains, lp, iteration number column that don't count
+    
+    tmp <- data.frame(quant = qv, 
+                      la = quantile(unlist(post_la[i]), probs = qv),
+                      mcmc = quantile(unlist(post_mcmc[i]), probs = qv), 
+                      par = rep(paste0("V", i)))
+    
+    quant_dat <- rbind(quant_dat, tmp)
+    
+  }
+  
+  return(list(quant_dat, post_draws))
+  
+}
+
+# run models
+pcod_comp <- mcmc_comp(pcod_mod)
+thrn_comp <- mcmc_comp(thrn_mod)
+# save things
+saveRDS(pcod_comp, file = "inst/example_scripts/pcod_mcmc_comp.rda")
+saveRDS(thrn_comp, file = "inst/example_scripts/thrn_mcmc_comp.rda")
+
+# what mcmc run checks to do???
+
+# more data prep
+colnames(pcod_comp[[2]]) <- c("V1", "lp", "type", "chain", "iter_num")
+pcod_comp[[2]] <- pcod_comp[[2]] %>% pivot_longer(cols = 1, names_to = "var")
+# check that mcmc ran okay -- will have trace plots nx1 plot (a)
+pcod_trace <- ggplot(pcod_comp[[2]], aes(iter_num, value)) +
+  geom_path(aes(col = as.factor(chain))) + 
+  facet_grid(rows = vars(type), col = vars(var), scales = "free") + 
+  theme_classic() + 
+  labs(x = "Posterior draw", y = "Estimated value") + 
+  scale_color_manual(values = c("#fbb61a", "#ed6925", "#bc3754"))
+# check identifiability -- post$log_PE v. post$lp__ comparision nx1 plot (b)
+pcod_ident <- ggplot(pcod_comp[[2]], aes(value, lp)) +
+  geom_line(aes(col = as.factor(chain))) + # not actually sure what this should look like???
+  facet_grid(rows = vars(type), col = vars(var), scales = "free") + 
+  theme_classic() + 
+  labs(x = "Estimated value", y = "LP") + 
+  scale_color_manual(values = c("#fbb61a", "#ed6925", "#bc3754"))
+  
+# check qq plot 1xn or similar plot (c)
+pcod_qq <- ggplot(pcod_comp[[1]], aes(mcmc, la)) + 
+                  geom_abline(intercept = 0, slope = 1, col = "lightgray") + 
+                  geom_point() +  
+                  facet_wrap(~par, scales = "free") + 
+                  theme_classic() + labs(x = "MCMC", y = "Laplace approx.")
+thrn_qq <- ggplot(thrn_comp[[1]], aes(mcmc, la)) + 
+                  geom_abline(intercept = 0, slope = 1, col = "lightgray") + 
+                  geom_point() +  
+                  facet_wrap(~par, nrow = 2, scales = "free") + 
+                  theme_classic() + labs(x = "MCMC", y = "Laplace approx.")
+
+# combine with cowplot for each species
+
+```
+
