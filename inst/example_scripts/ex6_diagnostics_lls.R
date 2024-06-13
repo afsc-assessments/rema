@@ -139,8 +139,8 @@ profile <- TMB::tmbprofile(m1, lincomb = c(0,1,0,0,0,0,0))
 plot(profile);confint(profile)
 profile <- TMB::tmbprofile(m1, lincomb = c(0,0,0,0,0,0,1))
 plot(profile);confint(profile)
-# can also look at the difference between parameters
-profile <- TMB::tmbprofile(m1, lincomb = c(0,0,1,0,0,-1,0))
+# # can also look at the difference between parameters - Anders N says don't do this!
+# profile <- TMB::tmbprofile(m1, lincomb = c(0,0,1,0,0,-1,0))
 plot(profile);confint(profile)
 # ^ note this is an alternative way of calculating variance to the standard
 # method (see below) which relies on the delta method and assumes asymptotic
