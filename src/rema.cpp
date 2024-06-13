@@ -243,6 +243,7 @@ Type objective_function<Type>::operator() ()
           // simulation block
           SIMULATE {
             log_biomass_obs(i,j) = rnorm(log_biomass_pred(i,j), log_biomass_sd(i,j));
+            REPORT(log_biomass_obs);
           }
         }
 
