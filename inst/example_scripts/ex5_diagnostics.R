@@ -21,7 +21,7 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 12) +
 TMB::compile(here::here('src', 'rema.cpp'))
 dyn.load(dynlib(here::here('src', 'rema')))
 biomass_dat <- read_csv('inst/example_data/goa_sst_biomass.csv')
-biomass_dat <- biomass_dat %>% filter(strata == "CGOA (0-500 m)")
+# biomass_dat <- biomass_dat %>% filter(strata == "CGOA (0-500 m)")
 cpue_dat <- read_csv('inst/example_data/goa_sst_rpw.csv')
 
 # library(rema)
@@ -35,6 +35,10 @@ input <- prepare_rema_input(model_name = 'GOA thornyhead',
                             # PE_options = list(pointer_PE_biomass = c(rep(1,3), rep(2,3), rep(3,3)))
                             )
 input$par$log_biomass_pred
+names(input$par)
+names(input$map)
+input$par$log_tau_biomass
+input$map$log_tau_biomass
 input$data$obsvec <- log(input$biomass_dat$biomass)
 m1 <- fit_rema(input)
 idx <- which(!is.na(input$data$keep_biomass_obs))

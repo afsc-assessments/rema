@@ -102,7 +102,7 @@ tidy_rema <- function(rema_model,
 
     pe_pars <- data.frame(model_name = rema_model$input$model_name,
                           parameter = 'process_error',
-               estimate = exp(pars$log_PE))
+                          estimate = exp(pars$log_PE))
 
     pe_ci <- matrix(nrow = 0, ncol = 3)
     for(i in 1:length(pars$log_PE)) {
@@ -137,7 +137,7 @@ tidy_rema <- function(rema_model,
 
   # power parameter(s) when available
   p_pars <- NULL
-  if(any(grepl('logit_tweedie_p', names(pars)))) {
+  if(any(grepl('logit_tweedie_p', rownames(summary(sdrep, "fixed"))))) {
     p_pars <- data.frame(model_name = rema_model$input$model_name,
                          parameter = 'tweedie_p',
                          estimate = 1 + (1 / (1 + exp(-pars$logit_tweedie_p))))
@@ -157,15 +157,15 @@ tidy_rema <- function(rema_model,
 
   # biomass tau (extra CV) parameter(s) when available
   tau_biomass_pars <- NULL
-  if(any(grepl('logit_tau_biomass', names(pars)))) {
+  if(any(grepl('log_tau_biomass', rownames(summary(sdrep, "fixed"))))) {
     tau_biomass_pars <- data.frame(model_name = rema_model$input$model_name,
-                         parameter = 'extra_biomass_cv',
-                         estimate = 1.5 / (1 + exp(-pars$logit_tau_biomass)))
+                                   parameter = 'extra_biomass_cv',
+                                   estimate = exp(pars$log_tau_biomass))
 
 
     tau_biomass_ci <- matrix(nrow = 0, ncol = 3)
-    for(i in 1:length(pars$logit_tau_biomass)) {
-      tau_biomass_ci <- rbind(tau_biomass_ci, get_ci(pars$logit_tau_biomass[i], sd$logit_tau_biomass[i], type = 'expit', lo = 0, hi = data$tau_biomass_upper[i]))
+    for(i in 1:length(pars$log_tau_biomass)) {
+      tau_biomass_ci <- rbind(tau_biomass_ci, get_ci(pars$log_tau_biomass[i], sd$log_tau_biomass[i], type = 'exp'))
     }
 
     tau_biomass_ci <- as.data.frame(tau_biomass_ci)
@@ -177,15 +177,15 @@ tidy_rema <- function(rema_model,
 
   # cpue tau (extra CV) parameter(s) when available
   tau_cpue_pars <- NULL
-  if(any(grepl('logit_tau_cpue', names(pars)))) {
+  if(any(grepl('log_tau_cpue', rownames(summary(sdrep, "fixed"))))) {
     tau_cpue_pars <- data.frame(model_name = rema_model$input$model_name,
-                                   parameter = 'extra_cpue_cv',
-                                   estimate = 1.5 / (1 + exp(-pars$logit_tau_cpue)))
+                                parameter = 'extra_cpue_cv',
+                                estimate = exp(pars$log_tau_cpue))
 
 
     tau_cpue_ci <- matrix(nrow = 0, ncol = 3)
-    for(i in 1:length(pars$logit_tau_cpue)) {
-      tau_cpue_ci <- rbind(tau_cpue_ci, get_ci(pars$logit_tau_cpue[i], sd$logit_tau_cpue[i], type = 'expit', lo = 0, hi = data$tau_cpue_upper[i]))
+    for(i in 1:length(pars$log_tau_cpue)) {
+      tau_cpue_ci <- rbind(tau_cpue_ci, get_ci(pars$log_tau_cpue[i], sd$log_tau_cpue[i], type = 'exp'))
     }
 
     tau_cpue_ci <- as.data.frame(tau_cpue_ci)
@@ -206,11 +206,11 @@ tidy_rema <- function(rema_model,
     parameter_estimates <- dplyr::bind_rows(parameter_estimates, p_pars)
   }
 
-  if(!is.null(tau_biomass_pars) & data$extra_biomass_cv == 1) {
+  if(!is.null(tau_biomass_pars)) {
     parameter_estimates <- dplyr::bind_rows(parameter_estimates, tau_biomass_pars)
   }
 
-  if(!is.null(tau_cpue_pars) & data$extra_cpue_cv == 1) {
+  if(!is.null(tau_cpue_pars)) {
     parameter_estimates <- dplyr::bind_rows(parameter_estimates, tau_cpue_pars)
   }
 
@@ -281,30 +281,30 @@ tidy_rema <- function(rema_model,
         dplyr::mutate(variable = 'tot_cpue_pred')
 
 
-       } else if(data$sum_cpue_index == 0) {
-        total_predicted_cpue <- "The CPUE survey index provided was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."
+    } else if(data$sum_cpue_index == 0) {
+      total_predicted_cpue <- "The CPUE survey index provided was defined as not summable in prepare_rema_input(). If the CPUE index is summable (e.g. Relative Population Numbers), please select sum_cpue_index = TRUE in prepare_rema_input(). See ?prepare_rema_input() for more details."
 
-       } else {
+    } else {
 
-         total_predicted_cpue <- tidyr::expand_grid(model_name = rema_model$input$model_name,
-                                                    variable = 'tot_cpue_pred',
-                                                    year = data$model_yrs) %>%
-           dplyr::mutate(log_pred = sdrep$value[names(sdrep$value) == 'log_tot_cpue_pred'],
-                         sd_log_pred = sdrep$sd[which(names(sdrep$value) == 'log_tot_cpue_pred')],
-                         pred = exp(log_pred),
-                         pred_lci = exp(log_pred - qnorm(1 - alpha_ci/2) * sd_log_pred),
-                         pred_uci = exp(log_pred + qnorm(1 - alpha_ci/2) * sd_log_pred)) %>%
-           dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci)
-       }
+      total_predicted_cpue <- tidyr::expand_grid(model_name = rema_model$input$model_name,
+                                                 variable = 'tot_cpue_pred',
+                                                 year = data$model_yrs) %>%
+        dplyr::mutate(log_pred = sdrep$value[names(sdrep$value) == 'log_tot_cpue_pred'],
+                      sd_log_pred = sdrep$sd[which(names(sdrep$value) == 'log_tot_cpue_pred')],
+                      pred = exp(log_pred),
+                      pred_lci = exp(log_pred - qnorm(1 - alpha_ci/2) * sd_log_pred),
+                      pred_uci = exp(log_pred + qnorm(1 - alpha_ci/2) * sd_log_pred)) %>%
+        dplyr::select(model_name, variable, year, pred, pred_lci, pred_uci)
+    }
 
-      # if there are more biomass strata than cpue strata, get
-      # predicted biomass by cpue strata for comparison at the same strata level
-      if(any(grepl('log_biomass_pred_cpue_strata', unique(names(sdrep$value))))) {
+    # if there are more biomass strata than cpue strata, get
+    # predicted biomass by cpue strata for comparison at the same strata level
+    if(any(grepl('log_biomass_pred_cpue_strata', unique(names(sdrep$value))))) {
 
       biomass_by_cpue_strata <- tidyr::expand_grid(model_name = rema_model$input$model_name,
-                                           strata = colnames(data$cpue_obs),
-                                           variable = 'biomass_pred_cpue_strata',
-                                           year = data$model_yrs) %>%
+                                                   strata = colnames(data$cpue_obs),
+                                                   variable = 'biomass_pred_cpue_strata',
+                                                   year = data$model_yrs) %>%
         dplyr::mutate(log_pred = sdrep$value[names(sdrep$value) == 'log_biomass_pred_cpue_strata'],
                       sd_log_pred = sdrep$sd[which(names(sdrep$value) == 'log_biomass_pred_cpue_strata')],
                       pred = exp(log_pred),
@@ -347,7 +347,7 @@ tidy_rema <- function(rema_model,
       dplyr::mutate(proportion = predicted_biomass / total_predicted_biomass) %>%
       tidyr::pivot_wider(id_cols = c(model_name, year), names_from = strata, values_from = proportion)
 
-    }
+  }
 
   # Prepare final output
 
