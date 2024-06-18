@@ -21,22 +21,29 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 12) +
 TMB::compile(here::here('src', 'rema.cpp'))
 dyn.load(dynlib(here::here('src', 'rema')))
 biomass_dat <- read_csv('inst/example_data/goa_sst_biomass.csv')
-# biomass_dat <- biomass_dat %>% filter(strata == "CGOA (0-500 m)")
+biomass_dat <- biomass_dat %>% filter(strata == "CGOA (0-500 m)")
 cpue_dat <- read_csv('inst/example_data/goa_sst_rpw.csv')
 
 # library(rema)
 unique(biomass_dat$strata)
 devtools::document()
 input <- prepare_rema_input(model_name = 'GOA thornyhead',
-                            biomass_dat = biomass_dat,
+                            biomass_dat = biomass_dat#,
                             # shared process error SD across all strata
                             # PE_options = list(pointer_PE_biomass = c(rep(1,9)))
                             # shared process error SD within regions
-                            PE_options = list(pointer_PE_biomass = c(rep(1,3), rep(2,3), rep(3,3)))
+                            # PE_options = list(pointer_PE_biomass = c(rep(1,3), rep(2,3), rep(3,3)))
                             )
 input$par$log_biomass_pred
-
+input$data$obsvec <- log(input$biomass_dat$biomass)
 m1 <- fit_rema(input)
+idx <- which(!is.na(input$data$keep_biomass_obs))
+fg <- oneStepPredict(m1, observation.name = "obsvec", data.term.indicator = "keep", method = "cdf", subset = idx)
+fg$residual
+fg <- oneStepPredict(m1, observation.name = "obsvec", method = "fullGaussian", data.term.indicator = "keep", subset = idx)
+fg <- oneStepPredict(m1, observation.name = "obsvec", method = "fullGaussian", data.term.indicator = "keep_biomass_obs", subset = idx)
+fg <- oneStepPredict(m1, observation.name = "obsvec", method = "fullGaussian", data.term.indicator = "keep_biomass_obs")
+m1$par
 out1 <- tidy_rema(m1)
 param <- out1$parameter_estimates %>% dplyr::mutate(region = c('CGOA', 'EGOA', 'WGOA')) # always lists the strata in alphabetical order!
 param
