@@ -70,13 +70,13 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(psig_log_q);
 
   // switch for estimating extra biomass cv (tau_biomass)
-  DATA_INTEGER(extra_biomass_cv);
-  DATA_INTEGER(extra_cpue_cv);
+  // DATA_INTEGER(extra_biomass_cv);
+  // DATA_INTEGER(extra_cpue_cv);
 
   // upper bounds for extra cv on biomass or cpue survey observations, default =
   // 1.5 (used to constrain tau parameter using the logit transformation)
-  DATA_VECTOR(tau_biomass_upper);
-  DATA_VECTOR(tau_cpue_upper);
+  // DATA_VECTOR(tau_biomass_upper);
+  // DATA_VECTOR(tau_cpue_upper);
 
   // data for one-step-ahead (OSA) residuals
   DATA_VECTOR(obsvec); // vector of all observations for OSA residuals
@@ -93,18 +93,25 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(logit_tweedie_p); // tweedie power parameter (one for biomass survey and optional one for cpue survey)
   vector<Type> tweedie_p = Type(0.95) * invlogit(logit_tweedie_p) + Type(1.05);
 
-  // extra cv (tau) for biomass and cpue observations
-  PARAMETER_VECTOR(logit_tau_biomass);
-  vector<Type> tau_biomass(logit_tau_biomass.size());
-  for(int i = 0; i < logit_tau_biomass.size(); i++) {
-    tau_biomass(i) = tau_biomass_upper(i) / (Type(1.0) + exp(-logit_tau_biomass(i)));
-  }
+  // // extra cv (tau) for biomass and cpue observations
+  // PARAMETER_VECTOR(logit_tau_biomass);
+  // vector<Type> tau_biomass(logit_tau_biomass.size());
+  // for(int i = 0; i < logit_tau_biomass.size(); i++) {
+  //   tau_biomass(i) = tau_biomass_upper(i) / (Type(1.0) + exp(-logit_tau_biomass(i)));
+  // }
+  //
+  // PARAMETER_VECTOR(logit_tau_cpue);
+  // vector<Type> tau_cpue(logit_tau_cpue.size());
+  // for(int i = 0; i < logit_tau_cpue.size(); i++) {
+  //   tau_cpue(i) = tau_cpue_upper(i) / (Type(1.0) + exp(-logit_tau_cpue(i)));
+  // }
 
-  PARAMETER_VECTOR(logit_tau_cpue);
-  vector<Type> tau_cpue(logit_tau_cpue.size());
-  for(int i = 0; i < logit_tau_cpue.size(); i++) {
-    tau_cpue(i) = tau_cpue_upper(i) / (Type(1.0) + exp(-logit_tau_cpue(i)));
-  }
+  // extra cv (tau) for biomass and cpue observations - originally this was
+  // logit transformed but corrected to a log transformation in June 2024)
+  PARAMETER_VECTOR(log_tau_biomass);
+  PARAMETER_VECTOR(log_tau_cpue);
+  vector<Type> tau_biomass = exp(log_tau_biomass);
+  vector<Type> tau_cpue = exp(log_tau_cpue);
 
   // random effects of predicted biomass
   PARAMETER_MATRIX(log_biomass_pred);
