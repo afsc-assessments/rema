@@ -1,30 +1,33 @@
-### think something like this to start....
-title: "REMA basics"
+---
+title: "REMA Model Validation"
+author: "LJ Balstad"
+output: html_document
+---
+
+YAML will become something more like:
+title: "REMA Model Validation"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{REMA basics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 
-TO DO: 
--- clean code: make as simple as possible
--- make graphs look nice... could do base r (lol)
--- add refs
--- code out stan portion
 
-```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
-rema_path <- find.package("rema")
-knitr::opts_knit$set(root.dir = file.path(rema_path, "example_data"))
-knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+```{r, include = FALSE, echo=FALSE,results='hide',fig.keep='all'}
+
+# knitr::opts_chunk$set(
+#   collapse = TRUE,
+#   comment = "#>"
+# )
+# rema_path <- find.package("rema")
+knitr::opts_knit$set(root.dir = "C:/Users/lauri/OneDrive/Documents/GitHub/rema")
+# knitr::opts_knit$set(root.dir = file.path(rema_path, "example_data"))
+# knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 
 # devtools::build_rmd(files = 'vignettes/ex1_basics.Rmd')
 ```
 
-```{r setup, warning = FALSE, message = FALSE}
+```{r setup, warning = FALSE, message = FALSE, echo=FALSE,results='hide',fig.keep='all'}
 
 library(rema)
 library(ggplot2)
@@ -34,6 +37,7 @@ library(devtools)
 library(TMB)
 library(tidyverse)
 library(tmbstan)
+library(PerformanceAnalytics)
 
 ggplot2::theme_set(cowplot::theme_cowplot(font_size = 14) +
                      cowplot::background_grid() +
@@ -41,42 +45,43 @@ ggplot2::theme_set(cowplot::theme_cowplot(font_size = 14) +
 
 ```
 
-### testing framework
-In this vignette, we will be testing that (1) the REMA model is working as expected and (2) the assumptions we have made to create the REMA model are valid. We will use several example stocks with different levels of stock and estimation complexity: 
+### Testing framework
+In this vignette, we will be testing that (1) the REMA model is working as expected and (2) the assumptions we have made to create the REMA model are valid. We will use two example stocks with different levels of complexity: 
 
--- A simple case, with one process error: Chill_Rockfish
--- A more complex case, with multiple process errors: Cool_Rockfish
--- A very complex case, with multiple survey types and process errors: Wild_Rockfish
+-- Pacific cod, a simple case with one process error
+-- Thornyhead rockfish, a complex case with multiple process errors and multiple surveys
 
-Testing the REMA model across this range of complexity helps ensure that model and model assumptions are valid in a variety of realistic, management-relevent cases. 
+Testing the REMA model across this range of complexity helps ensure that model and model assumptions are valid in a variety of realistic, management-relevant cases. 
 
-It is important to note that model validation does not mean the model is ``more right'' or ``more correct;'' model validation does not help choose between models or ensure the model makes ``better'' predictions. Rather, model validation is a way to ensure that the model is operating as expected, without introducing bias or violating statistical assumptions which the model is based upon. In particular, the key things we will test are:
+It is important to note that model validation does not mean the model is "more right" or "more correct;" model validation does not help choose models (except to identify models which are not functioning properly) or ensure the model makes "better" predictions. Rather, model validation is a way to ensure that the model is operating as expected, without introducing bias or violating statistical assumptions which the model is based upon [1, 2]. In particular, the key things we will test are:
 
--- Does the model introduce bias: Using a simulation self-check, we will show that the model is coded correctly and is able to recover known paraemters. 
--- Is the model identifiable: Using the likelihood profile, we will show the the model paraemters are identifiable. 
--- Are assumptions of normality valid: Using a lapalace approximation via MCMC, we will show that the distribution of things are normal. Additionally, using OSA residuals, we will show that something is normal. 
+-- Does the model introduce bias? Using a simulation self-check, we will test if the model is coded correctly and is able to recover known parameters. 
+-- Is the model identifiable? Using the likelihood profile, we will test if the model parameters are identifiable. 
+-- Are assumptions of normality valid? Comparing a non-Laplace approximation and a Laplace approximation of the model via MCMC, we test if the distribution of the parameters' posteriors are normal or normal-like. 
+-- Are the parameters unique and non-redundant? Checking the correlation between parameters helps us identify if parameters are redundant with each other. 
 
-### Prepare data for each stock here -- will hide
+### Prepare data for each stock here
 
-This will probably be background code (include == FALSE) which just sets up the data packages for each of the next parts. 
+First, we run the model for each stock. The Pacific cod model (pcod_mod) uses a single process error to describe the stock over time (one parameter). The thornyhead rockfish model (thrn_mod) uses three process errors and data from two surveys to describe the stock over time (six parameters). 
 
-So this should really be a function that fits the model and assigns it a unique variable name
-
-```{r data and model prep}
+```{r data and model prep, echo=FALSE,results='hide',fig.keep='all'}
 
 # compile everything
 # dyn.unload(dynlib(here::here('src', 'rema')))
 TMB::compile(here::here('src', 'rema.cpp'))
 dyn.load(dynlib(here::here('src', 'rema')))
 
+# package re-update R directory
+devtools::document()
+
 set.seed(415) # for repetability, use a seed
 
-# first, get the P-Cod data set up
+# first, get the p-cod data set up
 pcod_bio_dat <- read_csv("inst/example_data/ai_pcod_2022_biomass_dat.csv")
 pcod_input <- prepare_rema_input(model_name = "p_cod",
                                  biomass_dat = pcod_bio_dat,
-                                 PE_options = list(pointer_PE_biomass = 1)
                                  # one strata
+                                 PE_options = list(pointer_PE_biomass = 1)
                                  )
 # run the model
 pcod_mod <- fit_rema(pcod_input) 
@@ -105,28 +110,28 @@ thrn_input <- prepare_rema_input(model_name = 'thrnhead_rockfish',
                                 # estimate extra trawl survey observation error
                                 extra_biomass_cv = list(assumption = 'extra_cv'),
                                 # estimate extra longline survey observation error
-                                extra_cpue_cv = list(assumption = 'extra_cv'))
+                                extra_cpue_cv = list(assumption = 'extra_cv')
+                                )
 
 # run the model
 thrn_mod <- fit_rema(thrn_input) 
-
-# save both models
-saveRDS(pcod_mod, file = "inst/example_scripts/pcod_mod.rda")
-saveRDS(thrn_mod, file = "inst/example_scripts/thrn_mod.rda")
 
 ```
 
 ### 1. Simulation self-check: Can we recover parameters without bias?
 
-Simulation self-checking is an important step to ensure the model has been properly coded and is consistent in its running. First, we use the REMA model to estimate parameters (e.g., process error variance) from data. Next, we use the estimated parameters to simulate new data using the REMA equations. Finally, we use the REMA model to recover the parameters from the simulated data, which has a known process error variance. Models fail simulation testing when the recovered parameters deviate consistently (median of recovered parameters is far from true process error) or strongly (span of recovered parameters is large) from the true values used to simulate data.
+Simulation self-checking is an important step to ensure the model has been properly coded and is consistent in its running [1, 3]. First, we use the REMA model to estimate parameters (e.g., process error variance) from real data. Next, we use the estimated parameters to simulate new data (simulated observations and states) using the REMA equations. Finally, we use the REMA model to recover the parameters from the simulated data, which has a known process error variance. 
+
+Models fail simulation testing when the recovered parameters or simulated state spaces deviate consistently from the true values used to simulate data. If the recovered parameters are far from the true process error or the span of the recovered parameters is large, this indicates that the model is non-identifable, has redundant parameters, or has bias. 
 
 ```{r simulation testing function}
 
-inv_logit <- function(x) {
-  return(exp(x)/(1+exp(x)))
-}
-
 # this will run sim testing
+# mod_name (variable name) gives the model which should be used
+# n_try (numeric) gives the number of simulations to complete
+# cpue (T/F) is TRUE if there is CPUE data and FALSE if there is not CPUE data
+# runs simulations
+# returns estimated parameters as a matrix, with each column being a parameter and each row being an iteration 
 sim_test <- function(mod_name, n_try, cpue) {
   
   # storage things
@@ -136,142 +141,158 @@ sim_test <- function(mod_name, n_try, cpue) {
   suppressMessages(for(i in 1:n_try) {
     
     sim <- mod_name$simulate(complete = TRUE) # simulates the data
-    # biomass data
+    
+    # use biomass from simulation...
     tmp_biomass <- matrix(data = exp(sim$log_biomass_obs), ncol = ncol(mod_name$input$data$biomass_obs))
     colnames(tmp_biomass) <- colnames(mod_name$data$biomass_obs)
-    # if there's cpue data, add that too
+    # and if there's cpue data, add that too ...
     if (cpue) {tmp_cpue <- matrix(data = (sim$cpue_obs), ncol = ncol(mod_name$input$data$cpue_obs))
                colnames(tmp_cpue) <- colnames(mod_name$data$cpue_obs)}
-    # set up new data for input
+    # ... to set up new data for input
     newinput <- mod_name$input
     newinput$data$biomass_obs <- tmp_biomass
     if (cpue) {newinput$data$cpue_obs <- tmp_cpue}
+    
     # refit model 
     mod_new <- fit_rema(newinput, do.sdrep = F)
-    # add to data frame
-    re_est[i, ] <- mod_new$env$last.par[1: length(mod_name$par)]
     
+    # add parameter estimates to matrix
+    re_est[i, ] <- mod_new$env$last.par[1: length(mod_name$par)]
+
     })
   
   re_est <- as.data.frame(re_est); re_est$type <- rep("recovered")
-  
+
   return(re_est)
   
 }
 # sometimes spits out: In stats::nlminb(model$par, model$fn, model$gr, control = list(iter.max = 1000,...: NA/NaN function evaluation
 
 # run for pcod and prep data frame
-mod_ests <- data.frame(V1 = exp(pcod_mod$env$last.par[1]), 
+# run simulation testing
+par_ests <- sim_test(pcod_mod, 250, F)
+# get data frame with simulation values for each parameter
+mod_par_ests <- data.frame("log_PE1" = pcod_mod$env$last.par[1], 
                        type = "model")
-par_ests <- sim_test(pcod_mod, 200, F)
-par_ests <- cbind(exp(par_ests[1]), par_ests[2])
-pcod_ests <- rbind(mod_ests, par_ests); pcod_ests$sp <- rep("pacific cod")
-# save things
-saveRDS(par_ests, file = "inst/example_scripts/pcod_par_ests.rda")
+names(par_ests) <- names(mod_par_ests) # rename for ease
+pcod_par_ests <- rbind(mod_par_ests, par_ests) # recovered and model in one data frame
+pcod_par_ests$sp <- rep("Pacific cod")
 
-# run for thorny and prep data frame
-mod_ests <- data.frame(V1 = exp(thrn_mod$env$last.par[1]),
-                       V2 = exp(thrn_mod$env$last.par[2]), 
-                       V3 = exp(thrn_mod$env$last.par[3]), 
-                       V4 = exp(thrn_mod$env$last.par[4]), 
-                       V5 = inv_logit(thrn_mod$env$last.par[5]), 
-                       V6 = inv_logit(thrn_mod$env$last.par[6]), 
-                       type = "model")
-par_ests <- sim_test(thrn_mod, 200, T) # some warnings??
-par_ests <- cbind(exp(par_ests[1:4]), inv_logit(par_ests[5:6]), par_ests[7])
-thrn_ests <- rbind(mod_ests, par_ests); thrn_ests$sp <- rep("thornyhead rockfish")
-# save things
-saveRDS(par_ests, file = "inst/example_scripts/thrn_par_ests.rda")
+# run for thorny and prep data frame -- same process
+# run simulation testing
+par_ests <- sim_test(thrn_mod, 250, T) # note some warnings
+# get data frame with simulation values for each parameter
+mod_par_ests <- data.frame("log_PE1" = thrn_mod$env$last.par[1],
+                           "log_PE2" = thrn_mod$env$last.par[2], 
+                           "log_PE3" = thrn_mod$env$last.par[3], 
+                           "log_q" = thrn_mod$env$last.par[4], 
+                           "log_tau_biomass" = thrn_mod$env$last.par[5], 
+                           "log_tau_cpue" = thrn_mod$env$last.par[6], 
+                           type = "model")
+names(par_ests) <- names(mod_par_ests) # rename for ease
+thrn_par_ests <- rbind(mod_par_ests, par_ests) # recovered and model parameters in one data frame
+thrn_par_ests$sp <- rep("thornyhead rockfish")
 
-# plot
+```
+
+```{r simulation testing plot}
+
 # reogranize data
-thrn_tmp <- thrn_ests %>% pivot_longer(1:6, names_to = "parameter")
-pcod_tmp <- pcod_ests %>% pivot_longer(1, names_to = "parameter")
-dat_tmp <- rbind(thrn_tmp, pcod_tmp)
+pcod_tmp <- pcod_par_ests %>% pivot_longer(1, names_to = "parameter")
+thrn_tmp <- thrn_par_ests %>% pivot_longer(1:6, names_to = "parameter")
+dat_tmp_par <- rbind(thrn_tmp, pcod_tmp)
+
 # plotting parameter number v. value
 ggplot(NULL, aes(parameter, value)) + 
   # add distribution of recovered parameters
-  geom_violin(data = dat_tmp %>% filter(type == "recovered"), 
+  geom_violin(data = dat_tmp_par %>% filter(type == "recovered"), 
               fill = "#fbb61a", draw_quantiles = c(0.5)) +
   # add "true values" from original model
-  geom_point(data = dat_tmp %>% filter(type == "model"), 
+  geom_point(data = dat_tmp_par %>% filter(type == "model"), 
              size = 3, col = "black") + 
   # seperate by species 
   facet_grid(. ~ sp, scales = "free", space = "free") + 
   # make cute
   labs(x = "Parameter", 
-       y = "Process error (natural scale)") +
-  theme_classic()
+       y = "Process error (log scale)") +
+  theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
 
-[DISCRIBE WHY THE LONG TAIL] only simulate with R side -- want to use precision matrix to basically hold random effects where they are
+**Fig 1: Simulation testing, parameter outcomes.** The distribution of recovered parameters is given in yellow, with medians marked by horizontal black lines, and the model parameters are given by the black dots. The Pacific cod model and simulation testing is on the left, and the thornyhead rockfish model and simulation testing is on the right.
+
+We can see that the single process error for Pacific cod model is generally recovered in simulation testing. The median of simulations is similar to the model value, and the spread of the simulations is relatively low (recall this is plotted on the log scale, so long negative tails are less concerning than long positive tails). 
+
+The thornyhead rockfish model shows several concerning patterns. First, several parameters seem to differ between the simulations and the model value, for example, log_PE3, log_q and log_tau_biomass. Second, the spread on several parameters is particularly large, for example, log_tau_biomass and log_tau_cpue. These results indicate that the thornyhead rockfish model fails simulation testing, and suggests that either the model is (1) lacking data to appropriately fit all parameters [1], (2) that the observation noise is greater than the ecological noise [2], or (3) a subset of parameters are redundant with eachother [3]. We can check parameter correlation using MCMC testing in section 3.  
 
 ### 2. Likelihood profile: Is the model identifible? 
 
-A likelihood profile is a way to visualize model identifiablility. A model is identifiable if there is a particular combination of parameters which most increases the model's log-likelihood compared to all other parameter combinations. We can plot a model's log-likelihoods across different parameter values; in the simplest REMA context with one process error, this means calculating the model's log-likelihood across a vector of process errors for the single survey strata. Ideally, we want the model's likelhood profile to be smooth with a single peak; this indicates that there is a local maximum the model consistantly converges towards. 
+A likelihood profile is one way to visualize model identifiablility [1, 3, 4]. A model is identifiable if there is a particular value of a parameter which most increases the model's log-likelihood (when all other parameters are held constant) compared to other values of the parameter of interest. For the Pacific cod model, this means testing the model's log-likelihood as the process error parameter changes. For the thornyhead rockfish model, we calculate the log-likelihood as just one parameter changes, when all other parameters are held constant. 
 
-[WHAT DO GRAY LINES MEAN -- CONF INTERVAL PART]
-[DEAL WITH MAX/MIN WORDING AND PLOT]
+Ideally, we want the model's likelhood profile to be smooth with a single peak; this indicates that there is a local maximum the model consistantly converges towards. 
 
-```{r}
+```{r calculate and plot likelihood profiles, echo=FALSE,results='hide',fig.keep='all', fig.height=4, fig.width=10}
 
-# create profiles -- force quiet?
-pcod_profile <- TMB::tmbprofile(pcod_mod, lincomb = c(1))
-pcod_profile$sp <- rep("pacific cod")
-thrn_profile <- TMB::tmbprofile(thrn_mod, lincomb = c(1:6))
-thrn_profile$sp <- rep("thornyhead rockfish")
-# save things
-saveRDS(pcod_profile, file = "inst/example_scripts/pcod_profile.rda")
-saveRDS(thrn_profile, file = "inst/example_scripts/thrn_profile.rda")
+# for pcod, one parameter
+pcod_profs <- TMB::tmbprofile(pcod_mod, lincomb = c(1)); pcod_profs$name <- rep("log_PE1")
+pcod_profs$sp <- rep("Pacific cod")
 
-# we add some confidence intervals -- data for those... messy but works
-pcod_conf_edge <- as.data.frame(confint(pcod_profile))
-pcod_conf_edge$sp <- rep("pacific cod")
-pcod_conf_horiz <- data.frame(value  = pcod_profile$value[which(trunc(pcod_profile$parameter*10^2)/10^2 == trunc(pcod_conf_edge$upper*10^2)/10^2)[1]]) # get the closest option to use for horizontal line
-pcod_conf_horiz$sp <- rep("pacific cod")
-thrn_conf_edge <- as.data.frame(confint(thrn_profile))
-thrn_conf_edge$sp <- rep("thornyhead rockfish")
-thrn_conf_horiz <- data.frame(value  = thrn_profile$value[which(trunc(thrn_profile$parameter*10^2)/10^2 == trunc(thrn_conf_edge$upper*10^2)/10^2)[1]]) # get the closest option to use for horizontal line
-thrn_conf_horiz$sp <- rep("thornyhead rockfish")
-# combine for plots
-profile_dat <- rbind(pcod_profile, thrn_profile)
-conf_edge <- rbind(pcod_conf_edge, thrn_conf_edge)
-conf_horiz <- rbind(pcod_conf_horiz, thrn_conf_horiz)
+# for thornyhead, have 6 parameters. use lincomb to indicate which parameter we are interested in (1) and which parameters to hold constant (0)
+thrn_prof_pe1 <- TMB::tmbprofile(thrn_mod, lincomb = c(1, 0, 0, 0, 0, 0)); thrn_prof_pe1$name <- rep("log_PE1")
+thrn_prof_pe2 <- TMB::tmbprofile(thrn_mod, lincomb = c(0, 1, 0, 0, 0, 0)); thrn_prof_pe2$name <- rep("log_PE2")
+thrn_prof_pe3 <- TMB::tmbprofile(thrn_mod, lincomb = c(0, 0, 1, 0, 0, 0)); thrn_prof_pe3$name <- rep("log_PE3")
+thrn_prof_q <- TMB::tmbprofile(thrn_mod, lincomb = c(0, 0, 0, 1, 0, 0)); thrn_prof_q$name <- rep("log_q")
+thrn_prof_t_bio <- TMB::tmbprofile(thrn_mod, lincomb = c(0, 0, 0, 0, 1, 0)); thrn_prof_t_bio$name <- rep("log_tau_biomass")
+thrn_prof_t_cpue <- TMB::tmbprofile(thrn_mod, lincomb = c(0, 0, 0, 0, 0, 1)); thrn_prof_t_cpue$name <- rep("log_tau_cpue")
+thrn_profs <- rbind(thrn_prof_pe1, thrn_prof_pe2, thrn_prof_pe3, thrn_prof_q, thrn_prof_t_bio, thrn_prof_t_cpue)
+thrn_profs$sp <- rep("thornyhead rockfish")
 
-# plot
-ggplot(NULL, aes(parameter, value)) + 
-  # plot intervals
-  geom_vline(data = conf_edge, aes(xintercept = lower), col = "lightgray") + 
-  geom_vline(data = conf_edge, aes(xintercept = upper), col = "lightgray") + 
-  geom_hline(data = conf_horiz, aes(yintercept = value), col = "lightgray") +
-  # plot likelihood profile
-  geom_path(data = profile_dat, lwd = 1.1) + 
-  facet_wrap(. ~ sp, scales = "free") + 
-  # pref for theme and labs
-  theme_classic() + labs(x = "Combined parameters", y = "Scaled log-likelihood")
+profile_dat <- rbind(pcod_profs, thrn_profs)
+
+ggplot(profile_dat, aes(parameter, -value)) + # recall value is negative log-likelihood
+  geom_path(lwd = 1.1) +   
+  facet_wrap(vars(sp, name), nrow = 1, scales = "free") +
+  theme_classic() + 
+  labs(x = "Parameter value", y = "Log-likelihood") + 
+  theme(axis.text = element_text(size = 7), 
+        axis.title = element_text(size = 7),
+        strip.text = element_text(size = 7))
 
 ```
 
+**Fig 2: Conditional log-likelihood profiles.** The log-likelihood (y axis) is plotted across a range of parameter values for each parameter (x axis), holding all other values constant. The likelihood profile for the Pacific cod model is on the left, and the likelihood profiles for the thornyhead rockfish model are on the right. 
+
+All the model parameters show a single, smooth curve, indicating that the parameters are identifiable, given all other parameters are constant. 
+
 ### 3. Laplace appoximation: Are the model assumptions reasonable? 
 
-```{r}
+REMA uses TMB to quickly estimate parameters. Internally, TMB uses the Laplace approximation to simplify and speed calculations of the marginal likelihood [5]. However, it is not guaranteed that this approximation is appropriate, particularly if the posterior distributions of parameters are non-normal. We can test this assumption using MCMC sampling, comparing the distribution of parameters from MCMC-sampled models with and without the Laplace approximation (see [6] for addtional details). 
+
+We can compare the distributions using qq plots between the two model cases. The Laplace approximation is a reasonable assumption if the sampling quantiles for the two models (with and without the Laplace approximation) are similar, i.e., fall on the 1:1 line. This can also help us identify bias introduced by the Laplace approximation, for example, if the median (50%) is different when using the Laplace approximation.
+
+```{r mcmc laplace approximation test, echo=FALSE,results='hide',fig.keep='all'}
 
 # function to (1) run models and (2) return posterior data frames and the traceplots
-mcmc_comp <- function(mod_name) {
+# input is model, number of iterations (samples), number of chains
+mcmc_comp <- function(mod_name, it_numb, chain_numb) {
   
-  it_num <- 5000
+  # set up MCMC chain information
+  it_num <- it_numb
+  chain_num <- chain_numb
   
-  mod_la <- tmbstan(obj = mod_name, chains = 4, init = mod_name$par, laplace = T, iter = it_num)
-  mod_mcmc <- tmbstan(obj = mod_name, chains = 4, init = mod_name$par, laplace = F, iter = it_num) 
+  # run model with laplace approximation
+  mod_la <- tmbstan(obj = mod_name, chains = chain_num, init = mod_name$par, laplace = T, iter = it_num)
+  # run model without laplace approximation, i.e., all parameters fully estimated without assumptions of normality
+  mod_mcmc <- tmbstan(obj = mod_name, chains = chain_num, init = mod_name$par, laplace = F, iter = it_num) 
   
   # posteriors as data frame
   post_la <- as.data.frame(mod_la); post_la$type <- ("la")
   post_mcmc <- as.data.frame(mod_mcmc); post_mcmc <- post_mcmc[, c(1:length(mod_name$par), dim(post_mcmc)[2])]; post_mcmc$type <- rep("mcmc")
-  post_la$chain <- c(rep(1, it_num/2), rep(2, it_num/2), rep(3, it_num/2), rep(4, it_num/2))
-  post_la$iter_num <- rep(1:(it_num/2), 4)
-  post_mcmc$chain <- c(rep(1, it_num/2), rep(2, it_num/2), rep(3, it_num/2), rep(4, it_num/2))
-  post_mcmc$iter_num <- rep(1:(it_num/2), 4)
+  # informational things... this is for getting the posterior draws, i.e., to test traceplots and such
+  post_la$chain <- rep(1:chain_num, each = it_num/2)
+  post_la$iter_num <- rep(1:(it_num/2), chain_num)
+  post_mcmc$chain <- rep(1:chain_num, each = it_num/2)
+  post_mcmc$iter_num <- rep(1:(it_num/2), chain_num)
   post_draws <- rbind(post_la, post_mcmc)
 
   # get quantiles
@@ -297,45 +318,81 @@ mcmc_comp <- function(mod_name) {
 }
 
 # run models
-pcod_comp <- mcmc_comp(pcod_mod)
-thrn_comp <- mcmc_comp(thrn_mod)
-# save things
-saveRDS(pcod_comp, file = "inst/example_scripts/pcod_mcmc_comp.rda")
-saveRDS(thrn_comp, file = "inst/example_scripts/thrn_mcmc_comp.rda")
-
-# what mcmc run checks to do???
-
-# more data prep
-colnames(pcod_comp[[2]]) <- c("V1", "lp", "type", "chain", "iter_num")
-pcod_comp[[2]] <- pcod_comp[[2]] %>% pivot_longer(cols = 1, names_to = "var")
-# check that mcmc ran okay -- will have trace plots nx1 plot (a)
-pcod_trace <- ggplot(pcod_comp[[2]], aes(iter_num, value)) +
-  geom_path(aes(col = as.factor(chain))) + 
-  facet_grid(rows = vars(type), col = vars(var), scales = "free") + 
-  theme_classic() + 
-  labs(x = "Posterior draw", y = "Estimated value") + 
-  scale_color_manual(values = c("#fbb61a", "#ed6925", "#bc3754"))
-# check identifiability -- post$log_PE v. post$lp__ comparision nx1 plot (b)
-pcod_ident <- ggplot(pcod_comp[[2]], aes(value, lp)) +
-  geom_line(aes(col = as.factor(chain))) + # not actually sure what this should look like???
-  facet_grid(rows = vars(type), col = vars(var), scales = "free") + 
-  theme_classic() + 
-  labs(x = "Estimated value", y = "LP") + 
-  scale_color_manual(values = c("#fbb61a", "#ed6925", "#bc3754"))
-  
-# check qq plot 1xn or similar plot (c)
-pcod_qq <- ggplot(pcod_comp[[1]], aes(mcmc, la)) + 
-                  geom_abline(intercept = 0, slope = 1, col = "lightgray") + 
-                  geom_point() +  
-                  facet_wrap(~par, scales = "free") + 
-                  theme_classic() + labs(x = "MCMC", y = "Laplace approx.")
-thrn_qq <- ggplot(thrn_comp[[1]], aes(mcmc, la)) + 
-                  geom_abline(intercept = 0, slope = 1, col = "lightgray") + 
-                  geom_point() +  
-                  facet_wrap(~par, nrow = 2, scales = "free") + 
-                  theme_classic() + labs(x = "MCMC", y = "Laplace approx.")
-
-# combine with cowplot for each species
+pcod_comp <- mcmc_comp(pcod_mod, 4000, 4)
+thrn_comp_log_tau <- mcmc_comp(thrn_mod, 2000, 2) # running low bc consistantly fails test
 
 ```
 
+Note standard MCMC diagnostics (e.g., traceplot) can be computed by running the above models outside the ``mcmc_comp'' function. 
+
+```{r laplace approx plot, echo=FALSE,results='hide',fig.keep='all',  fig.height=4, fig.width=10}
+
+# clean up data frame names by renaming things
+pcod_qq <- pcod_comp[[1]]
+pcod_qq$par_name <- rep("log_PE1"); pcod_qq$sp <- rep("Pacific cod")
+thrn_qq <- thrn_comp_log_tau[[1]]
+thrn_qq$par_name <- recode(thrn_qq$par, 
+                           V1 = "log_PE1", 
+                           V2 = "log_PE2", 
+                           V3 = "log_PE3", 
+                           V4 = "log_q", 
+                           V5 = "log_tau_biomass", 
+                           V6 = "log_tau_cpue")
+thrn_qq$sp <- rep("thornyhead rockfish")
+qq_dat <- rbind(pcod_qq, thrn_qq)
+
+# plot
+ggplot(qq_dat, aes(mcmc, la)) + 
+  geom_abline(intercept = 0, slope = 1, col = "lightgray") + 
+  geom_point() +  
+  facet_wrap(~sp + par_name, scales = "free", nrow = 1) + 
+  theme_classic() + labs(x = "MCMC", y = "Laplace approx.") + 
+  theme(axis.text = element_text(size = 7), 
+        axis.title = element_text(size = 7),
+        strip.text = element_text(size = 7))
+
+```
+
+**Fig 3: Testing the Laplace approximation.** The compared quantiles from full MCMC testing (x axis) and the Laplace approximation (y axis) are given with the black points. The gray line is the 1:1 line. Points that fall on the gray line indicate that the quantile value is the same between the two cases. 
+
+For the simple Pacific cod model, the Laplace approxiamtion and full MCMC testing show a similar distribution, indicating that the Laplace approximation is reasonable. 
+
+For the more complex thornyhead rockfish model, the log_tau_biomass parameter shows significant deviations between the two model cases. Moreover, there are significant unresolved sampling problems of the log_tau_biomass parameter in both cases, indicating that the Laplace approximation might be inappropriate and that further investigation into model structure might be necessary. 
+
+### 4. Parameter correlation: Are the model parameters non-redundant? 
+
+Parameter redunancy refers to the idea that multiple parameters contribute to the model in the same way. An intuitive case is $y ~ \beta_1 + \beta_2 + \alpha x$, since the model could estimate many combinations of $\beta_1$ and $\beta_2$ which minimize the log-likelihood, i.e., the sampled parameters will be correlated. To reduce redundancy, $\beta_1 + \beta_2$ can be redefined as $\beta_0$. In more complex, hierarchical models, parameter redundancy is not always intuitive and can be solved by increasing the number of paramters [3, 4], but can be checked using various diagnostics. One simple diagnostic is to check for parameter correlations. 
+
+Using the MCMC sampling framework, we can check for parameter correlations within each model case to help us identify possible redundancy in parameters [1, 2]. If the sampled parameters are identifiable and non-redundant, we would see no correlation between parameters in both the full MCMC sampling case and the Laplace approximation case. 
+
+Note this is unncessary for the Pacific cod model, since there is only one parameter estimated in that model. 
+
+```{r parameter correlation plot, echo=FALSE,results='hide',fig.keep='all'}
+
+PerformanceAnalytics::chart.Correlation(thrn_comp_log_tau[[2]] %>% filter(type == "la") %>% select(c(1:6))) # looking at correlations between parameter samples
+
+PerformanceAnalytics::chart.Correlation(thrn_comp_log_tau[[2]] %>% filter(type == "mcmc") %>% select(c(1:6)))
+
+```
+
+**Fig 4a: Parameter correlations using the Laplace approximation, thornyhead rockfish model.** The diagonal gives the distribution of each sampled parameter. The lower off-diagonal gives the pairwise correlations between parameter samples, and the upper off-diagonal gives the statistical summary of parameter correlations (correlation value, r, in text; significance given by * in panels). Figure constructed using the parameter samples when the Laplace approximation is assumed. 
+
+**Fig 4b: Parameter correlations using full MCMC sampling, thornyhead rockfish model.** Figure layout as in Fig 4a, but now using parameter samples from full MCMC sampling (i.e., no Laplace approximation).
+
+In both cases, there are several parameters which are correlated with each other, such as process errors and log_tau_cpue. This suggests that some of the parameters might be redundent with each other, and that either (1) more data is needed to fit the complex model and/or (2) the model should be simplified to reduce parameter redunancy and increase parameter uniqueness (e.g., methods in [7]). 
+
+**References:**
+
+[1] Auger‐Méthé, M., Newman, K., Cole, D., Empacher, F., Gryba, R., King, A. A., ... & Thomas, L. (2021). A guide to state–space modeling of ecological time series. Ecological Monographs, 91(4), e01470.
+
+[2] Auger-Méthé, M., Field, C., Albertsen, C. M., Derocher, A. E., Lewis, M. A., Jonsen, I. D., & Mills Flemming, J. (2016). State-space models’ dirty little secrets: even simple linear Gaussian models can have estimation problems. Scientific reports, 6(1), 26677.
+
+[3] Gimenez, O., Viallefont, A., Catchpole, E. A., Choquet, R., & Morgan, B. J. (2004). Methods for investigating parameter redundancy. Animal Biodiversity and Conservation, 27(1), 561-572.
+
+[4] Cole, D. J. (2019). Parameter redundancy and identifiability in hidden Markov models. Metron, 77(2), 105-118.
+
+[5] Skaug, H. J., & Fournier, D. A. (2006). Automatic approximation of the marginal likelihood in non-Gaussian hierarchical models. Computational Statistics & Data Analysis, 51(2), 699-709.
+
+[6] Monnahan, C. C., & Kristensen, K. (2018). No-U-turn sampling for fast Bayesian inference in ADMB and TMB: Introducing the adnuts and tmbstan R packages. PloS one, 13(5), e0197954.
+
+[7] Campbell, D., & Lele, S. (2014). An ANOVA test for parameter estimability using data cloning with application to statistical inference for dynamic systems. Computational Statistics & Data Analysis, 70, 257-267.
