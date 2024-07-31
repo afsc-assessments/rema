@@ -28,26 +28,13 @@ cpue_dat <- read_csv('inst/example_data/goa_sst_rpw.csv')
 unique(biomass_dat$strata)
 devtools::document()
 input <- prepare_rema_input(model_name = 'GOA thornyhead',
-                            biomass_dat = biomass_dat#,
+                            biomass_dat = biomass_dat,
                             # shared process error SD across all strata
                             # PE_options = list(pointer_PE_biomass = c(rep(1,9)))
                             # shared process error SD within regions
-                            # PE_options = list(pointer_PE_biomass = c(rep(1,3), rep(2,3), rep(3,3)))
+                            PE_options = list(pointer_PE_biomass = c(rep(1,3), rep(2,3), rep(3,3)))
                             )
-input$par$log_biomass_pred
-names(input$par)
-names(input$map)
-input$par$log_tau_biomass
-input$map$log_tau_biomass
-input$data$obsvec <- log(input$biomass_dat$biomass)
 m1 <- fit_rema(input)
-idx <- which(!is.na(input$data$keep_biomass_obs))
-fg <- oneStepPredict(m1, observation.name = "obsvec", data.term.indicator = "keep", method = "cdf", subset = idx)
-fg$residual
-fg <- oneStepPredict(m1, observation.name = "obsvec", method = "fullGaussian", data.term.indicator = "keep", subset = idx)
-fg <- oneStepPredict(m1, observation.name = "obsvec", method = "fullGaussian", data.term.indicator = "keep_biomass_obs", subset = idx)
-fg <- oneStepPredict(m1, observation.name = "obsvec", method = "fullGaussian", data.term.indicator = "keep_biomass_obs")
-m1$par
 out1 <- tidy_rema(m1)
 param <- out1$parameter_estimates %>% dplyr::mutate(region = c('CGOA', 'EGOA', 'WGOA')) # always lists the strata in alphabetical order!
 param
@@ -109,7 +96,6 @@ ggplot(re_est_long, aes(exp(est_PE))) + # simout, aes(x = estimate)) +
 # > I'm not too sure about the posterior predictive checks or other uses for
 # simulations in this particular case but if you want to dig into them more that
 # would be great
-#
 
 # so looking at marie's code for posterior predictives, it seems pretty similar?
 # posterior predictive is basically checking that the simulated observations are working
@@ -293,48 +279,91 @@ t.test(post.la$`log_PE[3]`, post.mcmc$`log_PE[3]`)
 
 # One-step-ahead residuals ----
 
-TMB::oneStepPredict(obj = m2obj,
-                    observation.name = "obsvec",
-                    data.term.indicator = "keep",
-                    method = "fullGaussian")#oneStepGaussianOffMode
+# Methods for calculating OSA residuals in REMA have been implemented in TMB
+# through the `TMB::oneStepPredict()` function with the `fullGaussian` method
+# function. The use of OSA residuals, sometimes referred to as forecast
+# residuals or prediction errors, is crucial for validation of state-space
+# models like REMA (Thygesen et al. 2017). Instead of comparing the observed and
+# expected values at the same time step, OSA residuals use forecasted values
+# based on all previous observations (i.e. they exclude the observed value at
+# the current time step from prediction). Traditional residuals (e.g. Pearson's
+# residuals) are inappropriate for state-space models, because process error
+# variance may be over-estimated in cases where the model is mispecified, thus
+# leading to artificially small residuals (see Section 3 of Thygesen et al. 2017
+# for an example).
 
+# A wrapper function is available in rema to get leverages TMB::oneStepPredict()
+# using the fullGaussian method as default
+resids <- get_osa_residuals(m1)
+resids$residuals$biomass # residuals! :)
 
-# I've already built a wrapper function (not to say it couldn't use some work!) to do this get_osa_residuals() but
-# consistently have issues with residual patterns... I guess they may in fact
-# reflect true model misspecification!
-resids <- get_osa_residuals(m1)  # uses cdf methods
-resids$residuals$biomass$residual
-# check out the NaNs! in this case its always the first observation. this isn't
-# always the case but usually.
-resids$residuals$biomass %>% filter(is.nan(residual))
-cowplot::plot_grid(resids$plots$biomass_resids)#, resids$plots$biomass_qqplot, ncol = 1)
+# A quantile-quantile (Q-Q) plot can help determine if residuals are likely to
+# have come from a normal distribution, which is a key assumption in the model.
+resids$plots$qq
 
-# One thought i've had is that these issues have to due with our initial
-# conditions. To test this we can try fixing the first biomass observation using
-# the map object in TMB to see if it appropriately deals with our OSA problems
-# and consistency in the Laplace approximation
-newinput <- input
-newinput$model_name <- "GOA thornyhead (fixed init)"
-nstrata <- ncol(newinput$par$log_biomass_pred) # index for the number of biomass strata
-nyr <- nrow(newinput$par$log_biomass_pred) # index for the number of years in the model
-tmp <- as.factor(c(rep(NA, nstrata), # map off (aka fix) the first year of biomass
-                   1:(length(newinput$map$log_biomass_pred) - nstrata))) # numbers in the map are uniquely estimated parameters
-tmp <- matrix(data = tmp, ncol = ncol(newinput$par$log_biomass_pred), nrow = nyr,
-              byrow = TRUE) # must be byrow! otherwise it won't be indexed properly
-newinput$map$log_biomass_pred <- as.factor(as.vector(tmp))
-newm1 <- fit_rema(newinput)
-newout1 <- tidy_rema(newm1)
-newout1$parameter_estimates
-param
+# An autocorrelation function (ACF) plot of residuals can show if there is
+# autocorrelation in the residuals of time series data when fitting a regression
+# model. Autocorrelation can occur when the value of a variable in the current
+# time period is similar to its value in previous periods. If the ACF plot of
+# residuals shows significant lags, it could mean that the estimated model
+# violates the assumption of no autocorrelation in the errors.
+resids$plots$acf
+resids$plots$histo
+resids$plots$biomass_resids
+resids$plots$biomass_fitted
 
-newresids <- get_osa_residuals(newm1)  # uses cdf methods
-newresids$residuals
-# sure enough, at least in this case it got rid of the NaNs.... yikes!
-newresids$residuals$biomass %>% filter(is.nan(residual))
-cowplot::plot_grid(newresids$plots$biomass_resids, newresids$plots$biomass_qqplot, ncol = 1)
+# One could also compare other residual methods
+resids2 <- get_osa_residuals(m1, options = list("cdf"))
+resids2$residuals$biomass$residual
+# when the normality assumptions underlying the fullGaussian methods are met,
+# they should yield identical results to cdf methods
+plot(resids$residuals$biomass$residual, resids2$residuals$biomass$residual)
+cor(x=resids$residuals$biomass$residual[!is.na(resids$residuals$biomass$residual)], y=resids2$residuals$biomass$residual[!is.na(resids2$residuals$biomass$residual)])
 
-TMB::checkConsistency(newm1) # but this still fails, so that's good :)
+# OSA simulation test ----
 
-compare <- compare_rema_models(list(m1, newm1))
-compare$plots$total_predicted_biomass # gives identical results from a management perspective
-compare$plots$biomass_by_strata + facet_wrap(~strata, scales = 'free_y')
+# to do with simple & complex case: (1) simulate 1000 cases, refit them & check
+# validations, e.g., residuals (2) make matrix of residuals: row replicate, col
+# data point (3) KS test for normality, distribution of KS test p values should
+# be uniform enough
+r <- TMB::oneStepPredict(obj = m1, observation.name = "obsvec",
+                         data.term.indicator = "keep",
+                         discrete = FALSE, method = "fullGaussian")
+nresid <- length(r$residual)
+nsim = 1000
+simout <- matrix(NA, nrow = nsim, ncol = nresid)
+
+# suppressMessages(
+for(i in 1:nsim) {
+  sim <- m1$simulate(complete = TRUE)
+  # sim$biomass_obs[1,]
+  # exp(sim$log_biomass_obs)[1,]
+  newinput <- input
+  tmp <- matrix(data = exp(sim$log_biomass_obs), ncol = ncol(input$data$biomass_obs), nrow = nrow(input$data$biomass_obs))
+  colnames(tmp) <- colnames(input$data$biomass_obs)
+  newinput$data$biomass_obs <- tmp
+  newinput$data$obsvec <- sim$log_biomass_obs[!is.na(sim$log_biomass_obs)]
+  newm1 <- fit_rema(newinput, do.sdrep = FALSE)
+  tmpr <- TMB::oneStepPredict(obj = newm1, observation.name = "obsvec",
+                           data.term.indicator = "keep",
+                           discrete = FALSE, method = "fullGaussian")
+  simout[i,] <- tmpr$residual
+}
+# )
+
+ksout <- vector(length = nsim)
+# OSA residuals should be distributed iid N(0,1) under a model with valid
+# assumptions
+
+# one-sided KS test for normality
+# H0: the distribution of the residuals in normal
+# Ha: the distribution of the residuals in not normal
+# If p > 0.05 there is no evidence to reject the null hypothesis that the distribution of the data is normal.
+for(i in 1:nsim) {
+  kstmp <- ks.test(x=simout[i,], "pnorm", mean=0, sd=1)
+  ksout[i] <- kstmp$p.value
+}
+
+ks.test(ksout, "runif", 0, 1)
+length(ksout[ksout>=0.05])/length(ksout)
+

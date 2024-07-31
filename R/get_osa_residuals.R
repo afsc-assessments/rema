@@ -1,11 +1,10 @@
 #' Get one-step-head (OSA)
 #'
-#' Takes list output from \code{\link{tidy_rema}} and returns a list of
-#' \code{ggplot2} objects to be plotted or saved. This feature is
-#' experimental, and OSA residuals are still in Beta mode in
-#' \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}. The default "cdf"
-#' method sometimes results in NA values for residuals, especially when
-#' observation errors are small.
+#' Takes the rema model output from \code{\link{fit_rema}} and returns OSA
+#' residuals calculated using
+#' \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} with accompanying
+#' residual analysis plots. IMPORTANT: users implementing the Tweedie
+#' distribution should use "cdf" methods. See `options` for more details.
 #'
 #' @param rema_model list out output from \code{\link{fit_rema}}, which includes
 #'   model results but also inputs. Of note to OSA residual calculations is the
@@ -14,11 +13,15 @@
 #'   associated with them.
 #' @param options list of options for calculating OSA residuals, passed to
 #'   \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}. Default:
-#'   \code{options = list(method = "cdf", parallel = TRUE)}.
+#'   \code{options = list(method = "fullGaussian", parallel = TRUE)}.
+#'   Alternative methods include "cdf", "oneStepGeneric",
+#'   "oneStepGaussianOffMode", and "oneStepGaussian". Users implementing the
+#'   Tweedie distribution should use "cdf" methods.
 #'
 #' @return a list of tidied data.frames containing the biomass and CPUE survey
-#'   residuals with accompanying data, as well as ggplot2 plots to visual
-#'   results from the OSA residual analysis.
+#'   residuals with accompanying data, as well as a QQ-plot, ACF plot, histogram
+#'   of residuals, and plots of residuals~year and residuals~fitted values by
+#'   strata for the biomass and CPUE survey.
 #'
 #' @import ggplot2
 #' @export
@@ -29,14 +32,11 @@
 #' }
 get_osa_residuals <- function(rema_model,
                               options = list(method = "fullGaussian",
-                                             # "cdf","oneStepGeneric",
-                                             # ,
-                                             # "oneStepGaussianOffMode","oneStepGaussian"),
-                                             parallel = F)) {
+                                             # "cdf","oneStepGeneric","oneStepGaussianOffMode","oneStepGaussian"),
+                                             parallel = TRUE)) {
 
   # rema_model = m
-  # options = list(method = "cdf", parallel = TRUE)
-
+  # options = list(method = "fullGaussian", parallel = TRUE)
 
   p_resids <- function(dat) {
 
@@ -51,12 +51,14 @@ get_osa_residuals <- function(rema_model,
       labs(x = 'Year', y = 'Residual')
   }
 
-  p_qq <- function(dat) {
-    ggplot(data = dat, aes(sample = residual)) +
+  p_qq <- function(dat, facet_strata = TRUE) {
+    p <- ggplot(data = dat, aes(sample = residual)) +
       stat_qq() +
       stat_qq_line() +
-      facet_wrap(~strata) +
       labs(x = 'Theoretical quantiles', y = 'Sample quantiles')
+    if(isTRUE(facet_strata)) {p + facet_wrap(~strata)
+      } else {p}
+
   }
 
   p_hist <- function(dat) {
@@ -64,7 +66,7 @@ get_osa_residuals <- function(rema_model,
       # geom_histogram() +
       geom_histogram(aes(y = ..density..), colour = "black", fill = "white")+
       geom_density(alpha = 0.2, fill = "#FF6666") +
-      facet_wrap(~strata, scales = 'free') +
+      # facet_wrap(~strata, scales = 'free') +
       labs(x = 'Residual', y = 'Density')
   }
 
@@ -74,10 +76,25 @@ get_osa_residuals <- function(rema_model,
 
     ggplot(data = dat, aes(x = log_pred, y = residual)) +
       geom_hline(yintercept = 0, colour = "grey", size = 1) +
+      geom_segment(aes(x = log_pred, xend = log_pred, y = 0, yend = residual)) +
       geom_point() +
       expand_limits(y = c(-ybound, ybound)) +
       facet_wrap(~strata, scales = 'free_x') +
       labs(x = 'Fitted values (log-scale)', y = 'Residual')
+  }
+
+  p_acf <- function(dat) {
+
+  biomacf <- acf(x = dat$residual, na.action = na.pass, plot = FALSE)
+  acfci <- qnorm((1 + 0.95)/2)/sqrt(biomacf$n.used)
+  biomacf <- data.frame(Lag = 1:(nrow(biomacf$acf)), ACF = biomacf$acf, lci = -acfci, uci = acfci)
+  ggplot(biomacf, aes(x = Lag, y = ACF)) +
+    geom_hline(yintercept = 0, colour = "grey", size = 1) +
+    geom_hline(yintercept = biomacf$uci, colour = "blue", linetype = 2) +
+    geom_hline(yintercept = biomacf$lci, colour = "blue", linetype = 2) +
+    geom_segment(aes(x = Lag, xend = Lag, y = 0, yend = ACF)) +
+    geom_point()
+
   }
 
   if(is.null(rema_model$err)) {
@@ -105,10 +122,12 @@ get_osa_residuals <- function(rema_model,
                            dplyr::filter(survey == 'Biomass survey') %>%
                            dplyr::select(year, strata, residual))
 
+      p1_qq <- p_qq(dat = osa_resids, facet_strata = FALSE)
+      p2_acf <- p_acf(dat = osa_resids)
+      p3_hist <- p_hist(dat = osa_resids)
       p1_biomass <- p_resids(dat = biomass_resids)
-      p2_biomass <- p_qq(dat = biomass_resids)
-      p3_biomass <- p_hist(dat = biomass_resids)
-      p4_biomass <- p_fitted(dat = biomass_resids)
+      p2_biomass <- p_fitted(dat = biomass_resids)
+      p3_biomass <- p_qq(dat = biomass_resids, facet_strata = TRUE)
 
       biomass_resids <- biomass_resids %>%
         dplyr::select(model_name, variable, strata, year, log_pred, log_obs, residual)
@@ -122,9 +141,8 @@ get_osa_residuals <- function(rema_model,
                              dplyr::select(year, strata, residual))
 
         p1_cpue <- p_resids(dat = cpue_resids)
-        p2_cpue <- p_qq(dat = cpue_resids)
-        p3_cpue <- p_hist(dat = cpue_resids)
-        p4_cpue <- p_fitted(dat = cpue_resids)
+        p2_cpue <- p_fitted(dat = cpue_resids)
+        p3_cpue <- p_qq(dat = cpue_resids, facet_strata = TRUE)
 
         cpue_resids <- cpue_resids %>%
           dplyr::select(model_name, variable, strata, year, log_pred, log_obs, residual)
@@ -136,14 +154,15 @@ get_osa_residuals <- function(rema_model,
       out$residuals <- list(biomass = biomass_resids,
                             cpue = cpue_resids)
 
-      out$plots <- list(biomass_resids = p1_biomass,
-                        biomass_qqplot = p2_biomass,
-                        biomass_hist = p3_biomass,
-                        biomass_fitted = p4_biomass,
+      out$plots <- list(qq = p1_qq,
+                        acf = p2_acf,
+                        histo = p3_hist,
+                        biomass_resids = p1_biomass,
+                        biomass_fitted = p2_biomass,
+                        biomass_qq = p3_biomass,
                         cpue_resids = p1_cpue,
-                        cpue_qqplot = p2_cpue,
-                        cpue_hist = p3_cpue,
-                        cpue_fitted = p4_cpue)
+                        cpue_fitted = p2_cpue,
+                        cpue_qq = p3_cpue)
       return(out)
       }
 
