@@ -358,7 +358,8 @@ ksout <- vector(length = nsim)
 # one-sided KS test for normality
 # H0: the distribution of the residuals in normal
 # Ha: the distribution of the residuals in not normal
-# If p > 0.05 there is no evidence to reject the null hypothesis that the distribution of the data is normal.
+# If p > 0.05 there is no evidence to reject the null hypothesis that the
+# distribution of the data is normal.
 for(i in 1:nsim) {
   kstmp <- ks.test(x=simout[i,], "pnorm", mean=0, sd=1)
   ksout[i] <- kstmp$p.value
@@ -367,3 +368,5 @@ for(i in 1:nsim) {
 ks.test(ksout, "runif", 0, 1)
 length(ksout[ksout>=0.05])/length(ksout)
 
+saveRDS(list(simout = simout, ksout = ksout),
+        file="inst/example_scripts/ex5_osa_sim.RData")
