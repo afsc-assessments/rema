@@ -1,30 +1,25 @@
 ---
 title: "REMA Model Validation"
 author: "LJ Balstad"
-output: html_document
----
-
-YAML will become something more like:
-title: "REMA Model Validation"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{REMA basics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-
+---
 
 ```{r, include = FALSE, echo=FALSE,results='hide',fig.keep='all'}
 
-# knitr::opts_chunk$set(
-#   collapse = TRUE,
-#   comment = "#>"
-# )
-# rema_path <- find.package("rema")
-knitr::opts_knit$set(root.dir = "C:/Users/lauri/OneDrive/Documents/GitHub/rema")
-# knitr::opts_knit$set(root.dir = file.path(rema_path, "example_data"))
-# knitr::opts_chunk$set(warning = FALSE, message = FALSE)
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+rema_path <- find.package("rema")
+knitr::opts_knit$set(root.dir = file.path(rema_path, "example_data"))
+knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 
-# devtools::build_rmd(files = 'vignettes/ex1_basics.Rmd')
+# devtools::build_rmd(files = 'vignettes/ex5_model_validation.Rmd')
+
 ```
 
 ```{r setup, warning = FALSE, message = FALSE, echo=FALSE,results='hide',fig.keep='all'}
@@ -150,9 +145,10 @@ sim_test <- function(mod_name, n_try, cpue) {
                colnames(tmp_cpue) <- colnames(mod_name$data$cpue_obs)}
     # ... to set up new data for input
     newinput <- mod_name$input
-    newinput$data$biomass_obs <- tmp_biomass
-    if (cpue) {newinput$data$cpue_obs <- tmp_cpue}
-    
+    newinput$data$biomass_obs <- tmp_biomass # biomass data
+    if (cpue) {newinput$data$cpue_obs <- tmp_cpue} # cpue data
+    newinput$data$obsvec <- sim$log_biomass_obs[!is.na(sim$log_biomass_obs)] # called for the likelihood function -- since we are directly id-ing inputs
+
     # refit model 
     mod_new <- fit_rema(newinput, do.sdrep = F)
     
@@ -206,7 +202,7 @@ dat_tmp_par <- rbind(thrn_tmp, pcod_tmp)
 ggplot(NULL, aes(parameter, value)) + 
   # add distribution of recovered parameters
   geom_violin(data = dat_tmp_par %>% filter(type == "recovered"), 
-              fill = "#fbb61a", draw_quantiles = c(0.5)) +
+              fill = "#21918c", draw_quantiles = c(0.5)) +
   # add "true values" from original model
   geom_point(data = dat_tmp_par %>% filter(type == "model"), 
              size = 3, col = "black") + 
@@ -380,6 +376,22 @@ PerformanceAnalytics::chart.Correlation(thrn_comp_log_tau[[2]] %>% filter(type =
 **Fig 4b: Parameter correlations using full MCMC sampling, thornyhead rockfish model.** Figure layout as in Fig 4a, but now using parameter samples from full MCMC sampling (i.e., no Laplace approximation).
 
 In both cases, there are several parameters which are correlated with each other, such as process errors and log_tau_cpue. This suggests that some of the parameters might be redundent with each other, and that either (1) more data is needed to fit the complex model and/or (2) the model should be simplified to reduce parameter redunancy and increase parameter uniqueness (e.g., methods in [7]). 
+
+### 5. Model residuals
+
+What are residuals?
+
+What are good/problem diagnostics
+
+```{r}
+
+# run OSAs
+
+```
+
+**Fig 5** Caption
+
+Are they good/iffy and what does that mean? 
 
 **References:**
 
