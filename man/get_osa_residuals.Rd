@@ -25,7 +25,7 @@ Tweedie distribution should use "cdf" methods.}
 }
 \value{
 a list of tidied data.frames containing the biomass and CPUE survey
-  residuals with accompanying data, as well as a QQ-plot, ACF plot, histogram
+  residuals with accompanying data, as well as a QQ-plot, histogram
   of residuals, and plots of residuals~year and residuals~fitted values by
   strata for the biomass and CPUE survey.
 }

@@ -290,16 +290,22 @@ t.test(post.la$`log_PE[3]`, post.mcmc$`log_PE[3]`)
 # residuals) are inappropriate for state-space models, because process error
 # variance may be over-estimated in cases where the model is mispecified, thus
 # leading to artificially small residuals (see Section 3 of Thygesen et al. 2017
-# for an example).
+# for an example). OSA residuals also account for non-normality and correlation
+# among years. Under a correctly specified model, resultant OSA residuals should
+# be IID N(0,1).
 
 # A wrapper function is available in rema to get leverages TMB::oneStepPredict()
 # using the fullGaussian method as default
 resids <- get_osa_residuals(m1)
 resids$residuals$biomass # residuals! :)
+mean(resids$residuals$biomass$residual, na.rm = TRUE) # should be 0
+sd(resids$residuals$biomass$residual, na.rm = TRUE) # should be 1
 
 # A quantile-quantile (Q-Q) plot can help determine if residuals are likely to
 # have come from a normal distribution, which is a key assumption in the model.
+# Points should fall on the 0/1 line of the Q-Q plot
 resids$plots$qq
+resids$plots$biomass_qq
 
 # An autocorrelation function (ACF) plot of residuals can show if there is
 # autocorrelation in the residuals of time series data when fitting a regression
@@ -307,7 +313,7 @@ resids$plots$qq
 # time period is similar to its value in previous periods. If the ACF plot of
 # residuals shows significant lags, it could mean that the estimated model
 # violates the assumption of no autocorrelation in the errors.
-resids$plots$acf
+# resids$plots$acf
 resids$plots$histo
 resids$plots$biomass_resids
 resids$plots$biomass_fitted
@@ -365,8 +371,42 @@ for(i in 1:nsim) {
   ksout[i] <- kstmp$p.value
 }
 
-ks.test(ksout, "runif", 0, 1)
-length(ksout[ksout>=0.05])/length(ksout)
-
 saveRDS(list(simout = simout, ksout = ksout),
         file="inst/example_scripts/ex5_osa_sim.RData")
+out <- readRDS(file="inst/example_scripts/ex5_osa_sim.RData")
+
+ks.test(out$ksout, "runif", 0, 1)
+length(out$ksout[out$ksout>=0.05])/length(out$ksout)
+hist(out$ksout)
+
+library(goftest)
+adout <- vector(length = nsim)
+
+for(i in 1:nsim) {
+  adtmp <- goftest::ad.test(x=out$simout[i,], "pnorm", estimated = TRUE)
+  adout[i] <- adtmp$p.value
+}
+ks.test(adout, "runif", 0, 1)
+hist(adout)
+# it's because estimation of parameters introduces extra noise so the
+# distribution of the residuals is not N(0,1) anymore; the MLE will be slightly
+# different than the true parameters, by chance, which in turn lead to different
+# predictions and thus OSA residuals
+
+# the OSA residuals are no longer N(0,1) b/c when you estimate the parameters
+# with the new data it's no longer the right model
+# if you turn off estimation and calc resids from the original MLE value (truth) it's uniform
+
+# they key insight of OSA is that a set of parameters defines a distribution of
+# data that could be observed you have a set of data which you compare to this
+# distribution, and want to know if it came from it when you estimate the pars,
+# that data distribution changes a bit from what was used to simulate
+
+# steps to the fullGaussian method:
+# (1) takes your fitted model, and rebuilds a new object with the data and pars
+# switched, thus the parameter space is the data distribution, (2) then it
+# optimizes and gets a Hessian, inverts it to get a covar, and decorrelates with
+# a Cholesky (standard practice) so you have independent draws of observed data
+# vs data distribution, those are your residual values
+# The cdf methods are using the Laplace approximation to integrate the data not
+# the parameters

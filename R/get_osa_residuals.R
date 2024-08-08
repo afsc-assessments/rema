@@ -19,11 +19,12 @@
 #'   Tweedie distribution should use "cdf" methods.
 #'
 #' @return a list of tidied data.frames containing the biomass and CPUE survey
-#'   residuals with accompanying data, as well as a QQ-plot, ACF plot, histogram
+#'   residuals with accompanying data, as well as a QQ-plot, histogram
 #'   of residuals, and plots of residuals~year and residuals~fitted values by
 #'   strata for the biomass and CPUE survey.
 #'
 #' @import ggplot2
+#' @import grid
 #' @export
 #' @seealso \code{\link{tidy_rema}}
 #' @examples
@@ -35,8 +36,10 @@ get_osa_residuals <- function(rema_model,
                                              # "cdf","oneStepGeneric","oneStepGaussianOffMode","oneStepGaussian"),
                                              parallel = TRUE)) {
 
-  # rema_model = m
+  # rema_model = m1
   # options = list(method = "fullGaussian", parallel = TRUE)
+
+  print("**Note: users implementing the Tweedie error distribution should use cdf methods. See options under in ??get_osa_residuals for more details.**")
 
   p_resids <- function(dat) {
 
@@ -52,19 +55,27 @@ get_osa_residuals <- function(rema_model,
   }
 
   p_qq <- function(dat, facet_strata = TRUE) {
-    p <- ggplot(data = dat, aes(sample = residual)) +
+    # dat = osa_resids
+    sdnr <- sd(dat$residual)
+    sdnr <- paste0('SDNR = ', formatC(sdnr, format = "f", digits = 2))
+    p <- ggplot(data = dat, aes(sample = residual, col = strata)) +
       stat_qq() +
-      stat_qq_line() +
-      labs(x = 'Theoretical quantiles', y = 'Sample quantiles')
+      # stat_qq_line() + # puts through IQR
+      geom_abline(slope = 1, intercept = 0) +
+      labs(x = 'Theoretical quantiles', y = 'Sample quantiles', col = 'Stratum') +
+      ggplot2::scale_colour_viridis_d(direction = 1)
+
     if(isTRUE(facet_strata)) {p + facet_wrap(~strata)
-      } else {p}
+    } else {p + annotation_custom(grid::grobTree(grid::textGrob(sdnr, x=0.1,  y=0.95, hjust=0,
+                                              gp=grid::gpar(col="black", fontsize=10))))}
 
   }
 
   p_hist <- function(dat) {
     ggplot(data = dat, aes(x = residual)) +
       # geom_histogram() +
-      geom_histogram(aes(y = ..density..), colour = "black", fill = "white")+
+      # geom_histogram(aes(y = ..density..), colour = "black", fill = "white")+
+      geom_histogram(aes(y = after_stat(density)), colour = "black", fill = "white")+
       geom_density(alpha = 0.2, fill = "#FF6666") +
       # facet_wrap(~strata, scales = 'free') +
       labs(x = 'Residual', y = 'Density')
@@ -84,16 +95,18 @@ get_osa_residuals <- function(rema_model,
   }
 
   p_acf <- function(dat) {
+    # dat = osa_resids
+    # dat = biomass_resids
 
-  biomacf <- acf(x = dat$residual, na.action = na.pass, plot = FALSE)
-  acfci <- qnorm((1 + 0.95)/2)/sqrt(biomacf$n.used)
-  biomacf <- data.frame(Lag = 1:(nrow(biomacf$acf)), ACF = biomacf$acf, lci = -acfci, uci = acfci)
-  ggplot(biomacf, aes(x = Lag, y = ACF)) +
-    geom_hline(yintercept = 0, colour = "grey", size = 1) +
-    geom_hline(yintercept = biomacf$uci, colour = "blue", linetype = 2) +
-    geom_hline(yintercept = biomacf$lci, colour = "blue", linetype = 2) +
-    geom_segment(aes(x = Lag, xend = Lag, y = 0, yend = ACF)) +
-    geom_point()
+    biomacf <- acf(x = dat$residual, na.action = na.pass, plot = FALSE)
+    acfci <- qnorm((1 + 0.95)/2)/sqrt(biomacf$n.used)
+    biomacf <- data.frame(Lag = 1:(nrow(biomacf$acf)), ACF = biomacf$acf, lci = -acfci, uci = acfci)
+    ggplot(biomacf, aes(x = Lag, y = ACF)) +
+      geom_hline(yintercept = 0, colour = "grey", size = 1) +
+      geom_hline(yintercept = biomacf$uci, colour = "blue", linetype = 2) +
+      geom_hline(yintercept = biomacf$lci, colour = "blue", linetype = 2) +
+      geom_segment(aes(x = Lag, xend = Lag, y = 0, yend = ACF)) +
+      geom_point()
 
   }
 
@@ -155,7 +168,7 @@ get_osa_residuals <- function(rema_model,
                             cpue = cpue_resids)
 
       out$plots <- list(qq = p1_qq,
-                        acf = p2_acf,
+                        # acf = p2_acf,
                         histo = p3_hist,
                         biomass_resids = p1_biomass,
                         biomass_fitted = p2_biomass,
