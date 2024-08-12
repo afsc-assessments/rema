@@ -3,8 +3,8 @@
 #' Takes the rema model output from \code{\link{fit_rema}} and returns OSA
 #' residuals calculated using
 #' \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} with accompanying
-#' residual analysis plots. IMPORTANT: users implementing the Tweedie
-#' distribution should use "cdf" methods. See `options` for more details.
+#' residual analysis plots. IMPORTANT: OSA residuals do not work for users
+#' implementing the Tweedie distribution.
 #'
 #' @param rema_model list out output from \code{\link{fit_rema}}, which includes
 #'   model results but also inputs. Of note to OSA residual calculations is the
@@ -15,8 +15,7 @@
 #'   \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}. Default:
 #'   \code{options = list(method = "fullGaussian", parallel = TRUE)}.
 #'   Alternative methods include "cdf", "oneStepGeneric",
-#'   "oneStepGaussianOffMode", and "oneStepGaussian". Users implementing the
-#'   Tweedie distribution should use "cdf" methods.
+#'   "oneStepGaussianOffMode", and "oneStepGaussian".
 #'
 #' @return a list of tidied data.frames containing the biomass and CPUE survey
 #'   residuals with accompanying data, as well as a QQ-plot, histogram
@@ -39,7 +38,7 @@ get_osa_residuals <- function(rema_model,
   # rema_model = m1
   # options = list(method = "fullGaussian", parallel = TRUE)
 
-  print("**Note: users implementing the Tweedie error distribution should use cdf methods. See options under in ??get_osa_residuals for more details.**")
+  print("**WARNING: OSA residuals do not currently work for the Tweedie distribution.**")
 
   p_resids <- function(dat) {
 

@@ -348,7 +348,7 @@ for(i in 1:nsim) {
   tmp <- matrix(data = exp(sim$log_biomass_obs), ncol = ncol(input$data$biomass_obs), nrow = nrow(input$data$biomass_obs))
   colnames(tmp) <- colnames(input$data$biomass_obs)
   newinput$data$biomass_obs <- tmp
-  newinput$data$obsvec <- sim$log_biomass_obs[!is.na(sim$log_biomass_obs)]
+  newinput$data$obsvec <- t(sim$log_biomass_obs)[!is.na(t(sim$log_biomass_obs))]
   newm1 <- fit_rema(newinput, do.sdrep = FALSE)
   tmpr <- TMB::oneStepPredict(obj = newm1, observation.name = "obsvec",
                            data.term.indicator = "keep",

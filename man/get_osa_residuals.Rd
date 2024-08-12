@@ -20,8 +20,7 @@ associated with them.}
 \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}}. Default:
 \code{options = list(method = "fullGaussian", parallel = TRUE)}.
 Alternative methods include "cdf", "oneStepGeneric",
-"oneStepGaussianOffMode", and "oneStepGaussian". Users implementing the
-Tweedie distribution should use "cdf" methods.}
+"oneStepGaussianOffMode", and "oneStepGaussian".}
 }
 \value{
 a list of tidied data.frames containing the biomass and CPUE survey
@@ -33,8 +32,8 @@ a list of tidied data.frames containing the biomass and CPUE survey
 Takes the rema model output from \code{\link{fit_rema}} and returns OSA
 residuals calculated using
 \code{\link[TMB:oneStepPredict]{TMB::oneStepPredict}} with accompanying
-residual analysis plots. IMPORTANT: users implementing the Tweedie
-distribution should use "cdf" methods. See `options` for more details.
+residual analysis plots. IMPORTANT: OSA residuals do not work for users
+implementing the Tweedie distribution.
 }
 \examples{
 \dontrun{

@@ -271,6 +271,7 @@ Type objective_function<Type>::operator() ()
           // simulation block
           SIMULATE {
             log_biomass_obs(i,j) = rtweedie(log_biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0));
+            REPORT(log_biomass_obs);
           }
         }
 
@@ -322,6 +323,8 @@ Type objective_function<Type>::operator() ()
             // simulation block
             SIMULATE {
               log_cpue_obs(i,j) = rnorm(log_cpue_pred(i,j), log_cpue_sd(i,j));
+              REPORT(log_cpue_obs);
+
             }
           }
 
