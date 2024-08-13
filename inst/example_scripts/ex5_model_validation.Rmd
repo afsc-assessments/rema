@@ -220,7 +220,7 @@ ggplot(NULL, aes(parameter, value)) +
   # make cute
   labs(x = "Parameter", 
        y = "Process error (log scale)") +
-  theme_classic() + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
 
@@ -228,7 +228,7 @@ ggplot(NULL, aes(parameter, value)) +
 
 We can see that the single process error for Pacific cod model is generally recovered in simulation testing. The median of simulations is similar to the model value, and the spread of the simulations is relatively low (recall this is plotted on the log scale, so long negative tails are less concerning than long positive tails).
 
-The thornyhead rockfish model shows several concerning patterns. First, several parameters seem to differ between the simulations and the model value, for example, log_PE3, log_q and log_tau_biomass. Second, the spread on several parameters is particularly large, for example, log_tau_biomass and log_tau_cpue. These results indicate that the thornyhead rockfish model fails simulation testing, and suggests that either the model is (1) lacking data to appropriately fit all parameters [1], (2) that the observation noise is greater than the ecological noise [2], or (3) a subset of parameters are redundant with eachother [3]. We can check parameter correlation using MCMC testing in section 3.
+The parameters for the thornyhead rockfish model are generally recovered as well. Convergence for process error 3 and q (the catchability rescaling) are consistently  recovered close to the true (simulated value). There is some variation in recovering the remaining parameters. While the spread is high, and does have a longer positive tail (above the true, simulated value), most distribution is centered on the true, simulated values and there is no clear bias for any parameter. 
 
 ### 2. Likelihood profile: Is the model identifible?
 
@@ -257,7 +257,6 @@ profile_dat <- rbind(pcod_profs, thrn_profs)
 ggplot(profile_dat, aes(parameter, -value)) + # recall value is negative log-likelihood
   geom_path(lwd = 1.1) +   
   facet_wrap(vars(sp, name), nrow = 1, scales = "free") +
-  theme_classic() + 
   labs(x = "Parameter value", y = "Log-likelihood") + 
   theme(axis.text = element_text(size = 7), 
         axis.title = element_text(size = 7),
@@ -324,7 +323,7 @@ mcmc_comp <- function(mod_name, it_numb, chain_numb) {
 
 # run models
 pcod_comp <- mcmc_comp(pcod_mod, 4000, 4)
-thrn_comp_log_tau <- mcmc_comp(thrn_mod, 2000, 2) # running low bc consistently fails test
+thrn_comp_log_tau <- mcmc_comp(thrn_mod, 1500, 2) # running low bc consistently fails test
 
 ```
 
@@ -351,7 +350,7 @@ ggplot(qq_dat, aes(mcmc, la)) +
   geom_abline(intercept = 0, slope = 1, col = "lightgray") + 
   geom_point() +  
   facet_wrap(~sp + par_name, scales = "free", nrow = 1) + 
-  theme_classic() + labs(x = "MCMC", y = "Laplace approx.") + 
+  labs(x = "MCMC", y = "Laplace approx.") + 
   theme(axis.text = element_text(size = 7), 
         axis.title = element_text(size = 7),
         strip.text = element_text(size = 7))
@@ -384,7 +383,7 @@ PerformanceAnalytics::chart.Correlation(thrn_comp_log_tau[[2]] %>% filter(type =
 
 **Fig 4b: Parameter correlations using full MCMC sampling, thornyhead rockfish model.** Figure layout as in Fig 4a, but now using parameter samples from full MCMC sampling (i.e., no Laplace approximation).
 
-In both cases, there are several parameters which are correlated with each other, such as process errors and log_tau_cpue. This suggests that some of the parameters might be redundent with each other, and that either (1) more data is needed to fit the complex model and/or (2) the model should be simplified to reduce parameter redunancy and increase parameter uniqueness (e.g., methods in [7]).
+In both cases, there are several parameters which are correlated with each other, such as process errors and log_tau_cpue. This suggests that some of the parameters might be redundent with each other, and that either (1) more data is needed to fit the complex model and/or (2) the model should be simplified to reduce parameter redundancy and increase parameter uniqueness (e.g., methods in [7]).
 
 ### 5. Model residuals
 
@@ -395,6 +394,17 @@ What are good/problem diagnostics
 ```{r}
 
 # run OSAs
+pcod_resid <- get_osa_residuals(pcod_mod)
+thrn_resid <- get_osa_residuals(thrn_mod)
+
+# view plots
+pcod_resid$plots$qq # should be equivilient
+pcod_resid$plots$histo + geom_density(fill = fill_alpha("#21918c", 0.6)) # should be normal
+
+thrn_resid$plots$qq # overall
+thrn_resid$plots$biomass_qq # biomass data
+thrn_resid$plots$cpue_qq # cpue data
+thrn_resid$plots$histo + geom_density(fill = fill_alpha("#21918c", 0.6)) # overall
 
 ```
 
