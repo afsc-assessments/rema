@@ -3,10 +3,11 @@ Type: Package
 Title: A generalized framework to fit the random effects (RE) model, 
     a state-space random walk model developed at the Alaska Fisheries Science 
     Center (AFSC) for apportionment and biomass estimation of groundfish and crab stocks.
-Version: 0.1.0
+Version: 1.2.0
 Date: 2022-12-15
 Authors@R: c(
     person("Jane", "Sullivan", email = "jane.sullivan@noaa.gov", role = c("aut", "cre")),
+    person("Laurinne", "Balstad", email = "lbalstad@ucdavis.edu", role = c("aut", "ctb")),
     person("Cole", "Monnahan",  email = "cole.monnahan@noaa.gov", role = c("ctb")),
     person("Pete", "Hulson",  email = "pete.hulson@noaa.gov", role = c("ctb"))
     )
