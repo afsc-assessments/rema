@@ -218,17 +218,18 @@ survey) to describe the stock over time (six parameters; three sur).</p>
 bias?<a class="anchor" aria-label="anchor" href="#simulation-self-test-can-we-recover-parameters-without-bias"></a>
 </h3>
 <p>Simulation testing is an important step to ensure the model has been
-properly coded and performs consistently without introducing bias [1,
-3]. First, we use the REMA model to estimate parameters (e.g., process
-error variance) from the real data in the AI Pcod and GOA Thornyhead
-case studies. Next, we use the estimated parameters as “true” values to
-simulate new data (simulated observations and states) using the REMA
-equations. For AI Pcod each simulated data set is a biomass trajectory,
-and for GOA Thornyhead it includes biomass trajectories in nine strata
-and longline survey relative population weights (RPWs) in three strata.
-We use the REMA model to re-estimate the model parameters and calculate
-the relative error (RE; i.e., (true-estimated values)/true value*100))
-for the parameters in each simulation replicate (N=500).</p>
+properly coded and performs consistently without introducing bias
+(Auger‐Méthé et al., 2021; Gimenez et al., 2004). First, we use the REMA
+model to estimate parameters (e.g., process error variance) from the
+real data in the AI Pcod and GOA Thornyhead case studies. Next, we use
+the estimated parameters as “true” values to simulate new data
+(simulated observations and states) using the REMA equations. For AI
+Pcod each simulated data set is a biomass trajectory, and for GOA
+Thornyhead it includes biomass trajectories in nine strata and longline
+survey relative population weights (RPWs) in three strata. We use the
+REMA model to re-estimate the model parameters and calculate the
+relative error (RE; i.e., (true-estimated values)/true value*100)) for
+the parameters in each simulation replicate (N=500).</p>
 <p>Models fail this simulation testing when the recovered parameters are
 biased, or deviate consistently from the true values used to simulate
 data. If the recovered parameters are far from the true values or the
