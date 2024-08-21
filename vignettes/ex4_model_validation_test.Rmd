@@ -18,7 +18,7 @@ rema_path <- find.package("rema")
 knitr::opts_knit$set(root.dir = file.path(rema_path, "example_data"))
 knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 
-# devtools::build_rmd(files = 'vignettes/ex5_model_validation.Rmd')
+# devtools::build_rmd(files = 'vignettes/ex4_model_validation.Rmd')
 
 ```
 
@@ -440,7 +440,9 @@ For the simpler AI Pcod model (left panel), the Laplace approximation and full M
 
 For the more complex GOA Thornyhead model (right panels), the log_tau_biomass parameter shows significant deviations between the two model cases. Moreover, there are significant unresolved sampling problems of the log_tau_biomass parameter in both cases, indicating that the Laplace approximation might be inappropriate and that further investigation into model structure might be necessary.
 
-### ![](ex4_mcmc_qq.png){width="10in"} 4. Parameter correlation: Are the model parameters identifiable and non-redundant?
+![](ex4_mcmc_qq.png){width="10in"} 
+
+###4. Parameter correlation: Are the model parameters identifiable and non-redundant?
 
 Parameter redundancy refers to the idea that multiple parameters contribute to the model in the same way. An intuitive case is $y ~ \beta_1 + \beta_2 + \alpha x$, since the model could estimate many combinations of $\beta_1$ and $\beta_2$ which minimize the log-likelihood, i.e., the sampled parameters will be correlated. To reduce redundancy, $\beta_1 + \beta_2$ can be redefined as $\beta_0$. In more complex, hierarchical models, parameter redundancy is not always intuitive and can be solved by increasing the number of parameters (Gimenez et al., 2004; Cole, 2019), but can be checked using various diagnostics. One simple diagnostic is to check for parameter correlations.
 
