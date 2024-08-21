@@ -70,13 +70,13 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(psig_log_q);
 
   // switch for estimating extra biomass cv (tau_biomass)
-  DATA_INTEGER(extra_biomass_cv);
-  DATA_INTEGER(extra_cpue_cv);
+  // DATA_INTEGER(extra_biomass_cv);
+  // DATA_INTEGER(extra_cpue_cv);
 
   // upper bounds for extra cv on biomass or cpue survey observations, default =
   // 1.5 (used to constrain tau parameter using the logit transformation)
-  DATA_VECTOR(tau_biomass_upper);
-  DATA_VECTOR(tau_cpue_upper);
+  // DATA_VECTOR(tau_biomass_upper);
+  // DATA_VECTOR(tau_cpue_upper);
 
   // data for one-step-ahead (OSA) residuals
   DATA_VECTOR(obsvec); // vector of all observations for OSA residuals
@@ -93,18 +93,25 @@ Type objective_function<Type>::operator() ()
   PARAMETER_VECTOR(logit_tweedie_p); // tweedie power parameter (one for biomass survey and optional one for cpue survey)
   vector<Type> tweedie_p = Type(0.95) * invlogit(logit_tweedie_p) + Type(1.05);
 
-  // extra cv (tau) for biomass and cpue observations
-  PARAMETER_VECTOR(logit_tau_biomass);
-  vector<Type> tau_biomass(logit_tau_biomass.size());
-  for(int i = 0; i < logit_tau_biomass.size(); i++) {
-    tau_biomass(i) = tau_biomass_upper(i) / (Type(1.0) + exp(-logit_tau_biomass(i)));
-  }
+  // // extra cv (tau) for biomass and cpue observations
+  // PARAMETER_VECTOR(logit_tau_biomass);
+  // vector<Type> tau_biomass(logit_tau_biomass.size());
+  // for(int i = 0; i < logit_tau_biomass.size(); i++) {
+  //   tau_biomass(i) = tau_biomass_upper(i) / (Type(1.0) + exp(-logit_tau_biomass(i)));
+  // }
+  //
+  // PARAMETER_VECTOR(logit_tau_cpue);
+  // vector<Type> tau_cpue(logit_tau_cpue.size());
+  // for(int i = 0; i < logit_tau_cpue.size(); i++) {
+  //   tau_cpue(i) = tau_cpue_upper(i) / (Type(1.0) + exp(-logit_tau_cpue(i)));
+  // }
 
-  PARAMETER_VECTOR(logit_tau_cpue);
-  vector<Type> tau_cpue(logit_tau_cpue.size());
-  for(int i = 0; i < logit_tau_cpue.size(); i++) {
-    tau_cpue(i) = tau_cpue_upper(i) / (Type(1.0) + exp(-logit_tau_cpue(i)));
-  }
+  // extra cv (tau) for biomass and cpue observations - originally this was
+  // logit transformed but corrected to a log transformation in June 2024)
+  PARAMETER_VECTOR(log_tau_biomass);
+  PARAMETER_VECTOR(log_tau_cpue);
+  vector<Type> tau_biomass = exp(log_tau_biomass);
+  vector<Type> tau_cpue = exp(log_tau_cpue);
 
   // random effects of predicted biomass
   PARAMETER_MATRIX(log_biomass_pred);
@@ -178,17 +185,23 @@ Type objective_function<Type>::operator() ()
 
   // add wide prior for first predicted biomass, but only when computing osa
   // residuals
-  if(CppAD::Variable(keep.sum())){
-    Type huge = 10;
+  // if(CppAD::Variable(keep.sum())){
+    Type huge = 1e3;
     for(int j = 0; j < n_strata_biomass; j++) {
-      jnll -= dnorm(biomass_pred(0, j), Type(0), huge, true);
+      jnll(0) -= dnorm(log_biomass_pred(0, j), Type(10), huge, true);
     }
-  }
+  // }
 
   // random effects contribution to likelihood
   for(int i = 1; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
-      jnll(0) -= dnorm(log_biomass_pred(i-1,j), log_biomass_pred(i,j), exp(log_PE(pointer_PE_biomass(j))), 1);
+      jnll(0) -= dnorm(log_biomass_pred(i,j), log_biomass_pred(i-1,j), exp(log_PE(pointer_PE_biomass(j))), 1);
+
+      // simulation block
+      SIMULATE {
+        log_biomass_pred(i,j) = rnorm(log_biomass_pred(i-1,j), exp(log_PE(pointer_PE_biomass(j))));
+      }
+
     }
   }
   switch(PE_penalty_type) {
@@ -230,9 +243,15 @@ Type objective_function<Type>::operator() ()
       for(int j = 0; j < n_strata_biomass; j++) {
 
         if(biomass_obs(i,j) > 0) {
-          jnll(1) -= keep(keep_biomass_obs(i,j)) * dnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j), 1);
-          jnll(1) -= keep.cdf_lower(keep_biomass_obs(i,j)) * log(squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j))));
-          jnll(1) -= keep.cdf_upper(keep_biomass_obs(i,j)) * log(1.0 - squeeze(pnorm(log_biomass_obs(i,j), log_biomass_pred(i,j), log_biomass_sd(i,j))));
+          jnll(1) -= keep(keep_biomass_obs(i,j)) * dnorm(obsvec(keep_biomass_obs(i,j)), log_biomass_pred(i,j), log_biomass_sd(i,j), 1);
+          jnll(1) -= keep.cdf_lower(keep_biomass_obs(i,j)) * log(squeeze(pnorm(obsvec(keep_biomass_obs(i,j)), log_biomass_pred(i,j), log_biomass_sd(i,j))));
+          jnll(1) -= keep.cdf_upper(keep_biomass_obs(i,j)) * log(1.0 - squeeze(pnorm(obsvec(keep_biomass_obs(i,j)), log_biomass_pred(i,j), log_biomass_sd(i,j))));
+
+          // simulation block
+          SIMULATE {
+            log_biomass_obs(i,j) = rnorm(log_biomass_pred(i,j), log_biomass_sd(i,j));
+            REPORT(log_biomass_obs);
+          }
         }
 
       }
@@ -248,6 +267,12 @@ Type objective_function<Type>::operator() ()
           biomass_sd(i,j) = biomass_cv(i,j) * biomass_pred(i,j);
           biomass_dispersion(i,j) = (biomass_sd(i,j) * biomass_sd(i,j)) / pow(biomass_pred(i,j), tweedie_p(0));
           jnll(1) -= dtweedie(biomass_obs(i,j), biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0), 1);
+
+          // simulation block
+          SIMULATE {
+            log_biomass_obs(i,j) = rtweedie(log_biomass_pred(i,j), biomass_dispersion(i,j), tweedie_p(0));
+            REPORT(log_biomass_obs);
+          }
         }
 
       }
@@ -282,15 +307,6 @@ Type objective_function<Type>::operator() ()
       }
     }
 
-    // add wide prior for first predicted biomass, but only when computing osa
-    // residuals
-    if(CppAD::Variable(keep.sum())){
-      Type huge = 10;
-      for(int j = 0; j < n_strata_cpue; j++) {
-        jnll -= dnorm(cpue_pred(0, j), Type(0), huge, true);
-      }
-    }
-
     // get data likelihood for cpue survey
     switch(obs_error_type) {
 
@@ -300,9 +316,16 @@ Type objective_function<Type>::operator() ()
         for(int j = 0; j < n_strata_cpue; j++) {
 
           if(cpue_obs(i,j) > 0) {
-            jnll(2) -= keep(keep_cpue_obs(i,j)) * dnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j), 1);
-            jnll(2) -= keep.cdf_lower(keep_cpue_obs(i,j)) * log(squeeze(pnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j))));
-            jnll(2) -= keep.cdf_upper(keep_cpue_obs(i,j)) * log(1.0 - squeeze(pnorm(log_cpue_obs(i,j), log_cpue_pred(i,j), log_cpue_sd(i,j))));
+            jnll(2) -= keep(keep_cpue_obs(i,j)) * dnorm(obsvec(keep_cpue_obs(i,j)), log_cpue_pred(i,j), log_cpue_sd(i,j), 1);
+            jnll(2) -= keep.cdf_lower(keep_cpue_obs(i,j)) * log(squeeze(pnorm(obsvec(keep_cpue_obs(i,j)), log_cpue_pred(i,j), log_cpue_sd(i,j))));
+            jnll(2) -= keep.cdf_upper(keep_cpue_obs(i,j)) * log(1.0 - squeeze(pnorm(obsvec(keep_cpue_obs(i,j)), log_cpue_pred(i,j), log_cpue_sd(i,j))));
+
+            // simulation block
+            SIMULATE {
+              log_cpue_obs(i,j) = rnorm(log_cpue_pred(i,j), log_cpue_sd(i,j));
+              REPORT(log_cpue_obs);
+
+            }
           }
 
         }
@@ -317,6 +340,11 @@ Type objective_function<Type>::operator() ()
             cpue_sd(i,j) = cpue_cv(i,j) * cpue_pred(i,j);
             cpue_dispersion(i,j) = (cpue_sd(i,j) * cpue_sd(i,j)) / pow(cpue_pred(i,j), tweedie_p(1));
             jnll(2) -= dtweedie(cpue_obs(i,j), cpue_pred(i,j), cpue_dispersion(i,j), tweedie_p(1), 1);
+
+            // simulation block
+            SIMULATE {
+              log_cpue_obs(i,j) = rtweedie(log_cpue_pred(i,j), cpue_dispersion(i,j), tweedie_p(0));
+            }
           }
 
         }

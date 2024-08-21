@@ -38,15 +38,15 @@ set_defaults <- function(input, admb_re = NULL) {
   data$pmu_log_q <- NA
   data$psig_log_q <- NA
 
-  data$extra_biomass_cv <- 0
-  data$extra_cpue_cv <- 0
+  # data$extra_biomass_cv <- 0
+  # data$extra_cpue_cv <- 0
 
-  data$tau_biomass_upper <- rep(1.5, length(unique(data$pointer_extra_biomass_cv)))
-  data$tau_cpue_upper <- rep(1.5, length(unique(data$pointer_extra_cpue_cv)))
+  # data$tau_biomass_upper <- rep(1.5, length(unique(data$pointer_extra_biomass_cv)))
+  # data$tau_cpue_upper <- rep(1.5, length(unique(data$pointer_extra_cpue_cv)))
 
   # process error and scaling parameters
-  par$log_PE <- rep(1, length(unique(data$pointer_PE_biomass)))
-  par$log_q <- rep(1, length(unique(data$pointer_q_cpue)))
+  par$log_PE <- rep(0, length(unique(data$pointer_PE_biomass)))
+  par$log_q <- rep(0, length(unique(data$pointer_q_cpue)))
 
   # tweedie parameters starting vals
   # tweedie_p_init = 1.6 # based on Dave Warton (ref?)
@@ -61,9 +61,15 @@ set_defaults <- function(input, admb_re = NULL) {
     par$logit_tweedie_p <- rep(0.4054651, 2)
   }
 
-  # extra CV for biomass or CPUE survey (-Inf = 0 in logit space)
-  par$logit_tau_biomass <- rep(-Inf, length(unique(data$pointer_extra_biomass_cv)))
-  par$logit_tau_cpue <- rep(-Inf, length(unique(data$pointer_extra_cpue_cv)))
+  # # extra CV for biomass or CPUE survey (-Inf = 0 in logit space)
+  # par$logit_tau_biomass <- rep(-Inf, length(unique(data$pointer_extra_biomass_cv)))
+  # par$logit_tau_cpue <- rep(-Inf, length(unique(data$pointer_extra_cpue_cv)))
+
+  # extra CV for biomass or CPUE survey (originally this was logit transformed
+  # but corrected to a log transformation in June 2024). by default the extra
+  # cvs are fixed at approximately 0
+  par$log_tau_biomass <- rep(log(1e-7), length(unique(data$pointer_extra_biomass_cv)))
+  par$log_tau_cpue <- rep(log(1e-7), length(unique(data$pointer_extra_cpue_cv)))
 
   # if admb_re is provided using read_admb_re(), use log biomass predictions as
   # initial values for the model. if not, use linear interpolation to initiate
@@ -74,11 +80,11 @@ set_defaults <- function(input, admb_re = NULL) {
   if(!is.null(admb_re)) {
     par$log_biomass_pred <- admb_re$init_log_biomass_pred
   } else {
-  tmp <- data$biomass_obs
-  tmp[tmp < 0.01] <- NA # just for starting values
-  par$log_biomass_pred <- log(apply(X = tmp,
-                                    MARGIN = 2,
-                                    FUN = zoo::na.approx, maxgap = 100, rule = 2))
+    tmp <- data$biomass_obs
+    tmp[tmp < 0.01] <- NA # just for starting values
+    par$log_biomass_pred <- log(apply(X = tmp,
+                                      MARGIN = 2,
+                                      FUN = zoo::na.approx, maxgap = 100, rule = 2))
   }
 
   # set map
@@ -93,9 +99,9 @@ set_defaults <- function(input, admb_re = NULL) {
 
   map$logit_tweedie_p <- fill_vals(par$logit_tweedie_p, NA)
 
-  map$logit_tau_biomass <- fill_vals(par$logit_tau_biomass, NA)
+  map$log_tau_biomass <- fill_vals(par$log_tau_biomass, NA)
 
-  map$logit_tau_cpue <- fill_vals(par$logit_tau_cpue, NA)
+  map$log_tau_cpue <- fill_vals(par$log_tau_cpue, NA)
 
   map$log_biomass_pred <- as.factor(1:length(map$log_biomass_pred))
 

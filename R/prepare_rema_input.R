@@ -200,14 +200,16 @@
 #'     }
 #'
 #' \code{extra_biomass_cv} allows the user to specify options for estimating an
-#' additional CV parameter ("tau" in the source code) for the biomass survey
-#' observations. If \code{extra_biomass_cv = NULL} (default), no extra CV is
-#' estimated. The user can modify the default \code{extra_biomass_cv} options
-#' using the following list of entries:
+#' additional CV parameter (\code{log_tau_biomass} in the source code, estimated in
+#' log-space) for the biomass survey observations. If \code{extra_biomass_cv =
+#' NULL} (default), no extra CV is estimated. The user can modify the default
+#' \code{extra_biomass_cv} options using the following list of entries:
 #' \describe{
 #'     \item{$assumption}{A string identifying what assumption is used for the
 #'     biomass survey observations. Options include "none" (default in which no
-#'     extra CV is estimated) or "extra_cv". If \code{extra_biomass_cv} is not
+#'     extra CV is estimated) or "extra_cv". If assumption = "extra_cv", by
+#'     default only one extra CV will be estimated, regardless of how many
+#'     biomass strata are defined. If \code{extra_biomass_cv} is not
 #'     NULL, user must define appropriate assumption.}
 #'     \item{$pointer_extra_biomass_cv}{An index to customize the assignment of
 #'     extra CV parameters to individual biomass survey strata. Vector with
@@ -216,59 +218,49 @@
 #'     three biomass survey strata and user wanted to estimate an extra CV per
 #'     stratum, they would specify \code{pointer_extra_biomass_cv = c(1, 2, 3)}.
 #'     By default, only one additional parameter is estimated, regardless of how
-#'     many strata area defined (i.e. \code{pointer_extra_biomass_cv = c(1, 1, 1)}).}
+#'     many strata are defined (i.e. \code{pointer_extra_biomass_cv = c(1, 1, 1)}).}
 #'     \item{$initial_pars}{A vector of initial values for the extra biomass
-#'     \code{logit_tau}. The default initial value for each logit_tau is
-#'     -Inf (0 in real space).}
+#'     \code{log_tau_biomass}. The default initial value for each log_tau_biomass is
+#'     log(1e-7) (approximately 0 on the arithmetic scale).}
 #'     \item{$fix_pars}{Option to fix extra biomass CV parameters, where the
 #'     user specifies the index value of the parameter they would like to fix at
 #'     the initial value. For example, if there are three biomass survey strata
 #'     defined in \code{pointer_extra_biomass_cv}, and the user wants to fix the
-#'     \code{logit_tau} for the second stratum but estimate the \code{logit_tau}
+#'     \code{log_tau_biomass} for the second stratum but estimate the \code{log_tau_biomass}
 #'     for the first and third strata they would specify \code{fix_pars =
 #'     c(2)}.}
-#'     \item{$upper_bound}{A vector of user-specified values for the upper bound
-#'     in real space of the estimated extra biomass CV, where the default upper
-#'     bound is 1.5. For example, if there are three biomass survey strata
-#'     defined in \code{pointer_extra_biomass_cv}, and the user wants to
-#'     increase the upper bound of the extra biomass CV from 1.5 to 2, they
-#'     would specify \code{upper_bound = c(2.0, 2.0, 2.0)}.}
 #' }
 #'
 #' \code{extra_cpue_cv} allows the user to specify options for estimating an
-#' additional CV parameter ("tau" in the source code) for the CPUE survey
-#' observations. If \code{extra_cpue_cv = NULL} (default), no extra CV is
-#' estimated. The user can modify the default \code{extra_cpue_cv} options
-#' using the following list of entries:
+#' additional CV parameter (\code{log_tau_cpue} in the source code, estimated in
+#' log-space) for the cpue survey observations. If \code{extra_cpue_cv =
+#' NULL} (default), no extra CV is estimated. The user can modify the default
+#' \code{extra_cpue_cv} options using the following list of entries:
 #' \describe{
 #'     \item{$assumption}{A string identifying what assumption is used for the
-#'     CPUE survey observations. Options include "none" (default in which no
-#'     extra CV is estimated) or "extra_cv".If \code{extra_cpue_cv} is not
+#'     cpue survey observations. Options include "none" (default in which no
+#'     extra CV is estimated) or "extra_cv". If assumption = "extra_cv", by
+#'     default only one extra CV will be estimated, regardless of how many
+#'     cpue strata are defined. If \code{extra_cpue_cv} is not
 #'     NULL, user must define appropriate assumption.}
 #'     \item{$pointer_extra_cpue_cv}{An index to customize the assignment of
-#'     extra CV parameters to individual CPUE survey strata. Vector with length
-#'     = number of CPUE strata, starting with an index of 1 and ending with the
-#'     number of unique extra CV parameters estimated. If there are three CPUE
-#'     survey strata and user wanted to estimate an extra CV per stratum, they
-#'     would specify \code{pointer_extra_cpue_cv = c(1, 2, 3)}. By default, only
-#'     one additional parameter is estimated, regardless of how many strata area
-#'     defined (i.e. \code{pointer_extra_cpue_cv = c(1, 1, 1)}).}
+#'     extra CV parameters to individual cpue survey strata. Vector with
+#'     length = number of cpue strata, starting with an index of 1 and ending
+#'     with the number of unique extra CV parameters estimated. If there are
+#'     three cpue survey strata and user wanted to estimate an extra CV per
+#'     stratum, they would specify \code{pointer_extra_cpue_cv = c(1, 2, 3)}.
+#'     By default, only one additional parameter is estimated, regardless of how
+#'     many strata are defined (i.e. \code{pointer_extra_cpue_cv = c(1, 1, 1)}).}
 #'     \item{$initial_pars}{A vector of initial values for the extra cpue
-#'     \code{logit_tau}. The default initial value for each logit_tau is
-#'     -Inf (0 in real space).}
-#'     \item{$fix_pars}{Option to fix extra CPUE CV parameters, where the user
-#'     specifies the index value of the parameter they would like to fix at the
-#'     initial value. For example, if there are three CPUE survey strata defined
-#'     in \code{pointer_extra_cpue_cv}, and the user wants to fix the
-#'     \code{logit_tau} for the second stratum but estimate the \code{logit_tau}
+#'     \code{log_tau_cpue}. The default initial value for each log_tau_cpue is
+#'     log(1e-7) (approximately 0 on the arithmetic scale).}
+#'     \item{$fix_pars}{Option to fix extra cpue CV parameters, where the
+#'     user specifies the index value of the parameter they would like to fix at
+#'     the initial value. For example, if there are three cpue survey strata
+#'     defined in \code{pointer_extra_cpue_cv}, and the user wants to fix the
+#'     \code{log_tau_cpue} for the second stratum but estimate the \code{log_tau_cpue}
 #'     for the first and third strata they would specify \code{fix_pars =
 #'     c(2)}.}
-#'     \item{$upper_bound}{A vector of user-specified values for the upper bound
-#'     in real space of the estimated extra CPUE CV, where the default upper
-#'     bound is 1.5. For example, if there are three CPUE survey strata defined
-#'     in \code{pointer_extra_cpue_cv}, and the user wants to increase the upper
-#'     bound of the extra cpue CV from 1.5 to 2, they would specify
-#'     \code{upper_bound = c(2.0, 2.0, 2.0)}.}
 #' }
 #'
 #' @param model_name name of stock or other identifier for REMA model
