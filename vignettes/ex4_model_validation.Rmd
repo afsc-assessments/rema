@@ -49,15 +49,15 @@ library(rema)
 
 ```
 
-### Motivation (to do)
+### Motivation
 
--   Fisheries stock assessment is moving towards state-space models, which boast a range of benefits, including separation and estimation of observation and process errors, ability to handle missing or incomplete data sets, seemingly limitless flexibility with respect to model architecture and inclusion of different data types, and the potential for improved projections.
+-   Fisheries stock assessments are moving towards state-space estimation, which boasts a range of benefits, including separation and estimation of observation and process error, a more elegant framework for handling missing data, a high degree of flexibility with respect to model architecture and inclusion of different data types, and the potential for improved projections and predictive skill (needs citations).
 
--   The flexibility and relative ease of fitting state-space models means they can increase in complexity and dimensionality rapidly. While easy to fit, state-space models are often challenging to validate, and research has demonstrated that even simple models can suffer from estimation issues (Auger‐Méthé et al., 2016).
+-   The flexibility and relative ease of fitting state-space models means they can increase in complexity and dimensionality rapidly. While easy to fit, state-space models are often challenging to validate and even simple models can suffer from estimation issues (Auger‐Méthé et al., 2016).
 
--   At the North Pacific Fishery Management Council, the "random effects model" (REMA) used for Tier 5 groundfish stock assessments, Tier 4 crab stock assessments, and apportionment of many stocks, is by far the most common state-space model used for fishery management. Yet we have no standard model validation practices developed for model validation for REMA.
+-   At the North Pacific Fishery Management Council, the "random effects model" (REMA) used for Tier 5 groundfish stock assessments, Tier 4 crab stock assessments, and apportionment for many stocks, is by far the most common state-space model used for fishery management. Despite the high impact of this model, we have no standard model validation practices for REMA.
 
--   The goals of this study are to provide several examples of common state-space model validation techniques applied to real life REMA models and to make preliminary recommendations for REMA and other state-space model validation within our management framework.
+-   The goals of this study are to provide several examples of common state-space model validation techniques applied to real life REMA models and to make preliminary recommendations for model validation of REMA and other state-space models within our management framework.
 
 ### A testing framework for REMA model validation
 
@@ -501,9 +501,9 @@ From the traceplots for both models in the figures below, we see that the AI Pco
 
 ### Why should we care?
 
-The REMA model is used within the North Pacific Fishery Management Council to obtain exploitable biomass estimates for Tier 4 crab and Tier 5 groundfish and as a method to apportion Acceptable Biological Catches among management regions (Sullivan et al., 2022). So then if it's primary purpose is to smooth noisy survey biomass estimates (i.e., if we're using it as a fancy average), do we need to care about potential red flags raised during model validation? In the case of the GOA thornyhead model, for example, it appears there is an issue with the estimation of the additional observation error, pointing to potential over-parameterization of the model and/or parameter redundancy. Because terminal year predictions from the REMA model are the quantities directly used for management, and the estimation of additional observation error by definition increases the "smoothness" of model predictions, the answer is likely yes in this particular case. 
+The REMA model is used within the North Pacific Fishery Management Council to obtain exploitable biomass estimates for Tier 4 crab and Tier 5 groundfish and as a method to apportion Acceptable Biological Catches among management regions (Sullivan et al., 2022). So then if it's primary purpose is to smooth noisy survey biomass estimates (i.e., if we're using it as a fancy average), do we need to care about potential red flags raised during model validation? In the case of the GOA thornyhead model, for example, it appears there is an issue with the estimation of the additional observation error, pointing to potential over-parameterization of the model and/or parameter redundancy. Because terminal year predictions from the REMA model are the quantities directly used for management, and the estimation of additional observation error by definition increases the "smoothness" of model predictions, the answer is likely yes in this particular case.
 
-### Recommendations (draft)
+### Preliminary recommendations
 
 The model validation methods presented in this vignette are tools for stock assessment scientists to evaluate existing models and guide development of future models. From this analysis, we found the MCMC diagnostics and OSA residuals to be the most useful diagnostics for the REMA model, and we recommend they are explored for existing models using multivariate configurations with multiple process errors, multi-survey versions using CPUE indices like the longline survey, and models estimating additional observation error. Additionally, we recommend these model diagnostics be used when recommending new models for management.
 
