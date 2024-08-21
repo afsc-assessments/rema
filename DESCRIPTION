@@ -7,6 +7,7 @@ Version: 0.1.0
 Date: 2022-12-15
 Authors@R: c(
     person("Jane", "Sullivan", email = "jane.sullivan@noaa.gov", role = c("aut", "cre")),
+    person("Laurinne", "Balstad", email = "lbalstad@ucdavis.edu", role = c("aut", "ctb")),
     person("Cole", "Monnahan",  email = "cole.monnahan@noaa.gov", role = c("ctb")),
     person("Pete", "Hulson",  email = "pete.hulson@noaa.gov", role = c("ctb"))
     )
