@@ -282,9 +282,9 @@ ggsave(paste0("vignettes/ex4_sim_thrn.png"), width = 11, height = 7, units = "in
 
 Only 1 out of 500 simulation replicates did not converge for the AI Pcod model, which suggests a high degree of model stability. There were 11 out 500 simulation replicates for the GOA Thornyhead model that did not converge. In the following figures the top panel shows the distribution of resulting parameter estimates for the parameter estimates in each of the models based on the simulations, where the horizontal line is the median estimated value and the black dot is the "true" value (i.e., the parameters estimates from the real data sets). As demonstrated in the boxplots of the bottom panels in the figures below, the parameters in both models are recovered well in simulation testing, with low median relative error. In both models there are instances of long negative tails in the log standard deviation of the process error (log_PE), suggesting that PE was small or tended towards zero in some simulations. This is also the case for the extra observation error for the biomass survey (log_tau_biomass) in the GOA Thornyhead model. These outlier replicates may shed light on why some replicates failed to converge. Specifically, `nlminb`, the optimizer used by `rema`, returned a "`NA/NaN function evaluation`" error, which commonly means the optimizer got "stuck" in a parameter space that is incompatible with the assumptions of the model; e.g., PE wanted to be zero but couldn't because PE is log-transformed. The negative log-scale values are most extreme for the GOA Thornyhead model, which should raise some concern of potential model mispecification or over-parameterization. For example, given the trade off between between process and observation error in REMA, it is possible that the estimation of additional observation error on the biomass survey may not be justified (a PE=0 is the same as taking a global mean of the biomass time series).
 
-![](ex4_sim_pcod.png){width="6in"}
+![](vignettes/ex4_sim_pcod.png){width="6in"}
 
-![](ex4_sim_thrn.png){width="10in"}
+![](vignettes/ex4_sim_thrn.png){width="10in"}
 
 ### 2. Residual analysis
 
@@ -333,15 +333,15 @@ ggsave(paste0("vignettes/ex4_thrn_osa.png"), width = 7.5, height = 8, units = "i
 
 The normal QQ plot plot for AI Pcod (top panel of the figure below) suggests slight negative skewness in the residuals (i.e., the majority of the points fall below the 0/1 line), though the small sample size makes interpretation challenging. The SDNR is 0.99 (a perfect model would have an SDNR=1.00), which means assumptions are likely not violated for the residuals. The plot of OSA residuals by year (bottom) shows no patterns in the residuals, suggesting they are independent. There are also no concerning outliers that warrant further inspection
 
-![](ex4_aipcod_osa.png){width="6in"}
+![](vignettes/ex4_aipcod_osa.png){width="6in"}
 
 The combined normal QQ plot for GOA Thornyhead OSA residuals (top panel of the figure below) suggests they follow a normal distribution (the points fall along the 0/1 line), though there is evidence of slight positive, or right skewness (the majority of the points fall above the 0/1 line). The SDNR is exactly 1, indicating the variance assumptions are likely met for the residuals. The QQ plots for the biomass by strata (middle panels) highlight where some of the positive skewness may be coming from (e.g., EGOA 701-1000m, WGOA 0-500 m); however, small sample sizes by stratum make interpretation of these QQ plots challenging. The QQ plots for the CPUE by strata are mostly normal, though there some evidence of light tails in the WGOA stratum (bottom panel).
 
-![](ex4_thrn_osaqq.png){width="10in"}
+![](vignettes/ex4_thrn_osaqq.png){width="10in"}
 
 The plot of OSA residuals by year for the GOA Thornyhead OSA residuals by biomass strata (top panels of the figure below) show no patterns in the residuals, suggesting they are independent. However, there are runs in the residuals for the CPUE strata (bottom panels of the figure below), especially in the CGOA and WGOA, which may be indicative of model misspecification or misfit. There is no evidence of outliers that warrant further inspection.
 
-![](ex4_thrn_osa.png){width="10in"}
+![](vignettes/ex4_thrn_osa.png){width="10in"}
 
 ### 3. Laplace approximation: Are the model assumptions related to random effects estimation reasonable?
 
@@ -450,7 +450,7 @@ For the simpler AI Pcod model (left panel), the Laplace approximation and full M
 
 For the more complex GOA Thornyhead model (right panels), the log_tau_biomass parameter shows significant deviations between the two model cases. Moreover, there are significant unresolved sampling problems of the log_tau_biomass parameter in both cases, indicating that the Laplace approximation might be inappropriate and that further investigation into model structure might be necessary.
 
-![](ex4_mcmc_qq.png){width="10in"}
+![](vignettes/ex4_mcmc_qq.png){width="10in"}
 
 ###4. Parameter correlation: Are the model parameters identifiable and non-redundant?
 
@@ -473,7 +473,7 @@ ggsave(plot = p2_mcmc_thrn, filename = paste0("vignettes/ex4_pairs_thrn.png"), w
 
 The figure below shows a pairwise correlation matrix of the posterior draws for the GOA Thornyhead model (the MCMC model with the Laplace approximation), with histograms of the univariate marginal distributions on the diagonal and a scatterplot of the bivariate distributions off the diagonal. There are clear identifiability issues with the log_tau_biomass parameter, which appears to have a bimodal distributions. The pairwise scatterplots on the off-diagonals show that this bimodality in log_tau_biomass is causing interactions (i.e., correlation) with almost all other parameters in the model. This diagnostic is a clear indication that there is model mis-specification that warrants further investigation.
 
-![](ex4_pairs_thrn.png){width="10in"}
+![](vignettes/ex4_pairs_thrn.png){width="10in"}
 
 ### 5. Is the GOA Thornyhead model really converged?
 
@@ -488,7 +488,7 @@ ggsave(paste0("vignettes/ex4_traceplots.png"), width = 11, height = 8, units = "
 
 From the traceplots for both models in the figures below, we see that the AI Pcod model MCMC chains are fully mixed and the model is converged (top panel). However, for the GOA Thornyhead model (bottom panel), we see that the estimation of additional observation error (log_tau_biomass) is causing convergence issues and the MCMC chains are not well mixed.
 
-![](ex4_traceplots.png){width="10in"}
+![](vignettes/ex4_traceplots.png){width="10in"}
 
 ### Why should we care?
 
