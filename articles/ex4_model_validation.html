@@ -449,12 +449,12 @@ the residuals are not normally distributed, the points will deviate from
 the reference line. OSA residuals are plotted for the entire data set
 combined <code>$plots$qq</code> and by stratum for the biomass survey
 <code>$plots$biomass_qq</code> or CPUE survey
-<code>$plots$cpue_qq</code>. Although sample sizes within strata are
-often too small to have statistical power, it can also useful to check
-for residual patterns by stratum. In the top-left corner of the combined
-QQ plot <code>$plots$qq</code>, we provide the standard deviation of
-normalized residuals (SDNR) statistic. Given that OSA residuals should
-be
+<code>$plots$cpue_qq</code>. While it can be useful to check for
+residual patterns by stratum, users should be aware that small sample
+sizes may not have statistical power. In the top-left corner of the
+combined QQ plot <code>$plots$qq</code>, we provide the standard
+deviation of normalized residuals (SDNR) statistic. Given that OSA
+residuals should be
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">N(0,1)</annotation></semantics></math>
 under a correctly specified model, we should expect the SDNR to be equal
 to close to 1.</p>
@@ -466,7 +466,7 @@ tests (e.g., Wald-Wolfowitz test) are inappropriate for many REMA
 applications because of missing years of data in the survey time series.
 Patterns in the residuals may indicate structure in the data (i.e.,
 temporal correlation) that is not adequately captured by the model.
-These figures are also useful for assessing for outliers. Under the
+These figures are also useful for identifying outliers. Under the
 assumed standard normal distribution, a residual is considered an
 outlier when it is greater than 3 or less than -3.</p>
 <p>The following code shows how to run an OSA residual analysis for AI
@@ -505,10 +505,10 @@ suggests slight negative skewness in the residuals (i.e., the majority
 of the points fall below the 0/1 line), though the small sample size
 makes interpretation challenging. The SDNR is 0.99 (a perfect model
 would have an SDNR=1.00), which means assumptions are likely not
-violated for the residuals. The plot of OSA residuals by year (bottom)
-shows no patterns in the residuals, suggesting they are independent.
-There are also no concerning outliers that warrant further
-inspection</p>
+violated for the residuals. The plot of OSA residuals by year (bottom
+panel) shows no patterns in the residuals, suggesting they are
+independent. There is no evidence of outliers that warrant further
+inspection.</p>
 <!-- ![](ex4_aipcod_osa.png){width="6in"} -->
 <p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_aipcod_osa.png" style="width:6in"></p>
 <p>The combined normal QQ plot for GOA Thornyhead OSA residuals (top
@@ -519,8 +519,8 @@ positive, or right skewness (the majority of the points fall above the
 are likely met for the residuals. The QQ plots for the biomass by strata
 (middle panels) highlight where some of the positive skewness may be
 coming from (e.g., EGOA 701-1000m, WGOA 0-500 m); however, small sample
-sizes by stratum make interpretation of these QQ plots challenging. The
-QQ plots for the CPUE by strata are mostly normal, though there some
+sizes by stratum make interpretation of these QQ plots difficult The QQ
+plots for the CPUE by strata are mostly normal, though there some
 evidence of light tails in the WGOA stratum (bottom panel).</p>
 <!-- ![](ex4_thrn_osaqq.png){width="10in"} -->
 <p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_thrn_osaqq.png" style="width:10in"></p>
@@ -530,7 +530,7 @@ patterns in the residuals, suggesting they are independent. However,
 there are runs in the residuals for the CPUE strata (bottom panels of
 the figure below), especially in the CGOA and WGOA, which may be
 indicative of model misspecification or misfit. There is no evidence of
-outliers that warrant further inspection.</p>
+outliers.</p>
 <!-- ![](ex4_thrn_osa.png){width="10in"} -->
 <p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_thrn_osa.png" style="width:10in"></p>
 </div>
@@ -542,14 +542,13 @@ random effects estimation reasonable?<a class="anchor" aria-label="anchor" href=
 (<code>TMB</code>), which uses maximum marginal likelihood estimation
 with the Laplace approximation to efficiently estimate high dimensional,
 non-linear mixed effects models in a frequentist framework (Skaug and
-Fournier, 2006; Kristensen et al., 2012; Kristensen, 2018). The primary
-assumption in models using the Laplace approximation is that the random
-effects follow a normal distribution. This assumption simplifies the
-complex integrals that make up the likelihood function. The Laplace
-approximation is fast and accurate when the normality assumption is met;
-however, if the true distribution of the random effects is not normal,
-the Laplace approximation may introduce bias into the parameter
-estimates.</p>
+Fournier, 2006; Kristensen et al., 2016). The primary assumption in
+models using the Laplace approximation is that the random effects follow
+a normal distribution. This assumption simplifies the complex integrals
+that make up the likelihood function. The Laplace approximation is fast
+and accurate when the normality assumption is met; however, if the true
+distribution of the random effects is not normal, the Laplace
+approximation may introduce bias into the parameter estimates.</p>
 <p>We can test the validity of the Laplace approximation using Markov
 chain Monte Carlo (MCMC) sampling in the <code>tmbstan</code> library,
 comparing the distributions of the fixed effects parameters from
@@ -805,8 +804,6 @@ Visualization in Bayesian workflow. J. R. Stat. Soc. A. (182) 389-402.
 <p>Kristensen, K., Nielsen, A., Berg, C.W., Skaug, H., Bell, B.M. 2016.
 TMB: Automatic differentiation and Laplace approximation. J Stat Softw.
 2016; 70(5):21. Epub 2016-04-04. <a href="https://doi.org/10.18637/jss.v070.i05" class="external-link uri">https://doi.org/10.18637/jss.v070.i05</a></p>
-<p>Kristensen K. 2018. TMB: General random effect model builder tool
-inspired by ADMB. R package version 1.7.13.</p>
 <p>Monnahan, C.C., &amp; Kristensen, K. 2018. No-U-turn sampling for
 fast Bayesian inference in ADMB and TMB: Introducing the adnuts and
 tmbstan R packages. PloS one, 13(5), e0197954.</p>
