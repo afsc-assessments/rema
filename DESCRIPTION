@@ -48,6 +48,5 @@ Suggests:
     testthat (>= 3.0.0),
     cowplot (>= 1.1.1)
     tmbstan
-Remotes:
-    github::kaskr/tmbstan/tmbstan
+Remotes: kaskr/tmbstan/tmbstan
 Config/testthat/edition: 3
