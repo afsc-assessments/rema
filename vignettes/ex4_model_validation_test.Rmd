@@ -48,6 +48,16 @@ library(rema)
 
 ```
 
+### Motivation (to do)
+
+-    Fisheries stock assessment is moving towards state-space models, which boast a range of benefits, including separation and estimation of observation and process errors, ability to handle missing or incomplete data sets, seemingly limitless flexibility with respect to model architecture and inclusion of different data types, and the potential for improved projections.
+
+-   The flexibility and relative ease of fitting state-space models means they can increase in complexity and dimensionality rapidly. While easy to fit, state-space models are often challenging to validate, and research has demonstrated that even simple models can suffer from estimation issues (Auger‐Méthé et al., 2016).
+
+-   At the North Pacific Fishery Management Council, the "random effects model" (REMA) used for Tier 5 groundfish stock assessments, Tier 4 crab stock assessments, and apportionment of many stocks, is by far the most common state-space model used for fishery management. Yet we have no standard model validation practices developed for model validation for REMA.
+
+-   The goal of this study is to provide several examples of common state-space model validation techniques applied to real life REMA models and make preliminary recommendations on REMA model validation within our management framework.
+
 ### A testing framework for REMA model validation
 
 In this vignette, we will be testing that (1) REMA is working as expected (i.e., code has been implemented correctly and parameters are estimated without bias), and (2) that the assumptions made when parameterizing and estimating REMA are valid, including assumptions related to random effects and error structure. We use two example stocks with varying levels of complexity:
@@ -440,7 +450,7 @@ For the simpler AI Pcod model (left panel), the Laplace approximation and full M
 
 For the more complex GOA Thornyhead model (right panels), the log_tau_biomass parameter shows significant deviations between the two model cases. Moreover, there are significant unresolved sampling problems of the log_tau_biomass parameter in both cases, indicating that the Laplace approximation might be inappropriate and that further investigation into model structure might be necessary.
 
-![](ex4_mcmc_qq.png){width="10in"} 
+![](ex4_mcmc_qq.png){width="10in"}
 
 ###4. Parameter correlation: Are the model parameters identifiable and non-redundant?
 
@@ -502,7 +512,7 @@ Echave, K.B., Siwicke, K.A., Sullivan, J., Ferriss, B., and Hulson, P.J.F. 2022.
 
 Gabry, J. and Mahr, T. 2024. bayesplot: Plotting for Bayesian Models. R package version 1.11.1, <https://mc-stan.org/bayesplot/>.
 
-Gabry, J., Simpson, D., Vehtari, A., Betancourt, M., Gelman, A. 2019. Visualization in Bayesian workflow. J. R. Stat. Soc. A. (182) 389-402. doi:10.1111/rssa.12378 <https://doi.org/10.1111/rssa.12378>.
+Gabry, J., Simpson, D., Vehtari, A., Betancourt, M., Gelman, A. 2019. Visualization in Bayesian workflow. J. R. Stat. Soc. A. (182) 389-402. <doi:10.1111/rssa.12378> <https://doi.org/10.1111/rssa.12378>.
 
 Kristensen, K., Nielsen, A., Berg, C.W., Skaug, H., Bell, B.M. 2016. TMB: Automatic differentiation and Laplace approximation. J Stat Softw. 2016; 70(5):21. Epub 2016-04-04. <https://doi.org/10.18637/jss.v070.i05>
 
