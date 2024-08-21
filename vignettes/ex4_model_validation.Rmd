@@ -1,6 +1,5 @@
 ---
 title: "REMA model validation"
-author: "Laurie J Balstad, Jane Sullivan, Cole Monnahan"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{REMA model validation}
@@ -28,7 +27,6 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 knitr::opts_chunk$set(echo = TRUE)
 
 library(ggplot2)
-library(readr)
 library(dplyr)
 library(tidyr)
 
@@ -89,7 +87,7 @@ First, we run the model for each stock. The AI Pcod model (pcod_mod) uses a sing
 set.seed(415) # for reproducibility, use a seed
 
 # first, get the p-cod data set up
-pcod_bio_dat <- readr::read_csv("ai_pcod_2022_biomass_dat.csv")
+pcod_bio_dat <- read.csv("ai_pcod_2022_biomass_dat.csv")
 pcod_input <- prepare_rema_input(model_name = "p_cod",
                                  biomass_dat = pcod_bio_dat,
                                  # one strata
@@ -99,8 +97,8 @@ pcod_input <- prepare_rema_input(model_name = "p_cod",
 pcod_mod <- fit_rema(pcod_input) 
 
 # next, get the thornyhead data set up
-thrn_bio_dat <- readr::read_csv("goa_thornyhead_2022_biomass_dat.csv")
-thrn_cpue_dat <- readr::read_csv("goa_thornyhead_2022_cpue_dat.csv")
+thrn_bio_dat <- read.csv("goa_thornyhead_2022_biomass_dat.csv")
+thrn_cpue_dat <-read.csv("goa_thornyhead_2022_cpue_dat.csv")
 thrn_input <- prepare_rema_input(model_name = 'thrnhead_rockfish',
                                 multi_survey = TRUE,
                                 biomass_dat = thrn_bio_dat,
