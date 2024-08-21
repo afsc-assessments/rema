@@ -5,7 +5,6 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="rema">
 <title>REMA model equations • rema</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="16x16" href="../favicon-16x16.png">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32x32.png">
@@ -14,62 +13,49 @@
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="../apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
-<!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="REMA model equations">
-<meta property="og:description" content="rema">
-<meta property="og:image" content="https://afsc-assessments.github.io/rema/logo.png">
-<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
-<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-<![endif]-->
+<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="REMA model equations">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
-    
 
-    <nav class="navbar fixed-top navbar-dark navbar-expand-lg bg-primary"><div class="container">
-    
+
+    <nav class="navbar navbar-expand-lg fixed-top bg-primary" data-bs-theme="dark" aria-label="Site navigation"><div class="container">
+
     <a class="navbar-brand me-2" href="../index.html">rema</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
-    
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
-<li class="nav-item">
-  <a class="nav-link" href="../reference/index.html">Reference</a>
-</li>
+<li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
-  <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" role="button" aria-expanded="false" aria-haspopup="true" id="dropdown-articles">Articles</a>
-  <div class="dropdown-menu" aria-labelledby="dropdown-articles">
-    <a class="dropdown-item" href="../articles/ex1_basics.html">REMA basics</a>
-    <a class="dropdown-item" href="../articles/ex2_cpue.html">Fitting to an additional CPUE survey</a>
-    <a class="dropdown-item" href="../articles/ex3_zeros.html">Strategies for handling zero biomass observations</a>
-    <a class="dropdown-item" href="../articles/rema_equations.html">REMA model equations</a>
-  </div>
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="../articles/ex1_basics.html">REMA basics</a></li>
+    <li><a class="dropdown-item" href="../articles/ex2_cpue.html">Fitting to an additional CPUE survey</a></li>
+    <li><a class="dropdown-item" href="../articles/ex3_zeros.html">Strategies for handling zero biomass observations</a></li>
+    <li><a class="dropdown-item" href="../articles/ex4_model_validation.html">REMA model validation</a></li>
+    <li><a class="dropdown-item" href="../articles/rema_equations.html">REMA model equations</a></li>
+  </ul>
 </li>
       </ul>
-<form class="form-inline my-2 my-lg-0" role="search">
-        <input type="search" class="form-control me-sm-2" aria-label="Toggle navigation" name="search-input" data-search-index="../search.json" id="search-input" placeholder="Search for" autocomplete="off">
-</form>
-
-      <ul class="navbar-nav">
-<li class="nav-item">
-  <a class="external-link nav-link" href="https://github.com/JaneSullivan-NOAA/rema/" aria-label="github">
-    <span class="fab fa fab fa-github fa-lg"></span>
-     
-  </a>
-</li>
+<ul class="navbar-nav">
+<li class="nav-item"><form class="form-inline" role="search">
+ <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
+</form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/JaneSullivan-NOAA/rema/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
-    
+
   </div>
 </nav><div class="container template-article">
 
@@ -81,7 +67,7 @@
       <img src="../logo.png" class="logo" alt=""><h1>REMA model equations</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/JaneSullivan-NOAA/rema/blob/HEAD/vignettes/rema_equations.Rmd" class="external-link"><code>vignettes/rema_equations.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/JaneSullivan-NOAA/rema/blob/main/vignettes/rema_equations.Rmd" class="external-link"><code>vignettes/rema_equations.Rmd</code></a></small>
       <div class="d-none name"><code>rema_equations.Rmd</code></div>
     </div>
 
@@ -92,28 +78,46 @@
 </h2>
 <p>The base REMA model can be represented as a simple state-space random
 walk model with added noise. The observation model is comprised of an
-index of log-transformed annual survey biomass estimates <span class="math inline">\(ln(B_t)\)</span> with associated standard
-deviations <span class="math inline">\(\sigma_{ln(B_t)}\)</span>, where
-<span class="math inline">\(\sigma_{ln(B_t)}\)</span> is approximated
-using the coefficient of variation of <span class="math inline">\(B_t\)</span> (<span class="math inline">\(\sigma_{B_t}/B_t\)</span>) such that <span class="math display">\[
+index of log-transformed annual survey biomass estimates
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>B</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">ln(B_t)</annotation></semantics></math>
+with associated standard deviations
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>B</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msub><annotation encoding="application/x-tex">\sigma_{ln(B_t)}</annotation></semantics></math>,
+where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>B</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msub><annotation encoding="application/x-tex">\sigma_{ln(B_t)}</annotation></semantics></math>
+is approximated using the coefficient of variation of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>B</mi><mi>t</mi></msub><annotation encoding="application/x-tex">B_t</annotation></semantics></math>
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>σ</mi><msub><mi>B</mi><mi>t</mi></msub></msub><mi>/</mi><msub><mi>B</mi><mi>t</mi></msub></mrow><annotation encoding="application/x-tex">\sigma_{B_t}/B_t</annotation></semantics></math>)
+such that
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>σ</mi><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>B</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msub><mo>=</mo><msqrt><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>σ</mi><msub><mi>B</mi><mi>t</mi></msub></msub><msub><mi>B</mi><mi>t</mi></msub></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msqrt><mi>.</mi></mrow><annotation encoding="application/x-tex">
 \sigma_{ln(B_t)}=\sqrt{ln((\frac{\sigma_{B_t}}{B_t})^2+1)}.
-\]</span> The measurement or observation equation, which describes the
-relationship between the observed survey biomass <span class="math inline">\(ln(B_t)\)</span> and the latent state variable,
-population biomass <span class="math inline">\(ln(\hat{B}_t)\)</span>,
-is expressed as <span class="math display">\[
-ln(B_t) = ln(\hat{B}_t) + \epsilon_{B}, \text{where } \epsilon_{B} \sim
-N(0, \sigma_{ln(B_t)}^2).
-\]</span> The state equation and associated process error variance <span class="math inline">\(\sigma_{PE}^2\)</span> is defined as <span class="math display">\[
-ln(\hat{B}_{t}) = ln(\hat{B}_{t-1})+\eta_{t-1}, \text{where } \eta_t
-\sim N(0, \sigma_{PE}^2),
-\]</span></p>
-<p>where the initial <span class="math inline">\(ln\hat{B}_{1}\)</span>
+</annotation></semantics></math> The measurement or observation
+equation, which describes the relationship between the observed survey
+biomass
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>B</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">ln(B_t)</annotation></semantics></math>
+and the latent state variable, population biomass
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">ln(\hat{B}_t)</annotation></semantics></math>,
+is expressed as
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>B</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><msub><mi>ϵ</mi><mi>B</mi></msub><mo>,</mo><mrow><mtext mathvariant="normal">where </mtext><mspace width="0.333em"></mspace></mrow><msub><mi>ϵ</mi><mi>B</mi></msub><mo>∼</mo><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>B</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mn>2</mn></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
+ln(B_t) = ln(\hat{B}_t) + \epsilon_{B}, \text{where } \epsilon_{B} \sim N(0, \sigma_{ln(B_t)}^2). 
+</annotation></semantics></math> The state equation and associated
+process error variance
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>σ</mi><mrow><mi>P</mi><mi>E</mi></mrow><mn>2</mn></msubsup><annotation encoding="application/x-tex">\sigma_{PE}^2</annotation></semantics></math>
+is defined as
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><msub><mi>η</mi><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow></msub><mo>,</mo><mrow><mtext mathvariant="normal">where </mtext><mspace width="0.333em"></mspace></mrow><msub><mi>η</mi><mi>t</mi></msub><mo>∼</mo><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><mrow><mi>P</mi><mi>E</mi></mrow><mn>2</mn></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
+ln(\hat{B}_{t}) = ln(\hat{B}_{t-1})+\eta_{t-1}, \text{where } \eta_t \sim N(0, \sigma_{PE}^2), 
+</annotation></semantics></math></p>
+<p>where the initial
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>n</mi><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mn>1</mn></msub></mrow><annotation encoding="application/x-tex">ln\hat{B}_{1}</annotation></semantics></math>
 is constrained by the random walk process. In the base model, the
-process error variance <span class="math inline">\(\sigma_{PE}^2\)</span> is the only fixed effect
-parameter estimated, and the unobserved population biomass <span class="math inline">\(ln(\hat{B}_t)\)</span> is estimated as a series of
-random effects. The model is fit using marginal maximum likelihood
-estimation, where the marginal negative log-likelihood is obtained via
-the Laplace approximation (Skaug and Fournier 2006).</p>
+process error variance
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>σ</mi><mrow><mi>P</mi><mi>E</mi></mrow><mn>2</mn></msubsup><annotation encoding="application/x-tex">\sigma_{PE}^2</annotation></semantics></math>
+is the only fixed effect parameter estimated, and the unobserved
+population biomass
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">ln(\hat{B}_t)</annotation></semantics></math>
+is estimated as a series of random effects. The model is fit using
+marginal maximum likelihood estimation, where the marginal negative
+log-likelihood is obtained via the Laplace approximation (Skaug and
+Fournier 2006).</p>
 <p>A reproducible example of fitting the univariate (i.e., single
 stratum, single survey) version of the TMB model and comparing those
 results to ADMB is available in the <a href="https://afsc-assessments.github.io/rema/articles/ex1_basics.html">REMA
@@ -122,28 +126,31 @@ basics</a> vignette.</p>
 <h3 id="extending-to-multiple-biomass-survey-strata">Extending to multiple biomass survey strata<a class="anchor" aria-label="anchor" href="#extending-to-multiple-biomass-survey-strata"></a>
 </h3>
 <p>The single survey, single stratum version of the model can be
-extended to include one or more additional strata <span class="math inline">\(j\)</span> from the same survey. The inclusion of
-multiple strata in the same model is advantageous in scenarios where the
-apportionment of biomass among areas is a desired result. This extension
-assumes no correlation in the observation errors among survey strata,
-though PE variance can be shared or estimated independently among
-strata.</p>
+extended to include one or more additional strata
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math>
+from the same survey. The inclusion of multiple strata in the same model
+is advantageous in scenarios where the apportionment of biomass among
+areas is a desired result. This extension assumes no correlation in the
+observation errors among survey strata, though PE variance can be shared
+or estimated independently among strata.</p>
 <p>The ADMB and TMB versions of the REMA model utilize different methods
 for estimating variance of the total predicted biomass. Therefore, while
 strata-specific estimates of predicted biomass and associated confidence
 intervals will be close to identical between the ADMB and TMB versions
 of the model, the confidence intervals of the total predicted biomass
 will differ slightly. In the original ADMB code, the Marlow (1967)
-method is applied, such that the total variance <span class="math inline">\(\sigma_J^2\)</span> is approximated as <span class="math display">\[
-\sigma_J^2 = ln\Bigg(\frac{\sum{e^{2 \hat{B}_j + \sigma_{\hat{B}_j}^2}
-(e^{\sigma_{\hat{B}_j}^2 - 1})}} {(\sum{e^{\hat{B}_j +
-\sigma_{\hat{B}_j}^2/2}})^2} + 1\Bigg).
-\]</span> In the updated <em>rema</em> package, the total variance is
-estimated using the standard Delta method and can be replicated in ADMB
-using an <code>sdreport_number</code> and in TMB using the
-<code>ADREPORT</code> macro. As described in Monnahan et al. (2021), the
-exploration of methods for summing log-normal variables is a research
-topic that has potential impacts beyond the scope of this package.</p>
+method is applied, such that the total variance
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msubsup><mi>σ</mi><mi>J</mi><mn>2</mn></msubsup><annotation encoding="application/x-tex">\sigma_J^2</annotation></semantics></math>
+is approximated as
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msubsup><mi>σ</mi><mi>J</mi><mn>2</mn></msubsup><mo>=</mo><mi>l</mi><mi>n</mi><mo minsize="3.0" maxsize="3.0" stretchy="false" form="prefix">(</mo><mfrac><mrow><mo>∑</mo><mrow><msup><mi>e</mi><mrow><mn>2</mn><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mi>j</mi></msub><mo>+</mo><msubsup><mi>σ</mi><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mi>j</mi></msub><mn>2</mn></msubsup></mrow></msup><mrow><mo stretchy="true" form="prefix">(</mo><msup><mi>e</mi><mrow><msubsup><mi>σ</mi><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mi>j</mi></msub><mn>2</mn></msubsup><mo>−</mo><mn>1</mn></mrow></msup><mo stretchy="true" form="postfix">)</mo></mrow></mrow></mrow><msup><mrow><mo stretchy="true" form="prefix">(</mo><mo>∑</mo><msup><mi>e</mi><mrow><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mi>j</mi></msub><mo>+</mo><msubsup><mi>σ</mi><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mi>j</mi></msub><mn>2</mn></msubsup><mi>/</mi><mn>2</mn></mrow></msup><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup></mfrac><mo>+</mo><mn>1</mn><mo minsize="3.0" maxsize="3.0" stretchy="false" form="postfix">)</mo><mi>.</mi></mrow><annotation encoding="application/x-tex">
+\sigma_J^2 = ln\Bigg(\frac{\sum{e^{2 \hat{B}_j + \sigma_{\hat{B}_j}^2} (e^{\sigma_{\hat{B}_j}^2 - 1})}} {(\sum{e^{\hat{B}_j + \sigma_{\hat{B}_j}^2/2}})^2} + 1\Bigg).
+</annotation></semantics></math> In the updated <em>rema</em> package,
+the total variance is estimated using the standard Delta method and can
+be replicated in ADMB using an <code>sdreport_number</code> and in TMB
+using the <code>ADREPORT</code> macro. As described in Monnahan et
+al. (2021), the exploration of methods for summing log-normal variables
+is a research topic that has potential impacts beyond the scope of this
+package.</p>
 <p>A reproducible example of fitting the multivariate version of the
 REMA model in TMB and a comparison of results to ADMB is available in
 the <a href="https://afsc-assessments.github.io/rema/articles/ex1_basics.html">REMA
@@ -155,18 +162,28 @@ strata-specific versus a single, shared process error variance.</p>
 <h3 id="addition-of-an-auxiliary-catch-per-unit-effort-cpue-survey">Addition of an auxiliary catch per unit effort (CPUE) survey<a class="anchor" aria-label="anchor" href="#addition-of-an-auxiliary-catch-per-unit-effort-cpue-survey"></a>
 </h3>
 <p>In situations where an auxiliary biomass or catch per unit effort
-(CPUE) survey <span class="math inline">\(I_{t}\)</span> and associated
-variance <span class="math inline">\(\sigma_{I_{t}}\)</span> are
-available, an additional scaling parameter <span class="math inline">\(q\)</span> can be estimated to facilitate the
-inclusion of the new information into biomass predictions. The predicted
-annual CPUE survey index <span class="math inline">\(\hat{I}_{t}\)</span> is calculated as <span class="math display">\[
+(CPUE) survey
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>I</mi><mi>t</mi></msub><annotation encoding="application/x-tex">I_{t}</annotation></semantics></math>
+and associated variance
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><msub><mi>I</mi><mi>t</mi></msub></msub><annotation encoding="application/x-tex">\sigma_{I_{t}}</annotation></semantics></math>
+are available, an additional scaling parameter
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math>
+can be estimated to facilitate the inclusion of the new information into
+biomass predictions. The predicted annual CPUE survey index
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mover><mi>I</mi><mo accent="true">̂</mo></mover><mi>t</mi></msub><annotation encoding="application/x-tex">\hat{I}_{t}</annotation></semantics></math>
+is calculated as
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mover><mi>I</mi><mo accent="true">̂</mo></mover><mi>t</mi></msub><mo>=</mo><mi>q</mi><mo>*</mo><msup><mi>e</mi><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mi>t</mi></msub></msup></mrow><annotation encoding="application/x-tex">
 \hat{I}_{t} = q * e^{\hat{B}_{t}}
-\]</span> and the CPUE survey observations has an additional measurement
-equation and likelihood component similar to the biomass survey: <span class="math display">\[
-ln(I_{t}) = ln(\hat{I}_{t}) + \epsilon_{I}, \text{where } \epsilon_{I}
-\sim N(0, \sigma_{ln(I_t)}^2),
-\]</span> By default, <em>rema</em> estimates a single <span class="math inline">\(q\)</span> for each stratum; however, users can
-alternatively specify shared <span class="math inline">\(q\)</span>
+</annotation></semantics></math> and the CPUE survey observations has an
+additional measurement equation and likelihood component similar to the
+biomass survey:
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>I</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>I</mi><mo accent="true">̂</mo></mover><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><msub><mi>ϵ</mi><mi>I</mi></msub><mo>,</mo><mrow><mtext mathvariant="normal">where </mtext><mspace width="0.333em"></mspace></mrow><msub><mi>ϵ</mi><mi>I</mi></msub><mo>∼</mo><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><msubsup><mi>σ</mi><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>I</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><mn>2</mn></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo></mrow><annotation encoding="application/x-tex">
+ln(I_{t}) = ln(\hat{I}_{t}) + \epsilon_{I}, \text{where } \epsilon_{I} \sim N(0, \sigma_{ln(I_t)}^2), 
+</annotation></semantics></math> By default, <em>rema</em> estimates a
+single
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math>
+for each stratum; however, users can alternatively specify shared
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>q</mi><annotation encoding="application/x-tex">q</annotation></semantics></math>
 parameters among strata. If the strata definitions are not the same for
 t,he biomass and CPUE surveys (e.g. biomass is estimated at a finer
 geographic resolution that CPUE), the user can define the relationship
@@ -201,24 +218,27 @@ parameters defined inside the <code>PARAMETER_SECTION</code> of the
 template file cannot be used within the <code>SEPARABLE_FUNCTION</code>
 unless they are passed as arguments to the function (Skaug and Fournier
 2013). In the ADMB version of the REMA model, the calculation of
-predicted CPUE [i.e. <span class="math inline">\(ln(\hat{I}_{t})=ln(q)+ln(\hat{B})\)</span>]
+predicted CPUE
+[i.e. <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>I</mi><mo accent="true">̂</mo></mover><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>q</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><mover><mi>B</mi><mo accent="true">̂</mo></mover><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">ln(\hat{I}_{t})=ln(q)+ln(\hat{B})</annotation></semantics></math>]
 occurred outside rather than inside the <code>SEPARABLE_FUNCTION</code>,
 and as a results, violated this rule and affecting the accuracy of the
 Laplace approximation.</p>
 <p>We explored this error in a <a href="https://github.com/JaneSullivan-NOAA/separable_function" class="external-link">simplified
 example</a> of the REMA model in both ADMB and TMB. We were able to
-reproduce results from the TMB version of REMA in ADMB by passing <span class="math inline">\(ln(q)\)</span> as an argument to the
-<code>SEPARABLE_FUNCTION</code> and performing the <span class="math inline">\(ln(\hat{I}_{t})\)</span> calculation inside the
-<code>SEPARABLE_FUNCTION</code>. When we used Markov Chain Monte Carlo
-(MCMC) methods for statistical inference instead of MLE, the results
-from both ADMB versions closely matched the correct version of REMA.
-Finally, a comparison of the individual negative log-likelihood (NLL)
-components, along with the joint and marginal NLLs, revealed that all
-were the same between the TMB model, correct “inside” ADMB version, and
-incorrect “outside” ADMB version, <em>except</em> the marginal NLL.
-Taken together, this analysis confirms there is a bug in the “outside”
-ADMB version, which affects the accuracy of the Laplace approximation
-and model results.</p>
+reproduce results from the TMB version of REMA in ADMB by passing
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>q</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">ln(q)</annotation></semantics></math>
+as an argument to the <code>SEPARABLE_FUNCTION</code> and performing the
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>I</mi><mo accent="true">̂</mo></mover><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">ln(\hat{I}_{t})</annotation></semantics></math>
+calculation inside the <code>SEPARABLE_FUNCTION</code>. When we used
+Markov Chain Monte Carlo (MCMC) methods for statistical inference
+instead of MLE, the results from both ADMB versions closely matched the
+correct version of REMA. Finally, a comparison of the individual
+negative log-likelihood (NLL) components, along with the joint and
+marginal NLLs, revealed that all were the same between the TMB model,
+correct “inside” ADMB version, and incorrect “outside” ADMB version,
+<em>except</em> the marginal NLL. Taken together, this analysis confirms
+there is a bug in the “outside” ADMB version, which affects the accuracy
+of the Laplace approximation and model results.</p>
 </div>
 </div>
 <div class="section level3">
@@ -230,7 +250,8 @@ estimates of observation error variances for the biomass and/or CPUE
 survey are too low (e.g., Echave et al. 2020). That is, there is a
 mismatch between biologically reasonable inter-annual variability and
 the precision of index estimates. In these instances, the model
-estimates of <span class="math inline">\((\sigma^2_{B_{t,j}}+\sigma^2_{I_{t,j}})/\sigma^2_{PE}\)</span>
+estimates of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mo stretchy="true" form="prefix">(</mo><msubsup><mi>σ</mi><msub><mi>B</mi><mrow><mi>t</mi><mo>,</mo><mi>j</mi></mrow></msub><mn>2</mn></msubsup><mo>+</mo><msubsup><mi>σ</mi><msub><mi>I</mi><mrow><mi>t</mi><mo>,</mo><mi>j</mi></mrow></msub><mn>2</mn></msubsup><mo stretchy="true" form="postfix">)</mo></mrow><mi>/</mi><msubsup><mi>σ</mi><mrow><mi>P</mi><mi>E</mi></mrow><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">(\sigma^2_{B_{t,j}}+\sigma^2_{I_{t,j}})/\sigma^2_{PE}</annotation></semantics></math>
 may be lower than what should be expected based on an individual species
 life history traits. For example, if the ratio of observation to PE
 variation is low, model predictions of population biomass may exhibit
@@ -243,12 +264,14 @@ observation error. This method is commonly implemented in Stock
 Synthesis, has been implemented in Alaskan crab stock assessments (Zheng
 and Siddeek 2020), and has been explored in several groundfish
 assessments as well. Using the biomass survey variance as an example,
-the extra estimated error (<span class="math inline">\(\sigma_{\tau}\)</span>) is specified as:</p>
-<p><span class="math display">\[
+the extra estimated error
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>τ</mi></msub><annotation encoding="application/x-tex">\sigma_{\tau}</annotation></semantics></math>)
+is specified as:</p>
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>σ</mi><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>B</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msub><mo>=</mo><msqrt><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>σ</mi><msub><mi>B</mi><mi>t</mi></msub></msub><msub><mi>B</mi><mi>t</mi></msub></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><msub><mi>σ</mi><mi>τ</mi></msub><mn>2</mn></msup><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msqrt><mi>.</mi></mrow><annotation encoding="application/x-tex">
 \sigma_{ln(B_t)}=\sqrt{ln((\frac{\sigma_{B_t}}{B_t})^2+{\sigma_{\tau}}^2+1)}.
-\]</span> This approach is a new method for Tier 5 stock assessments and
-apportionment methods at the AFSC. A reproducible example with GOA
-shortraker is outlined in the <a href="https://afsc-assessments.github.io/rema/articles/ex2_cpue.html">Fitting
+</annotation></semantics></math> This approach is a new method for Tier
+5 stock assessments and apportionment methods at the AFSC. A
+reproducible example with GOA shortraker is outlined in the <a href="https://afsc-assessments.github.io/rema/articles/ex2_cpue.html">Fitting
 to an additional CPUE survey</a>. In this example, the estimation of
 additional observation error for the biomass and CPUE survey resulted in
 a better fit by AIC than status quo approaches and has a more
@@ -262,32 +285,53 @@ observations<a class="anchor" aria-label="anchor" href="#exploration-of-the-twee
 distributions</a> are a family of probability distributions that can be
 generalized to include the Gaussian, inverse Gaussian, gamma, Poisson,
 and compound Poisson-gamma distributions. The Tweedie distribution can
-be defined with three parameters, a mean (<span class="math inline">\(\mu\)</span>), power parameter (<span class="math inline">\(\rho\)</span>), and dispersion (<span class="math inline">\(\phi\)</span>), where the relationship between the
-variance and these parameters is defined by <span class="math inline">\(\sigma^2=\phi\mu^\rho\)</span>. When <span class="math inline">\(\rho\)</span> is bounded between 1 and 2, the
-Tweedie is a positive, continuous distribution that can handle zero
-values, thus allowing it to more naturally handle survey time series
-with one or more zero observations. Values of <span class="math inline">\(\rho\)</span> on these bounds are special cases of
-the Tweedie distribution, where <span class="math inline">\(\rho\)</span>=1 is equivalent to a Poisson
-distribution and <span class="math inline">\(\rho\)</span>=2 is a gamma
-distribution. In <em>rema</em>, the Tweedie <span class="math inline">\(\rho\)</span> is constrained between 1 and 2 using
-a logit-transformation.</p>
+be defined with three parameters, a mean
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>μ</mi><annotation encoding="application/x-tex">\mu</annotation></semantics></math>),
+power parameter
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>),
+and dispersion
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ϕ</mi><annotation encoding="application/x-tex">\phi</annotation></semantics></math>),
+where the relationship between the variance and these parameters is
+defined by
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>σ</mi><mn>2</mn></msup><mo>=</mo><mi>ϕ</mi><msup><mi>μ</mi><mi>ρ</mi></msup></mrow><annotation encoding="application/x-tex">\sigma^2=\phi\mu^\rho</annotation></semantics></math>.
+When
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
+is bounded between 1 and 2, the Tweedie is a positive, continuous
+distribution that can handle zero values, thus allowing it to more
+naturally handle survey time series with one or more zero observations.
+Values of
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
+on these bounds are special cases of the Tweedie distribution, where
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>=1
+is equivalent to a Poisson distribution and
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>=2
+is a gamma distribution. In <em>rema</em>, the Tweedie
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>
+is constrained between 1 and 2 using a logit-transformation.</p>
 <p>Similar to the normal distribution, observation error variances are
 treated as known for the Tweedie distribution in the REMA model. Using
 the biomass survey observation as an example, the dispersion of the
-biomass observation in strata <span class="math inline">\(j\)</span> in
-year <span class="math inline">\(t\)</span> is derived as <span class="math display">\[
+biomass observation in strata
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>j</mi><annotation encoding="application/x-tex">j</annotation></semantics></math>
+in year
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>t</mi><annotation encoding="application/x-tex">t</annotation></semantics></math>
+is derived as
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>ϕ</mi><msub><mi>B</mi><mrow><mi>t</mi><mo>,</mo><mi>j</mi></mrow></msub></msub><mo>=</mo><mfrac><msubsup><mi>σ</mi><msub><mi>B</mi><mrow><mi>t</mi><mo>,</mo><mi>j</mi></mrow></msub><mn>2</mn></msubsup><msup><mrow><mo stretchy="true" form="prefix">(</mo><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mrow><mi>t</mi><mo>,</mo><mi>j</mi></mrow></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>ρ</mi></msup></mfrac><mi>.</mi></mrow><annotation encoding="application/x-tex">
 \phi_{B_{t,j}}=\frac{\sigma_{B_{t,j}}^2}{{(\hat{B}_{t,j})}^\rho}.
-\]</span></p>
-<p>The result is that only one additional parameter (<span class="math inline">\(\rho\)</span>) is estimated when applying this
-alternative distribution. The measurement equation for the Tweedie
-becomes <span class="math display">\[
-B_{t,j} = \hat{B}_{t,j} + \epsilon_{B}, \text{where } \epsilon_{B} \sim
-Tw_{\rho}(0, \phi_{B_{t,j}}).
-\]</span> Because <span class="math inline">\(\sigma_{B_{t,j}}\)</span>
-is undefined when <span class="math inline">\(B_{t,j}\)</span>=0, the
-zeros are assumed to have a CV=1.5. This assumption can be explored by
-the user in <code>rema</code>, for example, if the user wanted to define
-a CV=2.0 for zeros, they would define
+</annotation></semantics></math></p>
+<p>The result is that only one additional parameter
+(<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>ρ</mi><annotation encoding="application/x-tex">\rho</annotation></semantics></math>)
+is estimated when applying this alternative distribution. The
+measurement equation for the Tweedie becomes
+<math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>B</mi><mrow><mi>t</mi><mo>,</mo><mi>j</mi></mrow></msub><mo>=</mo><msub><mover><mi>B</mi><mo accent="true">̂</mo></mover><mrow><mi>t</mi><mo>,</mo><mi>j</mi></mrow></msub><mo>+</mo><msub><mi>ϵ</mi><mi>B</mi></msub><mo>,</mo><mrow><mtext mathvariant="normal">where </mtext><mspace width="0.333em"></mspace></mrow><msub><mi>ϵ</mi><mi>B</mi></msub><mo>∼</mo><mi>T</mi><msub><mi>w</mi><mi>ρ</mi></msub><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><msub><mi>ϕ</mi><msub><mi>B</mi><mrow><mi>t</mi><mo>,</mo><mi>j</mi></mrow></msub></msub><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">
+B_{t,j} = \hat{B}_{t,j} + \epsilon_{B}, \text{where } \epsilon_{B} \sim Tw_{\rho}(0, \phi_{B_{t,j}}).
+</annotation></semantics></math> Because
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><msub><mi>B</mi><mrow><mi>t</mi><mo>,</mo><mi>j</mi></mrow></msub></msub><annotation encoding="application/x-tex">\sigma_{B_{t,j}}</annotation></semantics></math>
+is undefined when
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>B</mi><mrow><mi>t</mi><mo>,</mo><mi>j</mi></mrow></msub><annotation encoding="application/x-tex">B_{t,j}</annotation></semantics></math>=0,
+the zeros are assumed to have a CV=1.5. This assumption can be explored
+by the user in <code>rema</code>, for example, if the user wanted to
+define a CV=2.0 for zeros, they would define
 <code>zeros = list(assumption = 'tweedie', options_tweedie = list(zeros_cv = 2.0))</code>
 within the <code><a href="../reference/prepare_rema_input.html">prepare_rema_input()</a></code> function.</p>
 <p>A reproducible example using the Tweedie distribution for observation
@@ -300,11 +344,12 @@ this case, further exploration revealed that the Tweedie models can be
 very slow to run and often did not converge, especially in instances
 where the observation error variance estimates were low. It is possible
 that further development on estimating additional observation error
-variance (e.g. <span class="math inline">\({\tau}^2\)</span> in the
-previous section) could alleviate these convergence errors. However, in
-the interim, the Tweedie distribution in <em>rema</em> should be
-considered experimental, and we do not recommend it as a viable
-alternative for tactical assessments at this time.</p>
+variance
+(e.g. <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>τ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">{\tau}^2</annotation></semantics></math>
+in the previous section) could alleviate these convergence errors.
+However, in the interim, the Tweedie distribution in <em>rema</em>
+should be considered experimental, and we do not recommend it as a
+viable alternative for tactical assessments at this time.</p>
 </div>
 <div class="section level3">
 <h3 id="experimental-one-step-ahead-osa-residuals">Experimental One-Step Ahead (OSA) residuals<a class="anchor" aria-label="anchor" href="#experimental-one-step-ahead-osa-residuals"></a>
@@ -374,28 +419,26 @@ evaluation report the king and tanner crab fisheries of the Bering Sea
 and Aleutian Islands regions. North Pacific Fishery Management Council,
 605 W 4th Ave, Suite 306 Anchorage, AK 99501.</p>
 </div>
-  </main><aside class="col-md-3"><nav id="toc"><h2>On this page</h2>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>
 </div>
 
 
 
     <footer><div class="pkgdown-footer-left">
-  <p></p>
-<p>Developed by Jane Sullivan.</p>
+  <p>Developed by Jane Sullivan, Laurinne Balstad.</p>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p></p>
-<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
 </div>
 
     </footer>
 </div>
 
-  
 
-  
+
+
 
   </body>
 </html>
