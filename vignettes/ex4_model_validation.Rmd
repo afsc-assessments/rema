@@ -1,9 +1,9 @@
 ---
-title: "REMA Model Validation (draft)"
+title: "REMA Model Validation"
 author: "Laurie J Balstad, Jane Sullivan, Cole Monnahan "
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{REMA basics}
+  %\VignetteIndexEntry{REMA Model Validation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
