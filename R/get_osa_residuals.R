@@ -70,15 +70,12 @@ get_osa_residuals <- function(rema_model,
 
   }
 
-  p_hist <- function(dat) {
-    ggplot(data = dat, aes(x = residual)) +
-      # geom_histogram() +
-      # geom_histogram(aes(y = ..density..), colour = "black", fill = "white")+
-      geom_histogram(aes(y = after_stat(density)), colour = "black", fill = "white")+
-      geom_density(alpha = 0.2, fill = "#FF6666") +
-      # facet_wrap(~strata, scales = 'free') +
-      labs(x = 'Residual', y = 'Density')
-  }
+  # p_hist <- function(dat) {
+  #   ggplot(data = dat, aes(x = residual)) +
+  #     geom_histogram(aes(y = after_stat(density)), colour = "black", fill = "white") +
+  #     geom_density(fill = fill_alpha("#21918c", 0.6)) +
+  #     labs(x = 'Residual', y = 'Density')
+  # }
 
   p_fitted <- function(dat) {
 
@@ -93,21 +90,21 @@ get_osa_residuals <- function(rema_model,
       labs(x = 'Fitted values (log-scale)', y = 'Residual')
   }
 
-  p_acf <- function(dat) {
-    # dat = osa_resids
-    # dat = biomass_resids
-
-    biomacf <- acf(x = dat$residual, na.action = na.pass, plot = FALSE)
-    acfci <- qnorm((1 + 0.95)/2)/sqrt(biomacf$n.used)
-    biomacf <- data.frame(Lag = 1:(nrow(biomacf$acf)), ACF = biomacf$acf, lci = -acfci, uci = acfci)
-    ggplot(biomacf, aes(x = Lag, y = ACF)) +
-      geom_hline(yintercept = 0, colour = "grey", size = 1) +
-      geom_hline(yintercept = biomacf$uci, colour = "blue", linetype = 2) +
-      geom_hline(yintercept = biomacf$lci, colour = "blue", linetype = 2) +
-      geom_segment(aes(x = Lag, xend = Lag, y = 0, yend = ACF)) +
-      geom_point()
-
-  }
+  # p_acf <- function(dat) {
+  #   # dat = osa_resids
+  #   # dat = biomass_resids
+  #
+  #   biomacf <- acf(x = dat$residual, na.action = na.pass, plot = FALSE)
+  #   acfci <- qnorm((1 + 0.95)/2)/sqrt(biomacf$n.used)
+  #   biomacf <- data.frame(Lag = 1:(nrow(biomacf$acf)), ACF = biomacf$acf, lci = -acfci, uci = acfci)
+  #   ggplot(biomacf, aes(x = Lag, y = ACF)) +
+  #     geom_hline(yintercept = 0, colour = "grey", size = 1) +
+  #     geom_hline(yintercept = biomacf$uci, colour = "blue", linetype = 2) +
+  #     geom_hline(yintercept = biomacf$lci, colour = "blue", linetype = 2) +
+  #     geom_segment(aes(x = Lag, xend = Lag, y = 0, yend = ACF)) +
+  #     geom_point()
+  #
+  # }
 
   if(is.null(rema_model$err)) {
 
@@ -135,8 +132,8 @@ get_osa_residuals <- function(rema_model,
                            dplyr::select(year, strata, residual))
 
       p1_qq <- p_qq(dat = osa_resids, facet_strata = FALSE)
-      p2_acf <- p_acf(dat = osa_resids)
-      p3_hist <- p_hist(dat = osa_resids)
+      # p2_acf <- p_acf(dat = osa_resids)
+      # p3_hist <- p_hist(dat = osa_resids)
       p1_biomass <- p_resids(dat = biomass_resids)
       p2_biomass <- p_fitted(dat = biomass_resids)
       p3_biomass <- p_qq(dat = biomass_resids, facet_strata = TRUE)
@@ -168,7 +165,7 @@ get_osa_residuals <- function(rema_model,
 
       out$plots <- list(qq = p1_qq,
                         # acf = p2_acf,
-                        histo = p3_hist,
+                        # histo = p3_hist,
                         biomass_resids = p1_biomass,
                         biomass_fitted = p2_biomass,
                         biomass_qq = p3_biomass,
