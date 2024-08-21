@@ -40,7 +40,7 @@ The following example uses BSAI non-shortspine thornyhead (non-SST) other rockfi
 
 ```{r data, warning = FALSE, message = FALSE}
 
-nonsst <- read.csv('ebsshelf_orox.csv')
+nonsst <- read.csv('ebsshelf_orox_biomass.csv')
 kable(nonsst)
 
 ```
@@ -49,7 +49,7 @@ kable(nonsst)
 
 ```{r m1, warning = FALSE, message = FALSE}
 
-nonsst <- read.csv('ebsshelf_orox.csv')
+nonsst <- read.csv('ebsshelf_orox_biomass.csv')
 
 input1 <- prepare_rema_input(model_name = 'M1: Zeros as NAs',
                              biomass_dat = nonsst,

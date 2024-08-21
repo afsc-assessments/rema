@@ -1,9 +1,9 @@
 ---
-title: "REMA Model Validation"
+title: "REMA model validation"
 author: "Laurie J Balstad, Jane Sullivan, Cole Monnahan "
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{REMA Model Validation}
+  %\VignetteIndexEntry{REMA model validation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -50,7 +50,7 @@ library(rema)
 
 ### Motivation (to do)
 
--    Fisheries stock assessment is moving towards state-space models, which boast a range of benefits, including separation and estimation of observation and process errors, ability to handle missing or incomplete data sets, seemingly limitless flexibility with respect to model architecture and inclusion of different data types, and the potential for improved projections.
+-   Fisheries stock assessment is moving towards state-space models, which boast a range of benefits, including separation and estimation of observation and process errors, ability to handle missing or incomplete data sets, seemingly limitless flexibility with respect to model architecture and inclusion of different data types, and the potential for improved projections.
 
 -   The flexibility and relative ease of fitting state-space models means they can increase in complexity and dimensionality rapidly. While easy to fit, state-space models are often challenging to validate, and research has demonstrated that even simple models can suffer from estimation issues (Auger‐Méthé et al., 2016).
 
