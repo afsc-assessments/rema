@@ -54,8 +54,8 @@ compare_rema_models <- function(rema_models,
                                 cpue_ylab = 'CPUE') {
   # rema_models <- list(m1, m2)
   # admb_re = NULL
-  # biomass_ylab <- 'ROV biomass'
-  # cpue_ylab <- 'IPHC setline survey CPUE'
+  # biomass_ylab <- 'Trawl biomass'
+  # cpue_ylab <- 'Longline survey RPW'
   # xlab = NULL
 
   if(!is.list(rema_models)) {
@@ -235,8 +235,8 @@ compare_rema_models <- function(rema_models,
                   alpha = 0.25) +
       geom_line() +
       facet_wrap(~strata, nrow = NULL) +
-      geom_point(aes(x = year, y = obs), col = 'black') +
-      geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
+      # geom_point(aes(x = year, y = obs), col = 'black') +
+      # geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci), col = 'black') +
       # geom_point(aes(x = year, y = obs, col = model_name, shape = model_name)) +
       # geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci, col = model_name)) +
       scale_y_continuous(labels = scales::comma, expand = c(0, 0), limits = c(0, NA)) +
@@ -244,6 +244,8 @@ compare_rema_models <- function(rema_models,
            fill = NULL, colour = NULL, shape = NULL) +
       ggplot2::scale_fill_viridis_d(direction = 1) +
       ggplot2::scale_colour_viridis_d(direction = 1)
+      # scale_fill_discrete(type = c('#440154FF', '#2A788EFF')) +
+      # scale_color_discrete(type = c('#440154FF', '#2A788EFF'))
 
   } else {
     out_biomass_by_cpue_strata <- "'biomass_by_cpue_strata' is reserved for multi-survey scenarios when there are more biomass survey strata than CPUE survey strata, and the user wants predicted biomass at the same resolution as the CPUE survey index. One or more of the models selected for comparison did not meet this criterion."
