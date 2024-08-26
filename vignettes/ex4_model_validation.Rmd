@@ -77,7 +77,7 @@ The key questions we aim to answer are:
 
 First, we run the model for each stock. The AI Pcod model (pcod_mod) uses a single process error to describe the stock over time (one parameter). The GOA thornyhead rockfish model (thrn_mod) uses three process errors and data from two surveys (bottom trawl and longline survey) to describe the stock over time (six parameters; three sur).
 
-```{r data and model prep, fig.keep='all', message=FALSE, warning=FALSE}
+```{r data and model prep, eval=FALSE, message=FALSE, warning=FALSE}
 
 set.seed(415) # for reproducibility, use a seed
 
