@@ -75,7 +75,9 @@ The key questions we aim to answer are:
 
 ### Prepare data for each stock here
 
-First, we run the model for each stock. The AI Pcod model (pcod_mod) uses a single process error to describe the stock over time (one parameter). The GOA thornyhead rockfish model (thrn_mod) uses three process errors and data from two surveys (bottom trawl and longline survey) to describe the stock over time (six parameters; three sur).
+First, we run the model for each stock. The AI Pcod model (pcod_mod) uses a single process error to describe the stock over time (one parameter). The GOA thornyhead rockfish model (thrn_mod) uses data from two surveys (bottom trawl and longline survey) to describe the stock over time (six fixed effects parameters: three process errors, one scaling parameter, additional observation error for the biomass survey, and additional observation error for the longline survey).
+
+In the code below, we show how to specify and fit these models within the `rema` framework and plot fits to the data.
 
 ```{r data and model prep, eval=FALSE, message=FALSE, warning=FALSE}
 
@@ -157,6 +159,7 @@ ggsave(paste0("vignettes/ex4_thrn_fits.png"), width = 11, height = 10, units = "
 
 ```
 
+The figures below show fits the data for AI Pcod and GOA Thornyhead. In particular, the GOA Thornyhead fits show a trade off between the biomass and longline survey data.
 ![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_fits.png){width="10in"}
 
 ### 1. Simulation self-test: Can we recover parameters without bias?
@@ -315,9 +318,9 @@ ggsave(paste0("vignettes/ex4_sim_thrn.png"), width = 11, height = 7, units = "in
 Only 1 out of 500 simulation replicates did not converge for the AI Pcod model, which suggests a high degree of model stability. There were 11 out 500 simulation replicates for the GOA Thornyhead model that did not converge. In the following figures the top panel shows the distribution of resulting parameter estimates for the parameter estimates in each of the models based on the simulations, where the horizontal line is the median estimated value and the black dot is the "true" value (i.e., the parameters estimates from the real data sets). As demonstrated in the boxplots of the bottom panels in the figures below, the parameters in both models are recovered well in simulation testing, with low median relative error. In both models there are instances of long negative tails in the log standard deviation of the process error (log_PE), suggesting that PE was small or tended towards zero in some simulations. This is also the case for the extra observation error for the biomass survey (log_tau_biomass) in the GOA Thornyhead model. These outlier replicates may shed light on why some replicates failed to converge. Specifically, `nlminb`, the optimizer used by `rema`, returned a "`NA/NaN function evaluation`" error, which commonly means the optimizer got "stuck" in a parameter space that is incompatible with the assumptions of the model; e.g., PE wanted to be zero but couldn't because PE is log-transformed. The negative log-scale values are most extreme for the GOA Thornyhead model, which should raise some concern of potential model mispecification or over-parameterization. For example, given the trade off between between process and observation error in REMA, it is possible that the estimation of additional observation error on the biomass survey may not be justified (a PE=0 is the same as taking a global mean of the biomass time series).
 
 <!-- ![](ex4_sim_pcod.png){width="6in"} -->
-![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim_pcod.png){width="6in"}
+<!-- ![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim_pcod.png){width="6in"} -->
 
-<!-- ![](ex4_sim_thrn.png){width="10in"} -->
+<!-- ![](ex4_sim.png){width="10in"} -->
 ![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim_thrn.png){width="10in"}
 
 ### 2. Residual analysis
