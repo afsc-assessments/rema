@@ -172,11 +172,6 @@ survey) to describe the stock over time (six parameters; three sur).</p>
 <span>                                 <span class="op">)</span></span>
 <span><span class="co"># run the model</span></span>
 <span><span class="va">pcod_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_rema.html">fit_rema</a></span><span class="op">(</span><span class="va">pcod_input</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; Model runtime: 0.1 seconds </span></span>
-<span><span class="co">#&gt; stats::nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
-<span><span class="co">#&gt; Maximum gradient component: 1.73e-07 </span></span>
-<span><span class="co">#&gt; Max gradient parameter: log_PE </span></span>
-<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
 <span></span>
 <span><span class="co"># next, get the thornyhead data set up</span></span>
 <span><span class="va">thrn_bio_dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"goa_thornyhead_2022_biomass_dat.csv"</span><span class="op">)</span></span>
@@ -207,11 +202,41 @@ survey) to describe the stock over time (six parameters; three sur).</p>
 <span></span>
 <span><span class="co"># run the model</span></span>
 <span><span class="va">thrn_mod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_rema.html">fit_rema</a></span><span class="op">(</span><span class="va">thrn_input</span><span class="op">)</span> </span>
-<span><span class="co">#&gt; Model runtime: 0.3 seconds </span></span>
-<span><span class="co">#&gt; stats::nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
-<span><span class="co">#&gt; Maximum gradient component: 1.17e-05 </span></span>
-<span><span class="co">#&gt; Max gradient parameter: log_PE </span></span>
-<span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span></code></pre></div>
+<span></span>
+<span><span class="co"># tidy output and plot fitted data</span></span>
+<span><span class="va">tidy_pcod</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_rema.html">tidy_rema</a></span><span class="op">(</span><span class="va">pcod_mod</span><span class="op">)</span></span>
+<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_rema.html">plot_rema</a></span><span class="op">(</span><span class="va">tidy_pcod</span><span class="op">)</span><span class="op">$</span><span class="va">biomass_by_strata</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span>label <span class="op">=</span> <span class="st">"Model Fits to the AI Pcod Data"</span>,</span>
+<span>          subtitle <span class="op">=</span> <span class="st">"Trawl Survey Biomass Strata"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">pred_lci</span>, ymax <span class="op">=</span> <span class="va">pred_uci</span><span class="op">)</span>,</span>
+<span>              col <span class="op">=</span> <span class="st">'goldenrod'</span>, fill <span class="op">=</span> <span class="st">'goldenrod'</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, y <span class="op">=</span> <span class="va">obs</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_errorbar</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, ymin <span class="op">=</span> <span class="va">obs_lci</span>, ymax <span class="op">=</span> <span class="va">obs_uci</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">p1</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"vignettes/ex4_pcod_fits.png"</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">6</span>, height <span class="op">=</span> <span class="fl">4</span>, units <span class="op">=</span> <span class="st">"in"</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">tidy_thrn</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_rema.html">tidy_rema</a></span><span class="op">(</span><span class="va">thrn_mod</span><span class="op">)</span></span>
+<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_rema.html">plot_rema</a></span><span class="op">(</span><span class="va">tidy_thrn</span>, biomass_ylab <span class="op">=</span> <span class="st">'Biomass (t)'</span><span class="op">)</span><span class="op">$</span><span class="va">biomass_by_strata</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span>label <span class="op">=</span> <span class="st">"Model Fits to the GOA Thornyhead Data"</span>,</span>
+<span>          subtitle <span class="op">=</span> <span class="st">"Trawl Survey Biomass Strata"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">pred_lci</span>, ymax <span class="op">=</span> <span class="va">pred_uci</span><span class="op">)</span>,</span>
+<span>              col <span class="op">=</span> <span class="st">"#21918c"</span>, fill <span class="op">=</span> <span class="st">"#21918c"</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, y <span class="op">=</span> <span class="va">obs</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_errorbar</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, ymin <span class="op">=</span> <span class="va">obs_lci</span>, ymax <span class="op">=</span> <span class="va">obs_uci</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">p2</span></span>
+<span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/plot_rema.html">plot_rema</a></span><span class="op">(</span><span class="va">tidy_thrn</span>, cpue_ylab <span class="op">=</span> <span class="st">"RPW"</span><span class="op">)</span><span class="op">$</span><span class="va">cpue_by_strata</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span>label <span class="op">=</span> <span class="cn">NULL</span>, subtitle <span class="op">=</span> <span class="st">"Longline Survey Relative Population Weight (RPW) Strata"</span><span class="op">)</span> <span class="op">+</span> </span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_ribbon.html" class="external-link">geom_ribbon</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>ymin <span class="op">=</span> <span class="va">pred_lci</span>, ymax <span class="op">=</span> <span class="va">pred_uci</span><span class="op">)</span>,</span>
+<span>              col <span class="op">=</span> <span class="st">"#21918c"</span>, fill <span class="op">=</span> <span class="st">"#21918c"</span>, alpha <span class="op">=</span> <span class="fl">0.4</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_point.html" class="external-link">geom_point</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, y <span class="op">=</span> <span class="va">obs</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_linerange.html" class="external-link">geom_errorbar</a></span><span class="op">(</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">year</span>, ymin <span class="op">=</span> <span class="va">obs_lci</span>, ymax <span class="op">=</span> <span class="va">obs_uci</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">p3</span></span>
+<span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p2</span>, <span class="va">p3</span>, rel_heights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.7</span>, <span class="fl">0.3</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"vignettes/ex4_thrn_fits.png"</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">11</span>, height <span class="op">=</span> <span class="fl">10</span>, units <span class="op">=</span> <span class="st">"in"</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span></code></pre></div>
+<p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_fits.png" style="width:10in"></p>
 </div>
 <div class="section level3">
 <h3 id="simulation-self-test-can-we-recover-parameters-without-bias">1. Simulation self-test: Can we recover parameters without
@@ -666,11 +691,14 @@ the Laplace approximation might be inappropriate and that further
 investigation into model structure might be necessary.</p>
 <!-- ![](ex4_mcmc_qq.png){width="10in"} -->
 <p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_mcmc_qq.png" style="width:10in"></p>
-<p>###4. Parameter correlation: Are the model parameters identifiable
-and non-redundant?</p>
+</div>
+<div class="section level3">
+<h3 id="parameter-correlation-are-the-model-parameters-identifiable-and-non-redundant">4. Parameter correlation: Are the model parameters identifiable and
+non-redundant?<a class="anchor" aria-label="anchor" href="#parameter-correlation-are-the-model-parameters-identifiable-and-non-redundant"></a>
+</h3>
 <p>Parameter redundancy refers to the idea that multiple parameters
 contribute to the model in the same way. An intuitive case is
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi><mspace width="0.222em"></mspace><msub><mi>β</mi><mn>1</mn></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>+</mo><mi>α</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">y ~ \beta_1 + \beta_2 + \alpha x</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi><mo>∼</mo><msub><mi>β</mi><mn>1</mn></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub><mo>+</mo><mi>α</mi><mi>x</mi></mrow><annotation encoding="application/x-tex">y \sim \beta_1 + \beta_2 + \alpha x</annotation></semantics></math>,
 since the model could estimate many combinations of
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>1</mn></msub><annotation encoding="application/x-tex">\beta_1</annotation></semantics></math>
 and
@@ -775,6 +803,9 @@ management.</p>
 <div class="section level3">
 <h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h3>
+<p>Aeberhard, W.H., Flemming, J.M., Nielsen, A. 2018. Review of
+State-Space Models for Fisheries Science. Annual Review of Statistics
+and Its Application, 5(1), 215-235. <a href="https://doi.org/10.1146/annurev-statistics-031017-100427" class="external-link uri">https://doi.org/10.1146/annurev-statistics-031017-100427</a></p>
 <p>Auger-Méthé, M., Field, C., Albertsen, C.M., Derocher, A.E., Lewis,
 M.A., Jonsen, I.D., Flemming, J.M. 2016. State-space models’ dirty
 little secrets: even simple linear Gaussian models can have estimation
