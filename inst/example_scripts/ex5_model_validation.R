@@ -3,7 +3,6 @@ library(readr)
 library(dplyr)
 library(tidyr)
 
-
 # Packages for MCMC and diagnostics
 library(tmbstan)
 # tmbstan relies on rstan, which now needs to be installed through the R
@@ -59,6 +58,40 @@ thrn_input <- prepare_rema_input(model_name = "thrnhead_rockfish",
 
 # run the model
 thrn_mod <- fit_rema(thrn_input)
+
+# tidy output and plot fitted data
+tidy_pcod <- tidy_rema(pcod_mod)
+p1 <- plot_rema(tidy_pcod)$biomass_by_strata +
+  ggtitle(label = "Model Fits to the AI Pcod Data",
+          subtitle = "Trawl Survey Biomass Strata") +
+  geom_ribbon(aes(ymin = pred_lci, ymax = pred_uci),
+              col = 'goldenrod', fill = 'goldenrod', alpha = 0.4) +
+  geom_line() +
+  geom_point(aes(x = year, y = obs)) +
+  geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci))
+p1
+ggsave(paste0("vignettes/ex4_pcod_fits.png"), width = 6, height = 4, units = "in", bg = "white")
+
+tidy_thrn <- tidy_rema(thrn_mod)
+p2 <- plot_rema(tidy_thrn, biomass_ylab = 'Biomass (t)')$biomass_by_strata +
+  ggtitle(label = "Model Fits to the GOA Thornyhead Data",
+          subtitle = "Trawl Survey Biomass Strata") +
+  geom_ribbon(aes(ymin = pred_lci, ymax = pred_uci),
+              col = "#21918c", fill = "#21918c", alpha = 0.4) +
+  geom_line() +
+  geom_point(aes(x = year, y = obs)) +
+  geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci))
+p2
+p3 <- plot_rema(tidy_thrn, cpue_ylab = "RPW")$cpue_by_strata +
+  ggtitle(label = NULL, subtitle = "Longline Survey Relative Population Weight (RPW) Strata") +
+  geom_ribbon(aes(ymin = pred_lci, ymax = pred_uci),
+              col = "#21918c", fill = "#21918c", alpha = 0.4) +
+  geom_line() +
+  geom_point(aes(x = year, y = obs)) +
+  geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci))
+p3
+cowplot::plot_grid(p2, p3, rel_heights = c(0.7, 0.3), ncol = 1)
+ggsave(paste0("vignettes/ex4_thrn_fits.png"), width = 11, height = 10, units = "in", bg = "white")
 
 # simulation -----
 
@@ -190,8 +223,12 @@ p1thrn <- plot_sim(thrn_sim, "GOA Thornyhead Simulation")
 p2pcod <- plot_re(sim_re %>% filter(sp == "AI Pcod"), fill_col = "goldenrod")
 p2thrn <- plot_re(sim_re %>% filter(sp == "GOA Thornyhead"))
 
-cowplot::plot_grid(p1pcod, p2pcod, ncol = 1)
-ggsave(paste0("vignettes/ex4_sim_pcod.png"), width = 6.5, height = 7, units = "in", bg = "white")
+cowplot::plot_grid(p1pcod +
+                     labs(subtitle = "Distribution of parameters estimates\n(median=horizontal line, true value=point)"),
+                   p2pcod +
+                     labs(subtitle = "Distribution of relative error (RE;\ni.e., (true-estimated values)/true value*100)"),
+                   ncol = 1)
+ggsave(paste0("vignettes/ex4_sim_pcod.png"), width = 3.5, height = 6.5, units = "in", bg = "white")
 
 cowplot::plot_grid(p1thrn, p2thrn, ncol = 1)
 ggsave(paste0("vignettes/ex4_sim_thrn.png"), width = 11, height = 7, units = "in", bg = "white")

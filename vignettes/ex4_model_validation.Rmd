@@ -24,12 +24,9 @@ knitr::opts_chunk$set(warning = FALSE, message = FALSE)
 ```
 
 ```{r setup, warning = FALSE, message = FALSE, echo=FALSE,results='hide',fig.keep='all'}
-knitr::opts_chunk$set(echo = TRUE)
-
 library(ggplot2)
 library(dplyr)
 library(tidyr)
-
 # Packages for MCMC and diagnostics
 library(tmbstan)
 # tmbstan relies on rstan, which now needs to be installed through the R
@@ -40,13 +37,11 @@ library(tmbstan)
 #                                     "https://cloud.r-project.org"))
 library(rstan)
 library(bayesplot)
-
-ggplot2::theme_set(cowplot::theme_cowplot(font_size = 11) +
-                     cowplot::background_grid() +
-                     cowplot::panel_border())
-
+# install.packages("devtools")
+# devtools::install_github("afsc-assessments/rema")
 library(rema)
 
+ggplot2::theme_set(cowplot::theme_cowplot(font_size = 11) + cowplot::background_grid() + cowplot::panel_border())
 ```
 
 ### Motivation
@@ -126,7 +121,43 @@ thrn_input <- prepare_rema_input(model_name = 'thrnhead_rockfish',
 # run the model
 thrn_mod <- fit_rema(thrn_input) 
 
+# tidy output and plot fitted data
+tidy_pcod <- tidy_rema(pcod_mod)
+p1 <- plot_rema(tidy_pcod)$biomass_by_strata + 
+  ggtitle(label = "Model Fits to the AI Pcod Data",
+          subtitle = "Trawl Survey Biomass Strata") + 
+  geom_ribbon(aes(ymin = pred_lci, ymax = pred_uci),
+              col = 'goldenrod', fill = 'goldenrod', alpha = 0.4) +
+  geom_line() +
+  geom_point(aes(x = year, y = obs)) +
+  geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci))
+p1
+ggsave(paste0("vignettes/ex4_pcod_fits.png"), width = 6, height = 4, units = "in", bg = "white")
+
+tidy_thrn <- tidy_rema(thrn_mod)
+p2 <- plot_rema(tidy_thrn, biomass_ylab = 'Biomass (t)')$biomass_by_strata + 
+  ggtitle(label = "Model Fits to the GOA Thornyhead Data",
+          subtitle = "Trawl Survey Biomass Strata") + 
+  geom_ribbon(aes(ymin = pred_lci, ymax = pred_uci),
+              col = "#21918c", fill = "#21918c", alpha = 0.4) +
+  geom_line() +
+  geom_point(aes(x = year, y = obs)) +
+  geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci))
+p2
+p3 <- plot_rema(tidy_thrn, cpue_ylab = "RPW")$cpue_by_strata + 
+  ggtitle(label = NULL, subtitle = "Longline Survey Relative Population Weight (RPW) Strata") + 
+  geom_ribbon(aes(ymin = pred_lci, ymax = pred_uci),
+              col = "#21918c", fill = "#21918c", alpha = 0.4) +
+  geom_line() +
+  geom_point(aes(x = year, y = obs)) +
+  geom_errorbar(aes(x = year, ymin = obs_lci, ymax = obs_uci))
+p3
+cowplot::plot_grid(p2, p3, rel_heights = c(0.7, 0.3), ncol = 1)
+ggsave(paste0("vignettes/ex4_thrn_fits.png"), width = 11, height = 10, units = "in", bg = "white")
+
 ```
+
+![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_fits.png){width="10in"}
 
 ### 1. Simulation self-test: Can we recover parameters without bias?
 
@@ -459,9 +490,9 @@ For the more complex GOA Thornyhead model (right panels), the log_tau_biomass pa
 <!-- ![](ex4_mcmc_qq.png){width="10in"} -->
 ![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_mcmc_qq.png){width="10in"}
 
-###4. Parameter correlation: Are the model parameters identifiable and non-redundant?
+### 4. Parameter correlation: Are the model parameters identifiable and non-redundant?
 
-Parameter redundancy refers to the idea that multiple parameters contribute to the model in the same way. An intuitive case is $y ~ \beta_1 + \beta_2 + \alpha x$, since the model could estimate many combinations of $\beta_1$ and $\beta_2$ which minimize the log-likelihood, i.e., the sampled parameters will be correlated. To reduce redundancy, $\beta_1 + \beta_2$ can be redefined as $\beta_0$. In more complex, hierarchical models, parameter redundancy is not always intuitive and can be solved by increasing the number of parameters (Gimenez et al., 2004; Cole, 2019), but can be checked using various diagnostics. One simple diagnostic is to check for parameter correlations.
+Parameter redundancy refers to the idea that multiple parameters contribute to the model in the same way. An intuitive case is $y \sim \beta_1 + \beta_2 + \alpha x$, since the model could estimate many combinations of $\beta_1$ and $\beta_2$ which minimize the log-likelihood, i.e., the sampled parameters will be correlated. To reduce redundancy, $\beta_1 + \beta_2$ can be redefined as $\beta_0$. In more complex, hierarchical models, parameter redundancy is not always intuitive and can be solved by increasing the number of parameters (Gimenez et al., 2004; Cole, 2019), but can be checked using various diagnostics. One simple diagnostic is to check for parameter correlations.
 
 Using the MCMC sampling framework, we can check for parameter correlations to help us identify possible redundancy in parameters using the `bayesplot` library (Gabry et al., 2019; Gabry and Mahr, 2024). If the sampled parameters are identifiable and non-redundant, we would see no correlation between parameters. For simplicity here, we only use the model case with the Laplace approximation.
 
@@ -508,6 +539,8 @@ The REMA model is used within the North Pacific Fishery Management Council to ob
 The model validation methods presented in this vignette are tools for stock assessment scientists to evaluate existing models and guide development of future models. From this analysis, we found the MCMC diagnostics and OSA residuals to be the most useful diagnostics for the REMA model, and we recommend they are explored for existing models using multivariate configurations with multiple process errors, multi-survey versions using CPUE indices like the longline survey, and models estimating additional observation error. Additionally, we recommend these model diagnostics be used when recommending new models for management.
 
 ### References
+
+Aeberhard, W.H., Flemming, J.M., Nielsen, A. 2018. Review of State-Space Models for Fisheries Science. Annual Review of Statistics and Its Application, 5(1), 215-235. https://doi.org/10.1146/annurev-statistics-031017-100427
 
 Auger-Méthé, M., Field, C., Albertsen, C.M., Derocher, A.E., Lewis, M.A., Jonsen, I.D., Flemming, J.M. 2016. State-space models’ dirty little secrets: even simple linear Gaussian models can have estimation problems. Scientific reports, 6(1), 26677.
 
