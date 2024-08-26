@@ -321,7 +321,7 @@ Only 1 out of 500 simulation replicates did not converge for the AI Pcod model, 
 <!-- ![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim_pcod.png){width="6in"} -->
 
 <!-- ![](ex4_sim.png){width="10in"} -->
-![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim_thrn.png){width="10in"}
+![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim.png){width="10in"}
 
 ### 2. Residual analysis
 
@@ -482,7 +482,7 @@ cowplot::plot_grid(p1, p2, rel_widths = c(0.4,0.6), ncol = 2)
 ggsave(paste0("vignettes/ex4_mcmc_qq.png"), width = 11, height = 7, units = "in", bg = "white")
 ```
 
-**Results for testing the validity of the Laplace approximation.**
+**Results for testing the validity of the Laplace approximation**
 
 The compared quantiles from full MCMC testing (x-axis) and the Laplace approximation (y-axis) are given with the black points in the figure below. The gray line is the 1:1 line. Points that fall on the gray line indicate that the quantile value is the same between the two cases.
 
