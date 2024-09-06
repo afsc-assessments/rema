@@ -99,10 +99,12 @@ sim_test <- function(mod_name, replicates, cpue) {
 
   # storage things
   re_est <- matrix(NA, replicates, length(mod_name$par)) # parameter estimates
+  grad <- matrix(NA, replicates, length(mod_name$par)) # gradients
 
   # go through the model
   suppressMessages(for(i in 1:replicates) {
 
+    # i = 10; mod_name = thrn_mod; cpue = TRUE
     sim <- mod_name$simulate(complete = TRUE) # simulates the data
 
     # simulated biomass observations:
@@ -125,60 +127,81 @@ sim_test <- function(mod_name, replicates, cpue) {
     if (cpue) {newinput$data$obsvec <- c(t(sim$log_biomass_obs)[!is.na(t(sim$log_biomass_obs))], t(sim$log_cpue_obs)[!is.na(t(sim$log_cpue_obs))])}
 
     # refit model
-    mod_new <- fit_rema(newinput, do.sdrep = FALSE)
+    mod_new <- fit_rema(newinput, do.sdrep = TRUE)
 
     # add parameter estimates to matrix
     if(mod_new$opt$convergence == 0) {
-      re_est[i, ] <- mod_new$env$last.par[1:length(mod_name$par)]
+      re_est[i, ] <- mod_new$env$last.par.best[1:length(mod_name$par)]
     } else {
       re_est[i, ] <- rep(NA, length(mod_name$par))
     }
+    grad[i, ] <- mod_new$final_gradient
 
   })
 
   re_est <- as.data.frame(re_est); re_est$type <- rep("recovered")
+  grad <- as.data.frame(grad)
 
-  return(re_est)
+  return(list(est = re_est, grad = grad))
 
 }
 
 # run for pcod and prep data frame
 # run simulation testing
-par_ests <- sim_test(mod_name = pcod_mod, replicates = 500, cpue = FALSE)
+pcod_sim <- sim_test(mod_name = pcod_mod, replicates = 500, cpue = FALSE)
+par_ests <- pcod_sim$est; pcod_grad <- pcod_sim$grad
 # get data frame with simulation values for each parameter
 n_not_converged_pcod <- length(which(is.na(par_ests[,1]))); n_pcod <- length(par_ests[,1])
 prop_converged_pcod <- 1-n_not_converged_pcod/n_pcod
 
-mod_par_ests <- data.frame("log_PE1" = pcod_mod$env$last.par[1],
+mod_par_ests <- data.frame("log_PE1" = pcod_mod$env$last.par.best[1],
                            type = "model")
 names(par_ests) <- names(mod_par_ests) # rename for ease
 pcod_par_ests <- rbind(mod_par_ests, par_ests) # recovered and model in one data frame
 pcod_par_ests$sp <- rep("AI Pcod")
+names(pcod_grad) <- names(pcod_par_ests)[1]
 
 # run for thorny and prep data frame -- same process
 # run simulation testing
-par_ests <- sim_test(mod_name = thrn_mod, replicates = 500, cpue = TRUE) # note some warnings
+thrn_sim <- sim_test(mod_name = thrn_mod, replicates = 500, cpue = TRUE) # note some warnings
+par_ests <- thrn_sim$est; thrn_grad <- thrn_sim$grad
 # sometimes spits out: In stats::nlminb(model$par, model$fn, model$gr, control =
 # list(iter.max = 1000,...: NA/NaN function evaluation
 n_not_converged_thrn <- length(which(is.na(par_ests[,1]))); n_thrn <- length(par_ests[,1])
 prop_converged_thrn <- 1-n_not_converged_thrn/n_thrn
 nrow(par_ests)
 # get data frame with simulation values for each parameter
-mod_par_ests <- data.frame("log_PE1" = thrn_mod$env$last.par[1],
-                           "log_PE2" = thrn_mod$env$last.par[2],
-                           "log_PE3" = thrn_mod$env$last.par[3],
-                           "log_q" = thrn_mod$env$last.par[4],
-                           "log_tau_biomass" = thrn_mod$env$last.par[5],
-                           "log_tau_cpue" = thrn_mod$env$last.par[6],
+mod_par_ests <- data.frame("log_PE1" = thrn_mod$env$last.par.best[1],
+                           "log_PE2" = thrn_mod$env$last.par.best[2],
+                           "log_PE3" = thrn_mod$env$last.par.best[3],
+                           "log_q" = thrn_mod$env$last.par.best[4],
+                           "log_tau_biomass" = thrn_mod$env$last.par.best[5],
+                           "log_tau_cpue" = thrn_mod$env$last.par.best[6],
                            type = "model")
 names(par_ests) <- names(mod_par_ests) # rename for ease
 thrn_par_ests <- rbind(mod_par_ests, par_ests) # recovered and model parameters in one data frame
 thrn_par_ests$sp <- rep("GOA Thornyhead")
+names(thrn_grad) <- names(thrn_par_ests)[1:6]
 
 # reogranize data
 pcod_sim <- pcod_par_ests %>% pivot_longer(1, names_to = "parameter")
 thrn_sim <- thrn_par_ests %>% pivot_longer(1:6, names_to = "parameter")
 sim_dat <- rbind(pcod_sim, thrn_sim)
+pcod_grad <- pcod_grad %>% pivot_longer(1, names_to = "parameter", values_to = "gradient") %>%
+  mutate(high = ifelse(gradient > 1e-5, TRUE, FALSE))
+thrn_grad <- thrn_grad %>% pivot_longer(1:6, names_to = "parameter", values_to = "gradient") %>%
+  mutate(high = ifelse(gradient > 1e-35, TRUE, FALSE))
+grad_dat <- rbind(pcod_grad,# %>% mutate(sp = "AI Pcod"),
+                  thrn_grad) %>% # %>% mutate(sp = "GOA Thornyhead")) %>%
+  select(-high,-parameter)# %>% mutate(type = 'recovered')
+sim_dat %>%
+  filter(type == "recovered") %>%
+  bind_cols(grad_dat) %>%
+  bind_rows(sim_dat %>% filter(type == "model")) %>%
+  filter(is.na(value) | value < -9) %>%
+  mutate(absgradient = abs(gradient)) %>%
+  arrange(gradient) #%>% View
+
 
 # Relative Error: ((om-em)/om)
 sim_re <- sim_dat %>%
@@ -282,13 +305,56 @@ mcmc_comp <- function(mod_name, it_numb, chain_numb) {
 }
 
 # run models
-pcod_comp <- mcmc_comp(mod_name = pcod_mod, it_numb = 5000, chain_numb = 3)
-thrn_comp_log_tau <- mcmc_comp(mod_name = thrn_mod, it_numb = 5000, chain_numb = 3) # running low bc consistently fails test
+pcod_comp <- mcmc_comp(mod_name = pcod_mod, it_numb = 1000, chain_numb = 3)
+thrn_comp_log_tau <- mcmc_comp(mod_name = thrn_mod, it_numb = 5000, chain_numb = 3) # running slow bc of convergence issues
 
-p1_mcmc_pcod <- rstan::traceplot(pcod_comp[[3]]) + ggtitle(label = "Traceplots to assess mixing across Markov chains and convergence", subtitle = "AI Pcod")
+# parameter summary table - compare the marginal max likelihood estimates (MMLE)
+# with the mcmc estimates. Rhat is the potential scale reduction factor on split
+# chains (at convergence, Rhat=1)
+m <- summary(pcod_comp[[3]])$summary[1, c(6,4,8,10), drop = FALSE]
+psum <- data.frame(Stock = 'AI Pcod', Model = 'MCMC_Laplace', FixedEffect = row.names(m), m, row.names = NULL)
+m <- summary(pcod_comp[[4]])$summary[1, c(6,4,8,10), drop = FALSE]
+psum <- psum %>% bind_rows(data.frame(Stock = 'AI Pcod', Model = 'MCMC_withoutLaplace', FixedEffect = row.names(m), m, row.names = NULL))
+m <- summary(thrn_comp_log_tau[[3]])$summary[1:6, c(6,4,8,10), drop = FALSE]
+psum <- psum %>% bind_rows(data.frame(Stock = 'GOA Thornyhead', Model = 'MCMC_Laplace', FixedEffect = row.names(m), m, row.names = NULL))
+m <- summary(thrn_comp_log_tau[[4]])$summary[1:6, c(6,4,8,10), drop = FALSE]
+psum <- psum %>% bind_rows(data.frame(Stock = 'GOA Thornyhead', Model = 'MCMC_withoutLaplace', FixedEffect = row.names(m), m, row.names = NULL))
+pars <- as.list(pcod_mod$sdrep, "Est")$log_PE
+sd <- as.list(pcod_mod$sdrep, "Std")$log_PE
+psum <- psum %>% bind_rows(data.frame(Stock = 'AI Pcod', Model = 'Base_MMLE_Laplace', FixedEffect = "log_PE",
+                                      X50. = pars, X2.5. = pars-1.96*sd, X97.5. = pars+1.96*sd, Rhat = NA))
+pars <- unlist(as.list(thrn_mod$sdrep, "Est"))
+pars <- pars[names(pars)[grepl("log_PE|log_q|log_tau", names(pars))]]
+sd <- unlist(as.list(thrn_mod$sdrep, "Std"))
+sd <- sd[names(sd)[grepl("log_PE|log_q|log_tau", names(sd))]]
+psum <- psum %>% bind_rows(data.frame(Stock = 'GOA Thornyhead', Model = 'Base_MMLE_Laplace', FixedEffect = rownames(summary(thrn_comp_log_tau[[3]])$summary[1:6,,drop=FALSE]),
+                                      X50. = pars, sd = sd, row.names = NULL) %>%
+                             mutate(X2.5. = X50.-1.96*sd,
+                                    X97.5. = X50.+1.96*sd,
+                                    Rhat = NA) %>%
+                             select(-sd))
+write.csv(psum, 'inst/example_data/ex4vignette_param_table.csv')
+psum <- read.csv('inst/example_data/ex4vignette_param_table.csv')
+psum <- psum %>%
+  mutate(`Estimate (95% CI)` = ifelse(X50. > -1e3,
+                                      # parameter table formatting: estimate (lci, uci)
+                                      paste0(formatC(X50., format="f", big.mark=",", digits=2), " (",
+                                             formatC(X2.5., format="f", big.mark=",", digits=2), ", ",
+                                             formatC(X97.5., format="f", big.mark=",", digits=2), ")"),
+                                      # if estimates are really small
+                                      # (approaching 0 when exponentiated), use
+                                      # scientific notation for the table
+                                      paste0(formatC(X50., big.mark=",", digits=3), " (",
+                                             formatC(X2.5., big.mark=",", digits=3), ", ",
+                                             formatC(X97.5., big.mark=",", digits=3), ")")),
+         Rhat = formatC(Rhat, format="f", digits=3)) %>%
+           select(Stock, FixedEffect, Model, `Estimate (95% CI)`, Rhat) %>%
+  arrange(Stock, FixedEffect, Model)
+
+p1_mcmc_pcod <- rstan::traceplot(pcod_comp[[3]]) + ggtitle(label = "Traceplots to assess mixing across Markov chains", subtitle = "AI Pcod")
 p1_mcmc_thrn <- rstan::traceplot(thrn_comp_log_tau[[3]], ncol = 3) + ggtitle(label = NULL, subtitle = "GOA Thornyhead")
 cowplot::plot_grid(p1_mcmc_pcod, p1_mcmc_thrn, ncol = 1, rel_heights = c(1,1.5))
-ggsave(paste0("vignettes/ex4_traceplots.png"), width = 11, height = 8, units = "in", bg = "white")
+ggsave(paste0("vignettes/ex4_traceplots.png"), width = 8, height = 8, units = "in", bg = "white")
 
 p2_mcmc_thrn <- bayesplot::mcmc_pairs(thrn_comp_log_tau[[3]],
                       off_diag_args = list(size = 0.8, alpha = 1/5),
@@ -323,16 +389,21 @@ plot_laplace_mcmc <- function(qq_dat, plot_title) {
     geom_abline(intercept = 0, slope = 1, col = "lightgray") +
     geom_point() +
     facet_wrap(~par_name, scales = "free", nrow = 2,  dir = "v") +
-    labs(x = "MCMC", y = "Laplace approx.", title = plot_title) +
+    labs(x = "MCMC", y = "MCMC with Laplace", title = plot_title) +
     theme(plot.title = element_text(size = 12),
           axis.text = element_text(size = 7),
           axis.title = element_text(size = 11),
           strip.text = element_text(size = 11))
 }
 p1 <- plot_laplace_mcmc(pcod_qq, "AI Pcod")
+p1
+ggsave(paste0("vignettes/ex4_mcmc_pcod_qq.png"), width = 3, height = 3, units = "in", bg = "white")
 p2 <- plot_laplace_mcmc(thrn_qq, "GOA Thornyhead")
-cowplot::plot_grid(p1, p2, rel_widths = c(0.4,0.6), ncol = 2)
-ggsave(paste0("vignettes/ex4_mcmc_qq.png"), width = 11, height = 7, units = "in", bg = "white")
+p2
+ggsave(paste0("vignettes/ex4_mcmc_thrn_qq.png"), width = 7.5, height = 5, units = "in", bg = "white")
+
+# cowplot::plot_grid(p1, p2, rel_widths = c(0.4,0.6), ncol = 2)
+# ggsave(paste0("vignettes/ex4_mcmc_qq.png"), width = 11, height = 7, units = "in", bg = "white")
 
 # OSAs -----
 

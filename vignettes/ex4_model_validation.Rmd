@@ -1,11 +1,11 @@
 ---
 title: "REMA model validation"
+author: "Laurinne J Balstad, Jane Sullivan, and Cole Monnahan"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{REMA model validation}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
-
 ---
 
 ```{r, include=FALSE, echo=FALSE, results='hide', fig.keep='all'}
@@ -44,40 +44,51 @@ library(rema)
 ggplot2::theme_set(cowplot::theme_cowplot(font_size = 11) + cowplot::background_grid() + cowplot::panel_border())
 ```
 
-### Motivation
+### Background
 
--   Fisheries stock assessments are moving towards state-space estimation, which boasts a range of benefits, including separation and estimation of observation and process error, a more elegant framework for handling missing data, a high degree of flexibility with respect to model architecture and inclusion of different data types, and the potential for improved projections and predictive skill (needs citations).
+Fisheries stock assessments are moving towards state-space estimation, which boasts a range of benefits, including separation and estimation of observation and process error, a more elegant framework for handling missing data, a high degree of flexibility with respect to model architecture and inclusion of different data types, and the potential for improved projections and predictive skill (Aeberhard et al., 2018). The flexibility and relative ease of fitting state-space models means they can increase in complexity and dimensionality rapidly. While easy to fit, state-space models are often challenging to validate, and even simple models can suffer from estimation issues that result in biased inference (Auger‐Méthé et al., 2016).
 
--   The flexibility and relative ease of fitting state-space models means they can increase in complexity and dimensionality rapidly. While easy to fit, state-space models are often challenging to validate and even simple models can suffer from estimation issues (Auger‐Méthé et al., 2016).
+At the North Pacific Fishery Management Council (NPFMC), the “random effects model” (REMA) is by far the most common state-space model used for fishery management (Sullivan et al., 2022). REMA is a state-space random walk model that can be customized to estimate multiple process errors, fit to an additional abundance index, or estimate additional observation error. REMA is used to estimate biomass within Tier 5 groundfish and Tier 4 crab stock assessments and to apportion Acceptable Biological Catches (ABCs) by management area for many stocks. Despite the high impact of this model within the North Pacific fishery management process, we have no standard model validation practices for REMA.
 
--   At the North Pacific Fishery Management Council, the "random effects model" (REMA) used for Tier 5 groundfish stock assessments, Tier 4 crab stock assessments, and apportionment for many stocks, is by far the most common state-space model used for fishery management. Despite the high impact of this model, we have no standard model validation practices for REMA.
+**Our goals:**
 
--   The goals of this study are to provide several examples of common state-space model validation techniques applied to real life REMA models and to make preliminary recommendations for model validation of REMA and other state-space models within our management framework.
+1.  Apply established state-space model validation techniques to real life REMA examples.
+
+2.  Create a REMA model validation guide with clear descriptions of each method and motivation for its use, an explanation of how to interpret the model validation results, and reproducible code that will run for all operational REMA models at the NPFMC.
+
+3.  Provide preliminary recommendations for REMA users and reviewers on which model validation methods are most relevant and informative for REMA.
+
+A living version of this document is available on the REMA website: <https://afsc-assessments.github.io/rema/articles/ex4_model_validation.html>. This website is code-enhanced with reproducible code to support model validation for all operational REMA models at the NPFMC.
+
+Interested but otherwise busy readers are encouraged to skip to the “When should we care about failed model diagnostics?” and “Recommendations” sections. Table 1 and Figures 6-8 show examples of a REMA model failing model validation criteria.
 
 ### A testing framework for REMA model validation
 
-In this vignette, we will be testing that (1) REMA is working as expected (i.e., code has been implemented correctly and parameters are estimated without bias), and (2) that the assumptions made when parameterizing and estimating REMA are valid, including assumptions related to random effects and error structure. We use two example stocks with varying levels of complexity:
+In this paper, we will be testing that (1) REMA is working as expected (i.e., code has been implemented correctly and parameters are estimated without bias), and (2) that the assumptions made when parameterizing and estimating REMA are valid, including assumptions related to random effects and error structure. We use two example stocks:
 
 -   Aleutian Islands Pacific cod (AI Pcod; Spies et al., 2023): a simple, univariate case, which fits to a single time series of the AI bottom trawl survey and estimates one process error
 
 -   Gulf of Alaska Thornyhead rockfish (GOA thornyhead; Echave et al., 2022): a complex, multi-strata and multi-survey case, which estimates multiple process errors, a scaling parameter for the longline survey, and two additional observation errors for the GOA bottom trawl and longline surveys
 
-Testing REMA across this range of complexity helps ensure that model and model assumptions are valid in a variety of realistic, management-relevant cases.
+Both models appear to converge per standard REMA and TMB diagnostics (small maximum gradient, invertible Hessian), and fit the data reasonably, with model fits shown in Figure 1. These stocks span the levels of complexity of NPFMC REMA models; testing REMA across this range of complexity helps ensure that model and model assumptions are valid in a variety of realistic, management-relevant cases.
 
-It is important to note that model validation does not mean the model is "more right" or "more correct." Model validation does not help an analyst with model selection, except to identify models which are not functioning properly, nor does it ensure that the model makes "better" predictions. Rather, model validation is a way to ensure that the model is operating as expected, without introducing bias or violating statistical assumptions upon which the model is based (Auger‐Méthé et al., 2016; Auger‐Méthé et al., 2021).
+It is important to note that model validation does not mean the model is “more right” or “more correct.” Model validation does not help an analyst with model selection (except to identify models that might not function properly), nor does it ensure that the model makes “better” predictions. Rather, model validation is a way to ensure that the model is operating as expected, without introducing bias or violating statistical assumptions upon which the model is based (Auger‐Méthé et al., 2016; Auger‐Méthé et al., 2021), and that the data reasonably could have come from the model (Thygesen et al., 2017).
 
-The key questions we aim to answer are:
+The key questions we aim to answer with model validation include the following:
 
--   Does the model perform as expected, or does it introduce bias? Using a simulation self-check, we will test if the model is coded correctly and is able to recover known parameters.
--   Is it plausible that our data could have been generated by the model? Using one-step ahead (OSA) residuals, the appropriate residual type for state-space models, we test the model assumptions and look for trends in residuals that may reveal characteristics or dynamics of the data that aren't adequately captured by the model.
--   Are the normality assumptions made when estimating random effects via the Laplace approximation valid? By comparing a non-Laplace approximation and a Laplace approximation of the model via MCMC, we test if the distribution of the fixed effects parameters' posteriors are normal or normal-like.
--   Are the parameters unique and non-redundant? Checking the correlation between parameters helps us identify if parameters are redundant with each other.
+1.  Does the model perform as expected, or does it introduce bias? Using a simulation self-check, we will test if the model is coded correctly and is able to recover known parameters.
+
+2.  Is it plausible that our data could have been generated by the model? Using one-step ahead (OSA) residuals, the appropriate residual type for state-space models, we test the model assumptions and look for trends in residuals that reveal characteristics or dynamics of the data that aren’t adequately captured by the model.
+
+3.  Are the normality assumptions made when estimating random effects via the Laplace approximation accurate? By comparing the posterior distribution of fixed effects with and without the Laplace approximation, we test whether the distribution of the random effects are normal and thus the accuracy of the Laplace approximation. This allows us to test the accuracy of the fixed effects estimates with uncertainties.
+
+4.  Are the parameters unique and non-redundant? Checking the correlation between parameters helps us identify if parameters are redundant with each other.
 
 ### Prepare data for each stock here
 
 First, we run the model for each stock. The AI Pcod model (pcod_mod) uses a single process error to describe the stock over time (one parameter). The GOA thornyhead rockfish model (thrn_mod) uses data from two surveys (bottom trawl and longline survey) to describe the stock over time (six fixed effects parameters: three process errors, one scaling parameter, additional observation error for the biomass survey, and additional observation error for the longline survey).
 
-In the code below, we show how to specify and fit these models within the `rema` framework and plot fits to the data.
+In the code below, we show how to specify and fit these models within the `rema` framework and plot fits to the data. Figure 1 shows the fits to the data for AI Pcod and GOA Thornyhead. In particular, the GOA Thornyhead fits show a trade off between the biomass and longline survey data.
 
 ```{r data and model prep, eval=FALSE, message=FALSE, warning=FALSE}
 
@@ -159,14 +170,15 @@ ggsave(paste0("vignettes/ex4_thrn_fits.png"), width = 11, height = 10, units = "
 
 ```
 
-The figures below show fits the data for AI Pcod and GOA Thornyhead. In particular, the GOA Thornyhead fits show a trade off between the biomass and longline survey data.
 ![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_fits.png){width="10in"}
+
+*Figure 1.* *Fits to the AI Pcod (top panel; gold) and GOA Thornyhead (bottom panels; teal) models.*
 
 ### 1. Simulation self-test: Can we recover parameters without bias?
 
-Simulation testing is an important step to ensure the model has been properly coded and performs consistently without introducing bias (Auger‐Méthé et al., 2021; Gimenez et al., 2004). First, we use the REMA model to estimate parameters (e.g., process error variance) from the real data in the AI Pcod and GOA Thornyhead case studies. Next, we use the estimated parameters as "true" values to simulate new data (simulated observations and states) using the REMA equations. For AI Pcod each simulated data set is a biomass trajectory, and for GOA Thornyhead it includes biomass trajectories in nine strata and longline survey relative population weights (RPWs) in three strata. We use the REMA model to re-estimate the model parameters and calculate the relative error (RE; i.e., (true-estimated values)/true value\*100)) for the parameters in each simulation replicate (N=500).
+Simulation testing ensures the model has been properly coded and performs consistently without introducing bias (Auger‐Méthé et al., 2021; Gimenez et al., 2004). First, we use the REMA model to estimate parameters (e.g., process error variance) from the real data. Next, we use the estimated parameters as “true values” to simulate new latent states (random effects) and data conditioned on the states using the REMA equations. We then use the REMA model to re-estimate the model parameters (“recovered parameters”) and calculate the relative error (RE; i.e., (true-estimated values)/true value\*100)) for the parameters in each simulation replicate (N=500). The AI Pcod model is fitted to bottom trawl data and each simulated data set is a biomass trajectory; the GOA Thornyhead model is fitted to bottom trawl and longline survey data, and each simulation data set includes biomass trajectories in nine strata and longline survey relative population weights (RPWs) in three strata.
 
-Models fail this simulation testing when the recovered parameters are biased, or deviate consistently from the true values used to simulate data. If the recovered parameters are far from the true values or the span of the recovered parameters is large, this may indicate that the model has a coding, is non-identifiable, has redundant parameters, or is bias (i.e., there is some other kind of model misspecification).
+Models fail this simulation testing when the recovered parameters are biased (RE ≠ 0), or deviate consistently from the true values used to simulate data (span of the recovered parameters is large): this can indicate that the model has a coding error, is non-identifiable, has redundant parameters, or is biased (i.e., there is some other kind of model misspecification).
 
 The following function runs a simulation self-test for a REMA model.
 
@@ -220,7 +232,7 @@ sim_test <- function(mod_name, replicates, cpue) {
 }
 ```
 
-Run self-test for AI Pcod and GOA Thornyhead and examine results.
+Run self-test for AI Pcod and GOA Thornyhead and examine results:
 
 ```{r run simulation self-test, eval=FALSE, message=FALSE, warning=FALSE}
 
@@ -315,79 +327,43 @@ ggsave(paste0("vignettes/ex4_sim_thrn.png"), width = 11, height = 7, units = "in
 
 **Results of the simulation self-test**
 
-Only 1 out of 500 simulation replicates did not converge for the AI Pcod model, which suggests a high degree of model stability. There were 11 out 500 simulation replicates for the GOA Thornyhead model that did not converge. In the following figures the top panel shows the distribution of resulting parameter estimates for the parameter estimates in each of the models based on the simulations, where the horizontal line is the median estimated value and the black dot is the "true" value (i.e., the parameters estimates from the real data sets). As demonstrated in the boxplots of the bottom panels in the figures below, the parameters in both models are recovered well in simulation testing, with low median relative error. In both models there are instances of long negative tails in the log standard deviation of the process error (log_PE), suggesting that PE was small or tended towards zero in some simulations. This is also the case for the extra observation error for the biomass survey (log_tau_biomass) in the GOA Thornyhead model. These outlier replicates may shed light on why some replicates failed to converge. Specifically, `nlminb`, the optimizer used by `rema`, returned a "`NA/NaN function evaluation`" error, which commonly means the optimizer got "stuck" in a parameter space that is incompatible with the assumptions of the model; e.g., PE wanted to be zero but couldn't because PE is log-transformed. The negative log-scale values are most extreme for the GOA Thornyhead model, which should raise some concern of potential model mispecification or over-parameterization. For example, given the trade off between between process and observation error in REMA, it is possible that the estimation of additional observation error on the biomass survey may not be justified (a PE=0 is the same as taking a global mean of the biomass time series).
+Only 1 out of 500 simulation replicates did not converge for the AI Pcod model, which suggests a high degree of model stability. There were 11 out 500 simulation replicates for the GOA Thornyhead model that did not converge. In Figure 2 the top row within each panel shows the distribution of resulting recovered parameter estimates in each of the models based on the simulations, where the horizontal line is the median estimated value and the black dot is the true value (i.e., the parameters estimates from the real data sets). 
 
-<!-- ![](ex4_sim_pcod.png){width="6in"} -->
-<!-- ![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim_pcod.png){width="6in"} -->
+As demonstrated in the boxplots of the bottom rows of Figure 2, the parameters in both models are recovered well in simulation testing, with low median relative error. In both models there are instances of long negative tails in the log standard deviation of the process error (`log_PE`; Figure 2 top row within each panel), suggesting that PE was small or tended towards zero in some simulations (recall that parameters are estimated in log space, and a very negative number in log space is close to zero in natural space). This is also the case for the extra observation error for the biomass survey (`log_tau_biomass`) in the GOA Thornyhead model (Figure 2, top row within lower panel). 
 
-<!-- ![](ex4_sim.png){width="10in"} -->
-![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim.png){width="10in"}
+These outlier replicates, which occur when the optimizer used by `rema` (`nlminb()`) returns a `“NA/NaN function evaluation”` error, help shed light on why some replicates failed to converge. Under the hood, the optimizer is pushing the PE towards zero (PE=0 is the same as taking a global mean of the biomass time series), violating the central assumption of the REMA model that the biomass has an underlying trend (PE \> 0, and thus PE can be log-transformed). The negative log-scale values are most extreme for the GOA Thornyhead model, which should raise some concern of potential model misspecification or over-parameterization. For example, given the trade-off between process and observation error in REMA (where including an additional observation dampens the biomass trend estimated, pushing PE towards zero), it is possible that the estimation of additional observation error on the biomass survey (`log_tau_biomass`) might not be justified.
+
+![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim.png){width="10in"}*Figure 2.* *Simulation self-test results for AI Pcod (top panels; gold) and GOA Thornyhead (bottom panels; teal). The upper row of each panel gives the distribution of the recovered parameters, with the dot giving the “true value” used to simulate the data. The lower row of each panel gives the relative error of the recovered parameters, with the zero line indicating the simulation returns the “true value,” the box plot line giving the median of the recovered parameter’s relative errors, and the whiskers and dots of the boxplots giving the spread of the recovered parameter’s relative errors.*
 
 ### 2. Residual analysis
 
-Residuals are used to test the underlying assumptions about the error distributions in the model. For example, in a linear regression, residuals should be independent, normal, and have constant variance. Traditional residuals (e.g., Pearson's residuals) are inappropriate for state-space models like REMA, because process error variance may be over-estimated in cases where the model is mis-specified, thus leading to artificially small residuals (see Section 3 of Thygesen et al. 2017 for an example). The appropriate residual type for validation of state-space models are called one-step ahead (OSA) residuals. Instead of comparing the observed and expected values at the same time step, OSA residuals use forecasted values based on all previous observations (i.e., they exclude the observed value at the current time step from prediction). In this way, OSA residuals account for non-normality and correlation among years. Under a correctly specified model, resultant OSA residuals should be independent and identically distributed (i.i.d.) with a standard normal distribution $N(0,1)$.
+Residuals are used to test the underlying assumptions about the structure and error distributions in the model. For example, in a linear regression, residuals should be independent, normal, and have constant variance. Traditional residuals (e.g., Pearson’s residuals) are inappropriate for state-space models like REMA, because the random effects induce correlations in the predicted data such that the residuals are no longer independent. Additionally, process error variance may be overestimated in cases where the model is mis-specified, thus leading to artificially small residuals (see Section 3 of Thygesen et al. 2017 for an example). The appropriate residual type for validation of state-space models are one-step ahead (OSA) residuals. Instead of comparing the observed and expected values at the same time step, OSA residuals use forecasted values based on all previous observations (i.e., they exclude the observed value at the current time step from prediction). In this way, OSA residuals account for non-normality and correlation in the residuals among years. 
 
-Methods for calculating OSA residuals in REMA have been implemented in the `rema::get_osa_residuals()` using the `TMB::oneStepPredict()` function and the `fullGaussian` method. The `rema::get_osa_residuals()` returns tidied dataframes of observations, REMA model predictions, and OSA residuals for the biomass and CPUE survey data when appropriate, along with several diagnostic plots.
+Under a correctly specified model, resultant OSA residuals should be independent and identically distributed (i.i.d.) with a standard normal distribution $N(0,1)$. This can be tested with a normal QQ plot, where the theoretical quantile values of the standard normal distribution are plotted on the *x*-axis, and the corresponding empirical quantile values of the OSA residuals are plotted on the *y*-axis. If the OSA residuals are standard normally distributed, the points will fall on the 0/1 reference line, and the standard deviation of normalized residuals (SDNR) statistic will be close to 1. If the residuals are not standard normally distributed (SDNR far from 1), the points will deviate from the reference line. In the case where the model includes multiple strata and surveys, OSA residuals should be normally distributed within and across strata and surveys, however small sample sizes (e.g., within a single stratum) may not have sufficient statistical power to identify model misfit. 
 
-One useful diagnostic plot provided in the output to `rema::get_osa_residuals()` is the normal quantile-quantile (QQ) plot, which can help users determine if the OSA residuals are likely to have come from the expected standard normal distribution. In a normal QQ plot, the quantile values of the standard normal distribution are plotted on the x-axis, and the corresponding quantile values of the OSA residuals are plotted on the y-axis. If the OSA residuals are normally distributed, the points will fall on the 0/1 reference line. If the residuals are not normally distributed, the points will deviate from the reference line. OSA residuals are plotted for the entire data set combined `$plots$qq` and by stratum for the biomass survey `$plots$biomass_qq` or CPUE survey `$plots$cpue_qq`. While it can be useful to check for residual patterns by stratum, users should be aware that small sample sizes may not have statistical power. In the top-left corner of the combined QQ plot `$plots$qq`, we provide the standard deviation of normalized residuals (SDNR) statistic. Given that OSA residuals should be $N(0,1)$ under a correctly specified model, we should expect the SDNR to be equal to close to 1.
+In addition to the normality of OSA residuals, residuals should be random and independent (i.e., they should not be correlated by year). Standard approaches such as autocorrelation function (ACF) plots or residual runs tests (e.g., Wald-Wolfowitz test) are inappropriate for many REMA applications because of missing years of data in the survey time series, and instead, we directly plot the residuals against the years of the survey time series. Visual patterns or extreme outliers (greater than 3 or less than -3 for N(0,1) distribution) in the residuals can indicate structure in the data (i.e., temporal correlation) that is not adequately captured by the model. 
 
-In addition to the normal QQ plots, we examine visual fits of the OSA residuals by year in order to test for randomness or independence of the residuals (i.e., they should not be correlated by year). Standard approaches such as autocorrelation function (ACF) plots or residual runs tests (e.g., Wald-Wolfowitz test) are inappropriate for many REMA applications because of missing years of data in the survey time series. Patterns in the residuals may indicate structure in the data (i.e., temporal correlation) that is not adequately captured by the model. These figures are also useful for identifying outliers. Under the assumed standard normal distribution, a residual is considered an outlier when it is greater than 3 or less than -3.
-
-The following code shows how to run an OSA residual analysis for AI Pcod and GOA Thornyhead REMA models.
-
-```{r run osa, eval=FALSE, message=FALSE, warning=FALSE}
-
-# Pcod
-pcod_resid <- rema::get_osa_residuals(pcod_mod)
-cowplot::plot_grid(pcod_resid$plots$qq +
-                     ggtitle('OSA Residuals for AI Pcod') +
-                     theme(legend.position = 'none'),
-                   pcod_resid$plots$biomass_resids, ncol = 1)
-ggsave(paste0("vignettes/ex4_aipcod_osa.png"), width = 5.5, height = 7, units = "in", bg = "white")
-
-# Thorny
-thrn_resid <- get_osa_residuals(thrn_mod)
-p1 <-thrn_resid$plots$qq +
-  ggtitle('OSA Residual QQ Plots for GOA Thornyhead') +
-  theme(legend.position = 'none')
-p2 <- thrn_resid$plots$biomass_qq + # biomass data
-  ggtitle('By Biomass Survey Strata') +
-  theme(legend.position = 'none')
-p3 <- thrn_resid$plots$cpue_qq +
-  ggtitle('By Longline Survey Strata') + # rpw data
-  theme(legend.position = 'none')
-cowplot::plot_grid(p1, p2, p3, ncol = 1, rel_heights = c(1,2,1))
-ggsave(paste0("vignettes/ex4_thrn_osaqq.png"), width = 7.5, height = 11, units = "in", bg = "white")
-
-p1 <- thrn_resid$plots$biomass_resids + ggtitle('OSA Residuals for GOA Thornyhead by Biomass Survey Strata')
-p2 <- thrn_resid$plots$cpue_resids + ggtitle('By Longline Survey Strata')
-cowplot::plot_grid(p1, p2, ncol = 1, rel_heights = c(2.5,1.5))
-ggsave(paste0("vignettes/ex4_thrn_osa.png"), width = 7.5, height = 8, units = "in", bg = "white")
-
-```
+Methods for calculating OSA residuals in REMA have been implemented in the `rema::get_osa_residuals()` using the `TMB::oneStepPredict()` function and the fullGaussian method when using lognormal error distributions. The `rema::get_osa_residuals()` returns tidied dataframes of observations, REMA model predictions, and OSA residuals for the biomass and CPUE survey data when appropriate, along with QQ and residual-time series diagnostic plots. 
 
 **Results of the residual analysis**
 
-The normal QQ plot plot for AI Pcod (top panel of the figure below) suggests slight negative skewness in the residuals (i.e., the majority of the points fall below the 0/1 line), though the small sample size makes interpretation challenging. The SDNR is 0.99 (a perfect model would have an SDNR=1.00), which means assumptions are likely not violated for the residuals. The plot of OSA residuals by year (bottom panel) shows no patterns in the residuals, suggesting they are independent. There is no evidence of outliers that warrant further inspection.
+The normal QQ plot for AI Pcod (Figure 3, top panel) suggests slight negative skewness in the residuals (i.e., the majority of the points fall below the 0/1 line), though the small sample size makes interpretation challenging. The SDNR is 0.99 (recall a perfect model would have an SDNR=1.00), indicating  assumptions are likely met for the residuals. The plot of OSA residuals by year (Figure 3, bottom panel) shows no obvious patterns in the residuals, suggesting they are independent; there is no evidence of outliers in the residuals that warrant further inspection.
 
-<!-- ![](ex4_aipcod_osa.png){width="6in"} -->
-![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_aipcod_osa.png){width="6in"}
+The combined normal QQ plot for GOA Thornyhead OSA residuals (Figure 4, top panel) suggests they follow a normal distribution (the points fall along the 0/1 line), though there is evidence of slight positive, or right skewness (the majority of the points fall above the 0/1 line). The SDNR is approximately 1, indicating the variance assumptions are likely met for the residuals. The QQ plots for the biomass by strata (Figure 4, middle panels) highlight where some of the positive skewness may be coming from (e.g., EGOA 701-1000m, WGOA 0-500 m); however, small sample sizes by stratum make interpretation of these QQ plots difficult. The QQ plots for the CPUE by strata (Figure 4, bottom panel) are mostly normal, though there is some evidence of light tails in the WGOA stratum.
 
-The combined normal QQ plot for GOA Thornyhead OSA residuals (top panel of the figure below) suggests they follow a normal distribution (the points fall along the 0/1 line), though there is evidence of slight positive, or right skewness (the majority of the points fall above the 0/1 line). The SDNR is exactly 1, indicating the variance assumptions are likely met for the residuals. The QQ plots for the biomass by strata (middle panels) highlight where some of the positive skewness may be coming from (e.g., EGOA 701-1000m, WGOA 0-500 m); however, small sample sizes by stratum make interpretation of these QQ plots difficult The QQ plots for the CPUE by strata are mostly normal, though there some evidence of light tails in the WGOA stratum (bottom panel).
+The plot of OSA residuals by year for the GOA Thornyhead OSA residuals by biomass strata (Figure 5, top panels) show no patterns in the residuals, suggesting they are independent. However, there are runs in the residuals for the CPUE strata (Figure 5, bottom panels), especially in the CGOA and WGOA, which might indicate model misspecification or misfit. There is no evidence of outliers.
 
-<!-- ![](ex4_thrn_osaqq.png){width="10in"} -->
-![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_thrn_osaqq.png){width="10in"}
+![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_aipcod_osa.png){width="5in"} *Figure 3. One-step ahead (OSA) residual plots for AI Pcod. The top panel gives the QQ plot, comparing the normal distribution quantiles (x-axis) to the OSA residual distribution quantiles (y-axis). The diagonal line is the 0-1 line, where the two quantiles are equal, and the SDNR statistic is given in the upper left of the plot. The bottom panel gives the residuals (y-axis) plotted by year (x-axis) which is used to check for independence.*
 
-The plot of OSA residuals by year for the GOA Thornyhead OSA residuals by biomass strata (top panels of the figure below) show no patterns in the residuals, suggesting they are independent. However, there are runs in the residuals for the CPUE strata (bottom panels of the figure below), especially in the CGOA and WGOA, which may be indicative of model misspecification or misfit. There is no evidence of outliers.
+![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_thrn_osaqq.png){width="10in"} *Figure 4.* *One-step ahead (OSA) QQ plots across (top panel) and within strata (middle panel, bottom trawl survey strata; and bottom panel, longline survey strata) for GOA Thornyhead. In both panels, the colors correspond to bottom trawl survey strata. The SDNR statistic is given for the across strata QQ plot; the within strata plots are useful to check for extreme skew but lack statistical power.*
 
-<!-- ![](ex4_thrn_osa.png){width="10in"} -->
-![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_thrn_osa.png){width="10in"}
+*![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_thrn_osa.png){width="10in"} Figure 5. One-step ahead (OSA) residual plots for GOA Thornyhead. The residuals (y-axis) for each annual time step (random effect; x-axis) for each survey stratum.*
 
 ### 3. Laplace approximation: Are the model assumptions related to random effects estimation reasonable?
 
 The `rema` library was developed in Template Model Builder (`TMB`), which uses maximum marginal likelihood estimation with the Laplace approximation to efficiently estimate high dimensional, non-linear mixed effects models in a frequentist framework (Skaug and Fournier, 2006; Kristensen et al., 2016). The primary assumption in models using the Laplace approximation is that the random effects follow a normal distribution. This assumption simplifies the complex integrals that make up the likelihood function. The Laplace approximation is fast and accurate when the normality assumption is met; however, if the true distribution of the random effects is not normal, the Laplace approximation may introduce bias into the parameter estimates.
 
-We can test the validity of the Laplace approximation using Markov chain Monte Carlo (MCMC) sampling in the `tmbstan` library, comparing the distributions of the fixed effects parameters from MCMC-sampled models with and without the Laplace approximation (Monnahan and Kristensen, 2018). To do so, we compare the distributions using QQ plots between the two model cases. The Laplace approximation is a reasonable assumption if the sampling quantiles for the two models (with and without the Laplace approximation) are similar, i.e., they fall on the 1:1 line. This can also help us identify bias introduced by the Laplace approximation, for example, if the median (50%) is different when using the Laplace approximation.
+We can test the validity of the Laplace approximation using Markov chain Monte Carlo (MCMC) sampling in the `tmbstan` library, comparing the distributions of the fixed effects parameters from MCMC-sampled models with and without the Laplace approximation (Monnahan and Kristensen, 2018). To do so, we compare the distributions using QQ plots between the two model cases. The Laplace approximation is reasonably accurate if the sampling quantiles for the two models (with and without the Laplace approximation) are similar, i.e., they fall on the 1:1 line. This can also help us identify bias introduced by the Laplace approximation, for example, if the fixed effects estimates and their associated estimates of uncertainty differ between the base model (run with marginal maximum likelihood estimation using the Laplace approximation) and the MCMC versions with and without the Laplace approximation. MCMC models were run with 1000 iterations, assuming a warmup of 500. As discussed in the Results section, iterations were increased to 5000 with a warmup of 2500 for GOA Thornyhead in an effort to improve diagnostics and model convergence.
 
 The function below is used to run the two model cases:
 
@@ -401,7 +377,7 @@ mcmc_comp <- function(mod_name, it_numb, chain_numb) {
   # set up MCMC chain information
   it_num <- it_numb
   chain_num <- chain_numb
-  # mod_name = pcod_mod; it_num = 4000; chain_num = 4
+  # mod_name = pcod_mod; it_num = 1000; chain_num = 4
 
   # run model with laplace approximation
   mod_la <- tmbstan(obj = mod_name, chains = chain_num, init = mod_name$par, laplace = TRUE, iter = it_num)
@@ -442,12 +418,11 @@ mcmc_comp <- function(mod_name, it_numb, chain_numb) {
 }
 
 # run models
-pcod_comp <- mcmc_comp(mod_name = pcod_mod, it_numb = 5000, chain_numb = 3)
+pcod_comp <- mcmc_comp(mod_name = pcod_mod, it_numb = 1000, chain_numb = 3)
 thrn_comp_log_tau <- mcmc_comp(mod_name = thrn_mod, it_numb = 5000, chain_numb = 3) 
-
 ```
 
-The following code uses the output from `mcmc_comp()` to make a QQ plot to compare the posterior distributions of the parameters between the MCMC models with and without the Laplace approximation:
+The following code uses the output from `mcmc_comp()` to make a QQ plot to compare the posterior distributions of the parameters and parameter estimates between the MCMC models with and without the Laplace approximation:
 
 ```{r laplace qqplot, eval=FALSE, message=FALSE, warning=FALSE}
 # clean up data frame names by renaming things
@@ -480,42 +455,62 @@ p1 <- plot_laplace_mcmc(pcod_qq, "AI Pcod")
 p2 <- plot_laplace_mcmc(thrn_qq, "GOA Thornyhead")
 cowplot::plot_grid(p1, p2, rel_widths = c(0.4,0.6), ncol = 2)
 ggsave(paste0("vignettes/ex4_mcmc_qq.png"), width = 11, height = 7, units = "in", bg = "white")
+
+# parameter summary table - compare the marginal max likelihood estimates (MMLE)
+# with the mcmc estimates. Rhat is the potential scale reduction factor on split
+# chains (at convergence, Rhat=1)
+m <- summary(pcod_comp[[3]])$summary[1, c(6,4,8,10), drop = FALSE]
+psum <- data.frame(Stock = 'AI Pcod', Model = 'MCMC_Laplace', FixedEffect = row.names(m), m, row.names = NULL)
+m <- summary(pcod_comp[[4]])$summary[1, c(6,4,8,10), drop = FALSE]
+psum <- psum %>% bind_rows(data.frame(Stock = 'AI Pcod', Model = 'MCMC_withoutLaplace', FixedEffect = row.names(m), m, row.names = NULL))
+m <- summary(thrn_comp_log_tau[[3]])$summary[1:6, c(6,4,8,10), drop = FALSE]
+psum <- psum %>% bind_rows(data.frame(Stock = 'GOA Thornyhead', Model = 'MCMC_Laplace', FixedEffect = row.names(m), m, row.names = NULL))
+m <- summary(thrn_comp_log_tau[[4]])$summary[1:6, c(6,4,8,10), drop = FALSE]
+psum <- psum %>% bind_rows(data.frame(Stock = 'GOA Thornyhead', Model = 'MCMC_withoutLaplace', FixedEffect = row.names(m), m, row.names = NULL))
+pars <- as.list(pcod_mod$sdrep, "Est")$log_PE
+sd <- as.list(pcod_mod$sdrep, "Std")$log_PE
+psum <- psum %>% bind_rows(data.frame(Stock = 'AI Pcod', Model = 'Base_MMLE_Laplace', FixedEffect = "log_PE",
+                                      X50. = pars, X2.5. = pars-1.96*sd, X97.5. = pars+1.96*sd, Rhat = NA))
+pars <- unlist(as.list(thrn_mod$sdrep, "Est"))
+pars <- pars[names(pars)[grepl("log_PE|log_q|log_tau", names(pars))]]
+sd <- unlist(as.list(thrn_mod$sdrep, "Std"))
+sd <- sd[names(sd)[grepl("log_PE|log_q|log_tau", names(sd))]]
+psum <- psum %>% bind_rows(data.frame(Stock = 'GOA Thornyhead', Model = 'Base_MMLE_Laplace', FixedEffect = rownames(summary(thrn_comp_log_tau[[3]])$summary[1:6,,drop=FALSE]),
+                                      X50. = pars, sd = sd, row.names = NULL) %>%
+                             mutate(X2.5. = X50.-1.96*sd,
+                                    X97.5. = X50.+1.96*sd,
+                                    Rhat = NA) %>%
+                             select(-sd))
+# write.csv(psum, 'vignettes/ex4_param_table.csv')
 ```
 
 **Results for testing the validity of the Laplace approximation**
 
-The compared quantiles from full MCMC testing (x-axis) and the Laplace approximation (y-axis) are given with the black points in the figure below. The gray line is the 1:1 line. Points that fall on the gray line indicate that the quantile value is the same between the two cases.
+Figure 6 gives the compared quantiles from full MCMC testing (x-axis) and the Laplace approximation (y-axis) for AI Pcod and GOA Thornyhead models.
 
-For the simpler AI Pcod model (left panel), the Laplace approximation and full MCMC testing show a similar distribution, indicating that the Laplace approximation is reasonable.
+For the simpler AI Pcod model (Figure 6, left panel), the Laplace approximation and full MCMC testing show a similar distribution, indicating that the Laplace approximation is reasonable. Additionally the estimates of fixed effects are nearly identical between the base model and MCMC models with and without the Laplace approximation (Table 1).
 
-For the more complex GOA Thornyhead model (right panels), the log_tau_biomass parameter shows significant deviations between the two model cases. Moreover, there are significant unresolved sampling problems of the log_tau_biomass parameter in both cases, indicating that the Laplace approximation might be inappropriate and that further investigation into model structure might be necessary.
+For the more complex GOA Thornyhead model, the preliminary model results based on 1000 iterations exhibited poor diagnostics for all process error parameters and the additional observation error for the biomass survey (`log_tau_biomass`). We increased the number of MCMC iterations to 5000 in an effort to improve convergence diagnostics; however, the log_tau_biomass parameter continued to show significant deviations between the models with and without the Laplace approximation (Figure 6, right panels). A comparison of the fixed effects estimates between the base models show large differences in the parameter estimates and their associated estimates of uncertainty (Table 1). This indicates that the Laplace approximation is likely inaccurate, and that further investigation into model structure might be necessary.
 
-<!-- ![](ex4_mcmc_qq.png){width="10in"} -->
+*Table 1. AI Pcod and GOA Thornyhead fixed effect estimates with 95% confidence or credible intervals for maximum likelihood or MCMC models, respectively (CI). Fixed effects estimates are compared between the base model run with marginal maximum likelihood estimation assuming the Laplace approximation (“Base_MMLE_Laplace”) and MCMC models with and without the Laplace approximation (“MCMC_Laplace” and “MCMC_withoutLaplace”, respectively). The Rhat statistic is provided for MCMC models and is a convergence metric (convergence = Rhat = 1). Nonconverged parameters are highlighted in bold. The parameter estimate for the MCMC models is the median of the posterior samples.*
+
+![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_param_table.PNG){width="6in"}
+
 ![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_mcmc_qq.png){width="10in"}
+
+*Figure 6. Results from Laplace approximation testing. We compare the results of running a model without assuming normality of random effects (MCMC, x-axis) and running a model assuming normality of random effects (Laplace approximation, y-axis), where the quantiles of each are plotted against each other for each fixed effect in the model. The gray line is the 1:1 line; points that fall on the gray line indicate that the quantile value is the same between the two cases. The top panel gives the plot for the AI Pcod model (one fixed effect), and the bottom panels give the plots for the GOA Thornyhead model (six fixed effects).*
 
 ### 4. Parameter correlation: Are the model parameters identifiable and non-redundant?
 
-Parameter redundancy refers to the idea that multiple parameters contribute to the model in the same way. An intuitive case is $y \sim \beta_1 + \beta_2 + \alpha x$, since the model could estimate many combinations of $\beta_1$ and $\beta_2$ which minimize the log-likelihood, i.e., the sampled parameters will be correlated. To reduce redundancy, $\beta_1 + \beta_2$ can be redefined as $\beta_0$. In more complex, hierarchical models, parameter redundancy is not always intuitive and can be solved by increasing the number of parameters (Gimenez et al., 2004; Cole, 2019), but can be checked using various diagnostics. One simple diagnostic is to check for parameter correlations.
+Parameter redundancy refers to the idea that multiple parameters contribute to the model in the same way. An intuitive case is $y \sim \beta_1 + \beta_2 + \alpha x$, since the model could estimate many combinations of $\beta_1$ and $\beta_2$ which minimize the log-likelihood, i.e., the sampled parameters will be correlated. To reduce redundancy, $\beta_1 + \beta_2$ can be redefined as $\beta_0$.
 
-Using the MCMC sampling framework, we can check for parameter correlations to help us identify possible redundancy in parameters using the `bayesplot` library (Gabry et al., 2019; Gabry and Mahr, 2024). If the sampled parameters are identifiable and non-redundant, we would see no correlation between parameters. For simplicity here, we only use the model case with the Laplace approximation.
+#### **Results of parameter correlation analysis**
 
-Note this is unnecessary for the AI Pcod model, since there is only one fixed effect parameter estimated in that model.
+Figure 7 shows a pairwise correlation matrix of the posterior draws for the GOA Thornyhead model (the MCMC model with the Laplace approximation), with histograms of the univariate marginal distributions on the diagonal and a scatterplot of the bivariate distributions off the diagonal. There are significant unresolved sampling problems of the log_tau_biomass parameter, shown by the non-normal and heavily skewed distribution of log_tau_biomass. The pairwise scatterplots on the off-diagonals show that the heavy left tails in log_tau_biomass are causing interactions (i.e., correlation) with almost all other parameters in the model. This diagnostic is a clear indication that there is model mis-specification that warrants further investigation.
 
-```{r param corr, eval=FALSE, message=FALSE, warning=FALSE}
-p2_mcmc_thrn <- bayesplot::mcmc_pairs(thrn_comp_log_tau[[3]],
-                      off_diag_args = list(size = 0.8, alpha = 1/5),
-                      pars = c("log_PE[1]", "log_PE[2]", "log_PE[3]",
-                               "log_q", "log_tau_biomass", "log_tau_cpue"),
-                      grid_args = list(top = "GOA Thornyhead: Pairwise correlation matrix of the posterior draws"))
-
-ggsave(plot = p2_mcmc_thrn, filename = paste0("vignettes/ex4_pairs_thrn.png"), width = 11, height = 8, units = "in", bg = "white")
-
-```
-
-The figure below shows a pairwise correlation matrix of the posterior draws for the GOA Thornyhead model (the MCMC model with the Laplace approximation), with histograms of the univariate marginal distributions on the diagonal and a scatterplot of the bivariate distributions off the diagonal. There are clear identifiability issues with the log_tau_biomass parameter, which appears to have a bimodal distributions. The pairwise scatterplots on the off-diagonals show that this bimodality in log_tau_biomass is causing interactions (i.e., correlation) with almost all other parameters in the model. This diagnostic is a clear indication that there is model mis-specification that warrants further investigation.
-
-<!-- ![](ex4_pairs_thrn.png){width="10in"} -->
 ![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_pairs_thrn.png){width="10in"}
+
+*Figure 7. Pairs plot for the GOA Thornyhead MCMC model assuming the Laplace approximation. The diagonal plots give the distribution of each fixed effect for 2500 MCMC draws. The off-diagonal elements give the parameter-by-parameter correlation, where each point gives the parameter values estimated from the same MCMC simulation.*
 
 ### 5. Is the GOA Thornyhead model really converged?
 
@@ -530,20 +525,25 @@ ggsave(paste0("vignettes/ex4_traceplots.png"), width = 11, height = 8, units = "
 
 From the traceplots for both models in the figures below, we see that the AI Pcod model MCMC chains are fully mixed and the model is converged (top panel). However, for the GOA Thornyhead model (bottom panel), we see that the estimation of additional observation error (log_tau_biomass) is causing convergence issues and the MCMC chains are not well mixed.
 
-<!-- ![](ex4_traceplots.png){width="10in"} -->
 ![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_traceplots.png){width="10in"}
 
-### Why should we care?
+*Figure 8.  MCMC traceplots for AI Pcod (top panel) and GOA Thornyhead (bottom panels). Each subpanel is an individual parameter, and the plot gives the value of the parameter (y-axis) for each simulation draw (x-axis) for each model chain (color).*
 
-The REMA model is used within the North Pacific Fishery Management Council to obtain exploitable biomass estimates for Tier 4 crab and Tier 5 groundfish and as a method to apportion Acceptable Biological Catches among management regions (Sullivan et al., 2022). So then if it's primary purpose is to smooth noisy survey biomass estimates (i.e., if we're using it as a fancy average), do we need to care about potential red flags raised during model validation? In the case of the GOA thornyhead model, for example, it appears there is an issue with the estimation of the additional observation error, pointing to potential over-parameterization of the model and/or parameter redundancy. Because terminal year predictions from the REMA model are the quantities directly used for management, and the estimation of additional observation error by definition increases the "smoothness" of model predictions, the answer is likely yes in this particular case.
+### **When should we care about failed model diagnostics?** 
+
+The REMA model is used within the NPFMC to obtain exploitable biomass estimates for Tier 4 crab and Tier 5 groundfish and as a method to apportion Acceptable Biological Catches among management regions (Sullivan et al., 2022). So then, if its primary purpose is to smooth noisy survey biomass estimates (i.e., if we are using it as a fancy average), do we need to care about potential red flags raised during model validation? 
+
+-   **Yes:** In the case of the GOA Thornyhead model, for example, it appears there is an issue with the estimation of the additional observation error, pointing to potential over-parameterization of the model and/or parameter redundancy. Because terminal year predictions from the REMA model are the quantities directly used for management, and the estimation of additional observation error by definition increases the “smoothness” of model predictions, the answer is likely yes in this particular case. 
+
+-   **Maybe not:** In a hypothetical case where the estimation of year predictions show no diagnostic concerns, but uncertainty estimations show possible diagnostic problems, model validation red flags might be less important. This is because uncertainty results from REMA are not generally used for fisheries management at the NPFMC. In other words, failed model validation criteria are primarily a concern when they impact the quantities of interest in the model (in our case, biomass predictions). Model validation, and subsequent interpretation, should be considered in light of the goal of the model, rather than as a binary pass/fail testing procedure.
 
 ### Preliminary recommendations
 
-The model validation methods presented in this vignette are tools for stock assessment scientists to evaluate existing models and guide development of future models. From this analysis, we found the MCMC diagnostics and OSA residuals to be the most useful diagnostics for the REMA model, and we recommend they are explored for existing models using multivariate configurations with multiple process errors, multi-survey versions using CPUE indices like the longline survey, and models estimating additional observation error. Additionally, we recommend these model diagnostics be used when recommending new models for management.
+The model validation methods presented in this paper, along with reproducible code available on the REMA website (<https://afsc-assessments.github.io/rema/articles/ex4_model_validation.html>), are tools for stock assessment scientists to evaluate existing models and guide development of future models. From this analysis, we found that the REMA model can recover parameters across the range of complexity relevant to NPFMC Tier 4 and Tier 5 stocks. Our analysis suggests that the MCMC diagnostics and OSA residuals to be the most useful diagnostics for the REMA model. When models fail these diagnostics, it may indicate that the model is too complex and simplifications should be considered; we have highlighted several places in this document how diagnostic features can help make choices about the most appropriate model simplifications (pool PEs, remove additional OEs, etc.) in light of REMA model assumption and trade-offs between model parameters. Our results indicate that these diagnostics are most important to explore for existing models using multivariate configurations with multiple process errors, multi-survey versions using CPUE indices like the longline survey, and models estimating additional observation error. Additionally, we recommend these model diagnostics be used when recommending new models for management.
 
 ### References
 
-Aeberhard, W.H., Flemming, J.M., Nielsen, A. 2018. Review of State-Space Models for Fisheries Science. Annual Review of Statistics and Its Application, 5(1), 215-235. https://doi.org/10.1146/annurev-statistics-031017-100427
+Aeberhard, W.H., Flemming, J.M., Nielsen, A. 2018. Review of State-Space Models for Fisheries Science. Annual Review of Statistics and Its Application, 5(1), 215-235. <https://doi.org/10.1146/annurev-statistics-031017-100427>
 
 Auger-Méthé, M., Field, C., Albertsen, C.M., Derocher, A.E., Lewis, M.A., Jonsen, I.D., Flemming, J.M. 2016. State-space models’ dirty little secrets: even simple linear Gaussian models can have estimation problems. Scientific reports, 6(1), 26677.
 
