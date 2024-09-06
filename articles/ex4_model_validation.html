@@ -65,6 +65,8 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>REMA model validation</h1>
+                        <h4 data-toc-skip class="author">Laurinne J
+Balstad, Jane Sullivan, and Cole Monnahan</h4>
             
       
       <small class="dont-index">Source: <a href="https://github.com/JaneSullivan-NOAA/rema/blob/main/vignettes/ex4_model_validation.Rmd" class="external-link"><code>vignettes/ex4_model_validation.Rmd</code></a></small>
@@ -74,42 +76,60 @@
     
     
 <div class="section level3">
-<h3 id="motivation">Motivation<a class="anchor" aria-label="anchor" href="#motivation"></a>
+<h3 id="background">Background<a class="anchor" aria-label="anchor" href="#background"></a>
 </h3>
-<ul>
-<li><p>Fisheries stock assessments are moving towards state-space
+<p>Fisheries stock assessments are moving towards state-space
 estimation, which boasts a range of benefits, including separation and
 estimation of observation and process error, a more elegant framework
 for handling missing data, a high degree of flexibility with respect to
 model architecture and inclusion of different data types, and the
-potential for improved projections and predictive skill (needs
-citations).</p></li>
-<li><p>The flexibility and relative ease of fitting state-space models
-means they can increase in complexity and dimensionality rapidly. While
-easy to fit, state-space models are often challenging to validate and
-even simple models can suffer from estimation issues (Auger‐Méthé et
-al., 2016).</p></li>
-<li><p>At the North Pacific Fishery Management Council, the “random
-effects model” (REMA) used for Tier 5 groundfish stock assessments, Tier
-4 crab stock assessments, and apportionment for many stocks, is by far
-the most common state-space model used for fishery management. Despite
-the high impact of this model, we have no standard model validation
-practices for REMA.</p></li>
-<li><p>The goals of this study are to provide several examples of common
-state-space model validation techniques applied to real life REMA models
-and to make preliminary recommendations for model validation of REMA and
-other state-space models within our management framework.</p></li>
-</ul>
+potential for improved projections and predictive skill (Aeberhard et
+al., 2018). The flexibility and relative ease of fitting state-space
+models means they can increase in complexity and dimensionality rapidly.
+While easy to fit, state-space models are often challenging to validate,
+and even simple models can suffer from estimation issues that result in
+biased inference (Auger‐Méthé et al., 2016).</p>
+<p>At the North Pacific Fishery Management Council (NPFMC), the “random
+effects model” (REMA) is by far the most common state-space model used
+for fishery management (Sullivan et al., 2022). REMA is a state-space
+random walk model that can be customized to estimate multiple process
+errors, fit to an additional abundance index, or estimate additional
+observation error. REMA is used to estimate biomass within Tier 5
+groundfish and Tier 4 crab stock assessments and to apportion Acceptable
+Biological Catches (ABCs) by management area for many stocks. Despite
+the high impact of this model within the North Pacific fishery
+management process, we have no standard model validation practices for
+REMA.</p>
+<p><strong>Our goals:</strong></p>
+<ol style="list-style-type: decimal">
+<li><p>Apply established state-space model validation techniques to real
+life REMA examples.</p></li>
+<li><p>Create a REMA model validation guide with clear descriptions of
+each method and motivation for its use, an explanation of how to
+interpret the model validation results, and reproducible code that will
+run for all operational REMA models at the NPFMC.</p></li>
+<li><p>Provide preliminary recommendations for REMA users and reviewers
+on which model validation methods are most relevant and informative for
+REMA.</p></li>
+</ol>
+<p>A living version of this document is available on the REMA website:
+<a href="https://afsc-assessments.github.io/rema/articles/ex4_model_validation.html" class="uri">https://afsc-assessments.github.io/rema/articles/ex4_model_validation.html</a>.
+This website is code-enhanced with reproducible code to support model
+validation for all operational REMA models at the NPFMC.</p>
+<p>Interested but otherwise busy readers are encouraged to skip to the
+“When should we care about failed model diagnostics?” and
+“Recommendations” sections. Table 1 and Figures 6-8 show examples of a
+REMA model failing model validation criteria.</p>
 </div>
 <div class="section level3">
 <h3 id="a-testing-framework-for-rema-model-validation">A testing framework for REMA model validation<a class="anchor" aria-label="anchor" href="#a-testing-framework-for-rema-model-validation"></a>
 </h3>
-<p>In this vignette, we will be testing that (1) REMA is working as
+<p>In this paper, we will be testing that (1) REMA is working as
 expected (i.e., code has been implemented correctly and parameters are
 estimated without bias), and (2) that the assumptions made when
 parameterizing and estimating REMA are valid, including assumptions
-related to random effects and error structure. We use two example stocks
-with varying levels of complexity:</p>
+related to random effects and error structure. We use two example
+stocks:</p>
 <ul>
 <li><p>Aleutian Islands Pacific cod (AI Pcod; Spies et al., 2023): a
 simple, univariate case, which fits to a single time series of the AI
@@ -120,36 +140,43 @@ estimates multiple process errors, a scaling parameter for the longline
 survey, and two additional observation errors for the GOA bottom trawl
 and longline surveys</p></li>
 </ul>
-<p>Testing REMA across this range of complexity helps ensure that model
-and model assumptions are valid in a variety of realistic,
-management-relevant cases.</p>
+<p>Both models appear to converge per standard REMA and TMB diagnostics
+(small maximum gradient, invertible Hessian), and fit the data
+reasonably, with model fits shown in Figure 1. These stocks span the
+levels of complexity of NPFMC REMA models; testing REMA across this
+range of complexity helps ensure that model and model assumptions are
+valid in a variety of realistic, management-relevant cases.</p>
 <p>It is important to note that model validation does not mean the model
 is “more right” or “more correct.” Model validation does not help an
-analyst with model selection, except to identify models which are not
-functioning properly, nor does it ensure that the model makes “better”
+analyst with model selection (except to identify models that might not
+function properly), nor does it ensure that the model makes “better”
 predictions. Rather, model validation is a way to ensure that the model
 is operating as expected, without introducing bias or violating
 statistical assumptions upon which the model is based (Auger‐Méthé et
-al., 2016; Auger‐Méthé et al., 2021).</p>
-<p>The key questions we aim to answer are:</p>
-<ul>
-<li>Does the model perform as expected, or does it introduce bias? Using
-a simulation self-check, we will test if the model is coded correctly
-and is able to recover known parameters.</li>
-<li>Is it plausible that our data could have been generated by the
+al., 2016; Auger‐Méthé et al., 2021), and that the data reasonably could
+have come from the model (Thygesen et al., 2017).</p>
+<p>The key questions we aim to answer with model validation include the
+following:</p>
+<ol style="list-style-type: decimal">
+<li><p>Does the model perform as expected, or does it introduce bias?
+Using a simulation self-check, we will test if the model is coded
+correctly and is able to recover known parameters.</p></li>
+<li><p>Is it plausible that our data could have been generated by the
 model? Using one-step ahead (OSA) residuals, the appropriate residual
 type for state-space models, we test the model assumptions and look for
-trends in residuals that may reveal characteristics or dynamics of the
-data that aren’t adequately captured by the model.</li>
-<li>Are the normality assumptions made when estimating random effects
-via the Laplace approximation valid? By comparing a non-Laplace
-approximation and a Laplace approximation of the model via MCMC, we test
-if the distribution of the fixed effects parameters’ posteriors are
-normal or normal-like.</li>
-<li>Are the parameters unique and non-redundant? Checking the
+trends in residuals that reveal characteristics or dynamics of the data
+that aren’t adequately captured by the model.</p></li>
+<li><p>Are the normality assumptions made when estimating random effects
+via the Laplace approximation accurate? By comparing the posterior
+distribution of fixed effects with and without the Laplace
+approximation, we test whether the distribution of the random effects
+are normal and thus the accuracy of the Laplace approximation. This
+allows us to test the accuracy of the fixed effects estimates with
+uncertainties.</p></li>
+<li><p>Are the parameters unique and non-redundant? Checking the
 correlation between parameters helps us identify if parameters are
-redundant with each other.</li>
-</ul>
+redundant with each other.</p></li>
+</ol>
 </div>
 <div class="section level3">
 <h3 id="prepare-data-for-each-stock-here">Prepare data for each stock here<a class="anchor" aria-label="anchor" href="#prepare-data-for-each-stock-here"></a>
@@ -162,7 +189,10 @@ over time (six fixed effects parameters: three process errors, one
 scaling parameter, additional observation error for the biomass survey,
 and additional observation error for the longline survey).</p>
 <p>In the code below, we show how to specify and fit these models within
-the <code>rema</code> framework and plot fits to the data.</p>
+the <code>rema</code> framework and plot fits to the data. Figure 1
+shows the fits to the data for AI Pcod and GOA Thornyhead. In
+particular, the GOA Thornyhead fits show a trade off between the biomass
+and longline survey data.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">415</span><span class="op">)</span> <span class="co"># for reproducibility, use a seed</span></span>
@@ -240,33 +270,35 @@ the <code>rema</code> framework and plot fits to the data.</p>
 <span><span class="va">p3</span></span>
 <span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p2</span>, <span class="va">p3</span>, rel_heights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.7</span>, <span class="fl">0.3</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"vignettes/ex4_thrn_fits.png"</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">11</span>, height <span class="op">=</span> <span class="fl">10</span>, units <span class="op">=</span> <span class="st">"in"</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span></code></pre></div>
-<p>The figures below show fits the data for AI Pcod and GOA Thornyhead.
-In particular, the GOA Thornyhead fits show a trade off between the
-biomass and longline survey data. <img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_fits.png" style="width:10in"></p>
+<p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_fits.png" style="width:10in"></p>
+<p><em>Figure 1.</em> <em>Fits to the AI Pcod (top panel; gold) and GOA
+Thornyhead (bottom panels; teal) models.</em></p>
 </div>
 <div class="section level3">
 <h3 id="simulation-self-test-can-we-recover-parameters-without-bias">1. Simulation self-test: Can we recover parameters without
 bias?<a class="anchor" aria-label="anchor" href="#simulation-self-test-can-we-recover-parameters-without-bias"></a>
 </h3>
-<p>Simulation testing is an important step to ensure the model has been
-properly coded and performs consistently without introducing bias
-(Auger‐Méthé et al., 2021; Gimenez et al., 2004). First, we use the REMA
-model to estimate parameters (e.g., process error variance) from the
-real data in the AI Pcod and GOA Thornyhead case studies. Next, we use
-the estimated parameters as “true” values to simulate new data
-(simulated observations and states) using the REMA equations. For AI
-Pcod each simulated data set is a biomass trajectory, and for GOA
-Thornyhead it includes biomass trajectories in nine strata and longline
-survey relative population weights (RPWs) in three strata. We use the
-REMA model to re-estimate the model parameters and calculate the
-relative error (RE; i.e., (true-estimated values)/true value*100)) for
-the parameters in each simulation replicate (N=500).</p>
+<p>Simulation testing ensures the model has been properly coded and
+performs consistently without introducing bias (Auger‐Méthé et al.,
+2021; Gimenez et al., 2004). First, we use the REMA model to estimate
+parameters (e.g., process error variance) from the real data. Next, we
+use the estimated parameters as “true values” to simulate new latent
+states (random effects) and data conditioned on the states using the
+REMA equations. We then use the REMA model to re-estimate the model
+parameters (“recovered parameters”) and calculate the relative error
+(RE; i.e., (true-estimated values)/true value*100)) for the parameters
+in each simulation replicate (N=500). The AI Pcod model is fitted to
+bottom trawl data and each simulated data set is a biomass trajectory;
+the GOA Thornyhead model is fitted to bottom trawl and longline survey
+data, and each simulation data set includes biomass trajectories in nine
+strata and longline survey relative population weights (RPWs) in three
+strata.</p>
 <p>Models fail this simulation testing when the recovered parameters are
-biased, or deviate consistently from the true values used to simulate
-data. If the recovered parameters are far from the true values or the
-span of the recovered parameters is large, this may indicate that the
-model has a coding, is non-identifiable, has redundant parameters, or is
-bias (i.e., there is some other kind of model misspecification).</p>
+biased (RE ≠ 0), or deviate consistently from the true values used to
+simulate data (span of the recovered parameters is large): this can
+indicate that the model has a coding error, is non-identifiable, has
+redundant parameters, or is biased (i.e., there is some other kind of
+model misspecification).</p>
 <p>The following function runs a simulation self-test for a REMA
 model.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
@@ -317,7 +349,7 @@ model.</p>
 <span>  <span class="kw"><a href="https://rdrr.io/r/base/function.html" class="external-link">return</a></span><span class="op">(</span><span class="va">re_est</span><span class="op">)</span></span>
 <span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>Run self-test for AI Pcod and GOA Thornyhead and examine results.</p>
+<p>Run self-test for AI Pcod and GOA Thornyhead and examine results:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="co"># run for pcod and prep data frame</span></span>
@@ -410,160 +442,147 @@ model.</p>
 <p>Only 1 out of 500 simulation replicates did not converge for the AI
 Pcod model, which suggests a high degree of model stability. There were
 11 out 500 simulation replicates for the GOA Thornyhead model that did
-not converge. In the following figures the top panel shows the
-distribution of resulting parameter estimates for the parameter
-estimates in each of the models based on the simulations, where the
-horizontal line is the median estimated value and the black dot is the
-“true” value (i.e., the parameters estimates from the real data sets).
-As demonstrated in the boxplots of the bottom panels in the figures
-below, the parameters in both models are recovered well in simulation
-testing, with low median relative error. In both models there are
-instances of long negative tails in the log standard deviation of the
-process error (log_PE), suggesting that PE was small or tended towards
-zero in some simulations. This is also the case for the extra
-observation error for the biomass survey (log_tau_biomass) in the GOA
-Thornyhead model. These outlier replicates may shed light on why some
-replicates failed to converge. Specifically, <code>nlminb</code>, the
-optimizer used by <code>rema</code>, returned a
-“<code>NA/NaN function evaluation</code>” error, which commonly means
-the optimizer got “stuck” in a parameter space that is incompatible with
-the assumptions of the model; e.g., PE wanted to be zero but couldn’t
-because PE is log-transformed. The negative log-scale values are most
-extreme for the GOA Thornyhead model, which should raise some concern of
-potential model mispecification or over-parameterization. For example,
-given the trade off between between process and observation error in
-REMA, it is possible that the estimation of additional observation error
-on the biomass survey may not be justified (a PE=0 is the same as taking
-a global mean of the biomass time series).</p>
-<!-- ![](ex4_sim_pcod.png){width="6in"} -->
-<!-- ![](https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim_pcod.png){width="6in"} -->
-<!-- ![](ex4_sim.png){width="10in"} -->
-<p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim.png" style="width:10in"></p>
+not converge. In Figure 2 the top row within each panel shows the
+distribution of resulting recovered parameter estimates in each of the
+models based on the simulations, where the horizontal line is the median
+estimated value and the black dot is the true value (i.e., the
+parameters estimates from the real data sets). </p>
+<p>As demonstrated in the boxplots of the bottom rows of Figure 2, the
+parameters in both models are recovered well in simulation testing, with
+low median relative error. In both models there are instances of long
+negative tails in the log standard deviation of the process error
+(<code>log_PE</code>; Figure 2 top row within each panel), suggesting
+that PE was small or tended towards zero in some simulations (recall
+that parameters are estimated in log space, and a very negative number
+in log space is close to zero in natural space). This is also the case
+for the extra observation error for the biomass survey
+(<code>log_tau_biomass</code>) in the GOA Thornyhead model (Figure 2,
+top row within lower panel). </p>
+<p>These outlier replicates, which occur when the optimizer used by
+<code>rema</code> (<code><a href="https://rdrr.io/r/stats/nlminb.html" class="external-link">nlminb()</a></code>) returns a
+<code>“NA/NaN function evaluation”</code> error, help shed light on why
+some replicates failed to converge. Under the hood, the optimizer is
+pushing the PE towards zero (PE=0 is the same as taking a global mean of
+the biomass time series), violating the central assumption of the REMA
+model that the biomass has an underlying trend (PE &gt; 0, and thus PE
+can be log-transformed). The negative log-scale values are most extreme
+for the GOA Thornyhead model, which should raise some concern of
+potential model misspecification or over-parameterization. For example,
+given the trade-off between process and observation error in REMA (where
+including an additional observation dampens the biomass trend estimated,
+pushing PE towards zero), it is possible that the estimation of
+additional observation error on the biomass survey
+(<code>log_tau_biomass</code>) might not be justified.</p>
+<p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_sim.png" style="width:10in"><em>Figure 2.</em> <em>Simulation self-test results
+for AI Pcod (top panels; gold) and GOA Thornyhead (bottom panels; teal).
+The upper row of each panel gives the distribution of the recovered
+parameters, with the dot giving the “true value” used to simulate the
+data. The lower row of each panel gives the relative error of the
+recovered parameters, with the zero line indicating the simulation
+returns the “true value,” the box plot line giving the median of the
+recovered parameter’s relative errors, and the whiskers and dots of the
+boxplots giving the spread of the recovered parameter’s relative
+errors.</em></p>
 </div>
 <div class="section level3">
 <h3 id="residual-analysis">2. Residual analysis<a class="anchor" aria-label="anchor" href="#residual-analysis"></a>
 </h3>
-<p>Residuals are used to test the underlying assumptions about the error
-distributions in the model. For example, in a linear regression,
-residuals should be independent, normal, and have constant variance.
-Traditional residuals (e.g., Pearson’s residuals) are inappropriate for
-state-space models like REMA, because process error variance may be
-over-estimated in cases where the model is mis-specified, thus leading
-to artificially small residuals (see Section 3 of Thygesen et al. 2017
-for an example). The appropriate residual type for validation of
-state-space models are called one-step ahead (OSA) residuals. Instead of
-comparing the observed and expected values at the same time step, OSA
-residuals use forecasted values based on all previous observations
-(i.e., they exclude the observed value at the current time step from
-prediction). In this way, OSA residuals account for non-normality and
-correlation among years. Under a correctly specified model, resultant
-OSA residuals should be independent and identically distributed (i.i.d.)
-with a standard normal distribution
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">N(0,1)</annotation></semantics></math>.</p>
+<p>Residuals are used to test the underlying assumptions about the
+structure and error distributions in the model. For example, in a linear
+regression, residuals should be independent, normal, and have constant
+variance. Traditional residuals (e.g., Pearson’s residuals) are
+inappropriate for state-space models like REMA, because the random
+effects induce correlations in the predicted data such that the
+residuals are no longer independent. Additionally, process error
+variance may be overestimated in cases where the model is mis-specified,
+thus leading to artificially small residuals (see Section 3 of Thygesen
+et al. 2017 for an example). The appropriate residual type for
+validation of state-space models are one-step ahead (OSA) residuals.
+Instead of comparing the observed and expected values at the same time
+step, OSA residuals use forecasted values based on all previous
+observations (i.e., they exclude the observed value at the current time
+step from prediction). In this way, OSA residuals account for
+non-normality and correlation in the residuals among years. </p>
+<p>Under a correctly specified model, resultant OSA residuals should be
+independent and identically distributed (i.i.d.) with a standard normal
+distribution
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">N(0,1)</annotation></semantics></math>.
+This can be tested with a normal QQ plot, where the theoretical quantile
+values of the standard normal distribution are plotted on the
+<em>x</em>-axis, and the corresponding empirical quantile values of the
+OSA residuals are plotted on the <em>y</em>-axis. If the OSA residuals
+are standard normally distributed, the points will fall on the 0/1
+reference line, and the standard deviation of normalized residuals
+(SDNR) statistic will be close to 1. If the residuals are not standard
+normally distributed (SDNR far from 1), the points will deviate from the
+reference line. In the case where the model includes multiple strata and
+surveys, OSA residuals should be normally distributed within and across
+strata and surveys, however small sample sizes (e.g., within a single
+stratum) may not have sufficient statistical power to identify model
+misfit. </p>
+<p>In addition to the normality of OSA residuals, residuals should be
+random and independent (i.e., they should not be correlated by year).
+Standard approaches such as autocorrelation function (ACF) plots or
+residual runs tests (e.g., Wald-Wolfowitz test) are inappropriate for
+many REMA applications because of missing years of data in the survey
+time series, and instead, we directly plot the residuals against the
+years of the survey time series. Visual patterns or extreme outliers
+(greater than 3 or less than -3 for N(0,1) distribution) in the
+residuals can indicate structure in the data (i.e., temporal
+correlation) that is not adequately captured by the model. </p>
 <p>Methods for calculating OSA residuals in REMA have been implemented
 in the <code><a href="../reference/get_osa_residuals.html">rema::get_osa_residuals()</a></code> using the
-<code><a href="https://rdrr.io/pkg/TMB/man/oneStepPredict.html" class="external-link">TMB::oneStepPredict()</a></code> function and the
-<code>fullGaussian</code> method. The
+<code><a href="https://rdrr.io/pkg/TMB/man/oneStepPredict.html" class="external-link">TMB::oneStepPredict()</a></code> function and the fullGaussian method
+when using lognormal error distributions. The
 <code><a href="../reference/get_osa_residuals.html">rema::get_osa_residuals()</a></code> returns tidied dataframes of
 observations, REMA model predictions, and OSA residuals for the biomass
-and CPUE survey data when appropriate, along with several diagnostic
-plots.</p>
-<p>One useful diagnostic plot provided in the output to
-<code><a href="../reference/get_osa_residuals.html">rema::get_osa_residuals()</a></code> is the normal quantile-quantile
-(QQ) plot, which can help users determine if the OSA residuals are
-likely to have come from the expected standard normal distribution. In a
-normal QQ plot, the quantile values of the standard normal distribution
-are plotted on the x-axis, and the corresponding quantile values of the
-OSA residuals are plotted on the y-axis. If the OSA residuals are
-normally distributed, the points will fall on the 0/1 reference line. If
-the residuals are not normally distributed, the points will deviate from
-the reference line. OSA residuals are plotted for the entire data set
-combined <code>$plots$qq</code> and by stratum for the biomass survey
-<code>$plots$biomass_qq</code> or CPUE survey
-<code>$plots$cpue_qq</code>. While it can be useful to check for
-residual patterns by stratum, users should be aware that small sample
-sizes may not have statistical power. In the top-left corner of the
-combined QQ plot <code>$plots$qq</code>, we provide the standard
-deviation of normalized residuals (SDNR) statistic. Given that OSA
-residuals should be
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">N(0,1)</annotation></semantics></math>
-under a correctly specified model, we should expect the SDNR to be equal
-to close to 1.</p>
-<p>In addition to the normal QQ plots, we examine visual fits of the OSA
-residuals by year in order to test for randomness or independence of the
-residuals (i.e., they should not be correlated by year). Standard
-approaches such as autocorrelation function (ACF) plots or residual runs
-tests (e.g., Wald-Wolfowitz test) are inappropriate for many REMA
-applications because of missing years of data in the survey time series.
-Patterns in the residuals may indicate structure in the data (i.e.,
-temporal correlation) that is not adequately captured by the model.
-These figures are also useful for identifying outliers. Under the
-assumed standard normal distribution, a residual is considered an
-outlier when it is greater than 3 or less than -3.</p>
-<p>The following code shows how to run an OSA residual analysis for AI
-Pcod and GOA Thornyhead REMA models.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="co"># Pcod</span></span>
-<span><span class="va">pcod_resid</span> <span class="op">&lt;-</span> <span class="fu">rema</span><span class="fu">::</span><span class="fu"><a href="../reference/get_osa_residuals.html">get_osa_residuals</a></span><span class="op">(</span><span class="va">pcod_mod</span><span class="op">)</span></span>
-<span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">pcod_resid</span><span class="op">$</span><span class="va">plots</span><span class="op">$</span><span class="va">qq</span> <span class="op">+</span></span>
-<span>                     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'OSA Residuals for AI Pcod'</span><span class="op">)</span> <span class="op">+</span></span>
-<span>                     <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">'none'</span><span class="op">)</span>,</span>
-<span>                   <span class="va">pcod_resid</span><span class="op">$</span><span class="va">plots</span><span class="op">$</span><span class="va">biomass_resids</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"vignettes/ex4_aipcod_osa.png"</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">5.5</span>, height <span class="op">=</span> <span class="fl">7</span>, units <span class="op">=</span> <span class="st">"in"</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># Thorny</span></span>
-<span><span class="va">thrn_resid</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/get_osa_residuals.html">get_osa_residuals</a></span><span class="op">(</span><span class="va">thrn_mod</span><span class="op">)</span></span>
-<span><span class="va">p1</span> <span class="op">&lt;-</span><span class="va">thrn_resid</span><span class="op">$</span><span class="va">plots</span><span class="op">$</span><span class="va">qq</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'OSA Residual QQ Plots for GOA Thornyhead'</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">'none'</span><span class="op">)</span></span>
-<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="va">thrn_resid</span><span class="op">$</span><span class="va">plots</span><span class="op">$</span><span class="va">biomass_qq</span> <span class="op">+</span> <span class="co"># biomass data</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'By Biomass Survey Strata'</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">'none'</span><span class="op">)</span></span>
-<span><span class="va">p3</span> <span class="op">&lt;-</span> <span class="va">thrn_resid</span><span class="op">$</span><span class="va">plots</span><span class="op">$</span><span class="va">cpue_qq</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'By Longline Survey Strata'</span><span class="op">)</span> <span class="op">+</span> <span class="co"># rpw data</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>legend.position <span class="op">=</span> <span class="st">'none'</span><span class="op">)</span></span>
-<span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, <span class="va">p3</span>, ncol <span class="op">=</span> <span class="fl">1</span>, rel_heights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>,<span class="fl">2</span>,<span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"vignettes/ex4_thrn_osaqq.png"</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">7.5</span>, height <span class="op">=</span> <span class="fl">11</span>, units <span class="op">=</span> <span class="st">"in"</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span>
-<span></span>
-<span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="va">thrn_resid</span><span class="op">$</span><span class="va">plots</span><span class="op">$</span><span class="va">biomass_resids</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'OSA Residuals for GOA Thornyhead by Biomass Survey Strata'</span><span class="op">)</span></span>
-<span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="va">thrn_resid</span><span class="op">$</span><span class="va">plots</span><span class="op">$</span><span class="va">cpue_resids</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">'By Longline Survey Strata'</span><span class="op">)</span></span>
-<span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, ncol <span class="op">=</span> <span class="fl">1</span>, rel_heights <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2.5</span>,<span class="fl">1.5</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"vignettes/ex4_thrn_osa.png"</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">7.5</span>, height <span class="op">=</span> <span class="fl">8</span>, units <span class="op">=</span> <span class="st">"in"</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span></code></pre></div>
+and CPUE survey data when appropriate, along with QQ and residual-time
+series diagnostic plots. </p>
 <p><strong>Results of the residual analysis</strong></p>
-<p>The normal QQ plot plot for AI Pcod (top panel of the figure below)
-suggests slight negative skewness in the residuals (i.e., the majority
-of the points fall below the 0/1 line), though the small sample size
-makes interpretation challenging. The SDNR is 0.99 (a perfect model
-would have an SDNR=1.00), which means assumptions are likely not
-violated for the residuals. The plot of OSA residuals by year (bottom
-panel) shows no patterns in the residuals, suggesting they are
-independent. There is no evidence of outliers that warrant further
-inspection.</p>
-<!-- ![](ex4_aipcod_osa.png){width="6in"} -->
-<p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_aipcod_osa.png" style="width:6in"></p>
-<p>The combined normal QQ plot for GOA Thornyhead OSA residuals (top
-panel of the figure below) suggests they follow a normal distribution
-(the points fall along the 0/1 line), though there is evidence of slight
-positive, or right skewness (the majority of the points fall above the
-0/1 line). The SDNR is exactly 1, indicating the variance assumptions
-are likely met for the residuals. The QQ plots for the biomass by strata
-(middle panels) highlight where some of the positive skewness may be
-coming from (e.g., EGOA 701-1000m, WGOA 0-500 m); however, small sample
-sizes by stratum make interpretation of these QQ plots difficult The QQ
-plots for the CPUE by strata are mostly normal, though there some
-evidence of light tails in the WGOA stratum (bottom panel).</p>
-<!-- ![](ex4_thrn_osaqq.png){width="10in"} -->
-<p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_thrn_osaqq.png" style="width:10in"></p>
+<p>The normal QQ plot for AI Pcod (Figure 3, top panel) suggests slight
+negative skewness in the residuals (i.e., the majority of the points
+fall below the 0/1 line), though the small sample size makes
+interpretation challenging. The SDNR is 0.99 (recall a perfect model
+would have an SDNR=1.00), indicating  assumptions are likely met for the
+residuals. The plot of OSA residuals by year (Figure 3, bottom panel)
+shows no obvious patterns in the residuals, suggesting they are
+independent; there is no evidence of outliers in the residuals that
+warrant further inspection.</p>
+<p>The combined normal QQ plot for GOA Thornyhead OSA residuals (Figure
+4, top panel) suggests they follow a normal distribution (the points
+fall along the 0/1 line), though there is evidence of slight positive,
+or right skewness (the majority of the points fall above the 0/1 line).
+The SDNR is approximately 1, indicating the variance assumptions are
+likely met for the residuals. The QQ plots for the biomass by strata
+(Figure 4, middle panels) highlight where some of the positive skewness
+may be coming from (e.g., EGOA 701-1000m, WGOA 0-500 m); however, small
+sample sizes by stratum make interpretation of these QQ plots difficult.
+The QQ plots for the CPUE by strata (Figure 4, bottom panel) are mostly
+normal, though there is some evidence of light tails in the WGOA
+stratum.</p>
 <p>The plot of OSA residuals by year for the GOA Thornyhead OSA
-residuals by biomass strata (top panels of the figure below) show no
-patterns in the residuals, suggesting they are independent. However,
-there are runs in the residuals for the CPUE strata (bottom panels of
-the figure below), especially in the CGOA and WGOA, which may be
-indicative of model misspecification or misfit. There is no evidence of
-outliers.</p>
-<!-- ![](ex4_thrn_osa.png){width="10in"} -->
-<p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_thrn_osa.png" style="width:10in"></p>
+residuals by biomass strata (Figure 5, top panels) show no patterns in
+the residuals, suggesting they are independent. However, there are runs
+in the residuals for the CPUE strata (Figure 5, bottom panels),
+especially in the CGOA and WGOA, which might indicate model
+misspecification or misfit. There is no evidence of outliers.</p>
+<p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_aipcod_osa.png" style="width:5in"><em>Figure 3. One-step ahead (OSA) residual plots
+for AI Pcod. The top panel gives the QQ plot, comparing the normal
+distribution quantiles (x-axis) to the OSA residual distribution
+quantiles (y-axis). The diagonal line is the 0-1 line, where the two
+quantiles are equal, and the SDNR statistic is given in the upper left
+of the plot. The bottom panel gives the residuals (y-axis) plotted by
+year (x-axis) which is used to check for independence.</em></p>
+<p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_thrn_osaqq.png" style="width:10in"><em>Figure 4.</em> <em>One-step ahead (OSA) QQ
+plots across (top panel) and within strata (middle panel, bottom trawl
+survey strata; and bottom panel, longline survey strata) for GOA
+Thornyhead. In both panels, the colors correspond to bottom trawl survey
+strata. The SDNR statistic is given for the across strata QQ plot; the
+within strata plots are useful to check for extreme skew but lack
+statistical power.</em></p>
+<p><em><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_thrn_osa.png" style="width:10in"> Figure 5. One-step ahead (OSA) residual plots for
+GOA Thornyhead. The residuals (y-axis) for each annual time step (random
+effect; x-axis) for each survey stratum.</em></p>
 </div>
 <div class="section level3">
 <h3 id="laplace-approximation-are-the-model-assumptions-related-to-random-effects-estimation-reasonable">3. Laplace approximation: Are the model assumptions related to
@@ -585,14 +604,20 @@ chain Monte Carlo (MCMC) sampling in the <code>tmbstan</code> library,
 comparing the distributions of the fixed effects parameters from
 MCMC-sampled models with and without the Laplace approximation (Monnahan
 and Kristensen, 2018). To do so, we compare the distributions using QQ
-plots between the two model cases. The Laplace approximation is a
-reasonable assumption if the sampling quantiles for the two models (with
+plots between the two model cases. The Laplace approximation is
+reasonably accurate if the sampling quantiles for the two models (with
 and without the Laplace approximation) are similar, i.e., they fall on
 the 1:1 line. This can also help us identify bias introduced by the
-Laplace approximation, for example, if the median (50%) is different
-when using the Laplace approximation.</p>
+Laplace approximation, for example, if the fixed effects estimates and
+their associated estimates of uncertainty differ between the base model
+(run with marginal maximum likelihood estimation using the Laplace
+approximation) and the MCMC versions with and without the Laplace
+approximation. MCMC models were run with 1000 iterations, assuming a
+warmup of 500. As discussed in the Results section, iterations were
+increased to 5000 with a warmup of 2500 for GOA Thornyhead in an effort
+to improve diagnostics and model convergence.</p>
 <p>The function below is used to run the two model cases:</p>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># function to (1) run models with and without laplace approximation for</span></span>
 <span><span class="co"># comparison and (2) return posterior data frames and models</span></span>
 <span><span class="co"># function input: model (e.g., AI Pcod or GOA Thornyhead), number of iterations</span></span>
@@ -602,7 +627,7 @@ when using the Laplace approximation.</p>
 <span>  <span class="co"># set up MCMC chain information</span></span>
 <span>  <span class="va">it_num</span> <span class="op">&lt;-</span> <span class="va">it_numb</span></span>
 <span>  <span class="va">chain_num</span> <span class="op">&lt;-</span> <span class="va">chain_numb</span></span>
-<span>  <span class="co"># mod_name = pcod_mod; it_num = 4000; chain_num = 4</span></span>
+<span>  <span class="co"># mod_name = pcod_mod; it_num = 1000; chain_num = 4</span></span>
 <span></span>
 <span>  <span class="co"># run model with laplace approximation</span></span>
 <span>  <span class="va">mod_la</span> <span class="op">&lt;-</span> <span class="fu">tmbstan</span><span class="op">(</span>obj <span class="op">=</span> <span class="va">mod_name</span>, chains <span class="op">=</span> <span class="va">chain_num</span>, init <span class="op">=</span> <span class="va">mod_name</span><span class="op">$</span><span class="va">par</span>, laplace <span class="op">=</span> <span class="cn">TRUE</span>, iter <span class="op">=</span> <span class="va">it_num</span><span class="op">)</span></span>
@@ -643,12 +668,13 @@ when using the Laplace approximation.</p>
 <span><span class="op">}</span></span>
 <span></span>
 <span><span class="co"># run models</span></span>
-<span><span class="va">pcod_comp</span> <span class="op">&lt;-</span> <span class="fu">mcmc_comp</span><span class="op">(</span>mod_name <span class="op">=</span> <span class="va">pcod_mod</span>, it_numb <span class="op">=</span> <span class="fl">5000</span>, chain_numb <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="va">pcod_comp</span> <span class="op">&lt;-</span> <span class="fu">mcmc_comp</span><span class="op">(</span>mod_name <span class="op">=</span> <span class="va">pcod_mod</span>, it_numb <span class="op">=</span> <span class="fl">1000</span>, chain_numb <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="va">thrn_comp_log_tau</span> <span class="op">&lt;-</span> <span class="fu">mcmc_comp</span><span class="op">(</span>mod_name <span class="op">=</span> <span class="va">thrn_mod</span>, it_numb <span class="op">=</span> <span class="fl">5000</span>, chain_numb <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> </span></code></pre></div>
 <p>The following code uses the output from <code>mcmc_comp()</code> to
 make a QQ plot to compare the posterior distributions of the parameters
-between the MCMC models with and without the Laplace approximation:</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+and parameter estimates between the MCMC models with and without the
+Laplace approximation:</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># clean up data frame names by renaming things</span></span>
 <span><span class="va">pcod_qq</span> <span class="op">&lt;-</span> <span class="va">pcod_comp</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
 <span><span class="va">pcod_qq</span><span class="op">$</span><span class="va">par_name</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"log_PE1"</span><span class="op">)</span>; <span class="va">pcod_qq</span><span class="op">$</span><span class="va">sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="st">"AI Pcod"</span><span class="op">)</span></span>
@@ -678,25 +704,80 @@ between the MCMC models with and without the Laplace approximation:</p>
 <span><span class="va">p1</span> <span class="op">&lt;-</span> <span class="fu">plot_laplace_mcmc</span><span class="op">(</span><span class="va">pcod_qq</span>, <span class="st">"AI Pcod"</span><span class="op">)</span></span>
 <span><span class="va">p2</span> <span class="op">&lt;-</span> <span class="fu">plot_laplace_mcmc</span><span class="op">(</span><span class="va">thrn_qq</span>, <span class="st">"GOA Thornyhead"</span><span class="op">)</span></span>
 <span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1</span>, <span class="va">p2</span>, rel_widths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.4</span>,<span class="fl">0.6</span><span class="op">)</span>, ncol <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"vignettes/ex4_mcmc_qq.png"</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">11</span>, height <span class="op">=</span> <span class="fl">7</span>, units <span class="op">=</span> <span class="st">"in"</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"vignettes/ex4_mcmc_qq.png"</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">11</span>, height <span class="op">=</span> <span class="fl">7</span>, units <span class="op">=</span> <span class="st">"in"</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># parameter summary table - compare the marginal max likelihood estimates (MMLE)</span></span>
+<span><span class="co"># with the mcmc estimates. Rhat is the potential scale reduction factor on split</span></span>
+<span><span class="co"># chains (at convergence, Rhat=1)</span></span>
+<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">pcod_comp</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">$</span><span class="va">summary</span><span class="op">[</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>,<span class="fl">4</span>,<span class="fl">8</span>,<span class="fl">10</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="va">psum</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Stock <span class="op">=</span> <span class="st">'AI Pcod'</span>, Model <span class="op">=</span> <span class="st">'MCMC_Laplace'</span>, FixedEffect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/row.names.html" class="external-link">row.names</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span>, <span class="va">m</span>, row.names <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span></span>
+<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">pcod_comp</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">$</span><span class="va">summary</span><span class="op">[</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>,<span class="fl">4</span>,<span class="fl">8</span>,<span class="fl">10</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="va">psum</span> <span class="op">&lt;-</span> <span class="va">psum</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Stock <span class="op">=</span> <span class="st">'AI Pcod'</span>, Model <span class="op">=</span> <span class="st">'MCMC_withoutLaplace'</span>, FixedEffect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/row.names.html" class="external-link">row.names</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span>, <span class="va">m</span>, row.names <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">thrn_comp_log_tau</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">$</span><span class="va">summary</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>,<span class="fl">4</span>,<span class="fl">8</span>,<span class="fl">10</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="va">psum</span> <span class="op">&lt;-</span> <span class="va">psum</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Stock <span class="op">=</span> <span class="st">'GOA Thornyhead'</span>, Model <span class="op">=</span> <span class="st">'MCMC_Laplace'</span>, FixedEffect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/row.names.html" class="external-link">row.names</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span>, <span class="va">m</span>, row.names <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">thrn_comp_log_tau</span><span class="op">[[</span><span class="fl">4</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">$</span><span class="va">summary</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">6</span>,<span class="fl">4</span>,<span class="fl">8</span>,<span class="fl">10</span><span class="op">)</span>, drop <span class="op">=</span> <span class="cn">FALSE</span><span class="op">]</span></span>
+<span><span class="va">psum</span> <span class="op">&lt;-</span> <span class="va">psum</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Stock <span class="op">=</span> <span class="st">'GOA Thornyhead'</span>, Model <span class="op">=</span> <span class="st">'MCMC_withoutLaplace'</span>, FixedEffect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/row.names.html" class="external-link">row.names</a></span><span class="op">(</span><span class="va">m</span><span class="op">)</span>, <span class="va">m</span>, row.names <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">pars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">pcod_mod</span><span class="op">$</span><span class="va">sdrep</span>, <span class="st">"Est"</span><span class="op">)</span><span class="op">$</span><span class="va">log_PE</span></span>
+<span><span class="va">sd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">pcod_mod</span><span class="op">$</span><span class="va">sdrep</span>, <span class="st">"Std"</span><span class="op">)</span><span class="op">$</span><span class="va">log_PE</span></span>
+<span><span class="va">psum</span> <span class="op">&lt;-</span> <span class="va">psum</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Stock <span class="op">=</span> <span class="st">'AI Pcod'</span>, Model <span class="op">=</span> <span class="st">'Base_MMLE_Laplace'</span>, FixedEffect <span class="op">=</span> <span class="st">"log_PE"</span>,</span>
+<span>                                      X50. <span class="op">=</span> <span class="va">pars</span>, X2.5. <span class="op">=</span> <span class="va">pars</span><span class="op">-</span><span class="fl">1.96</span><span class="op">*</span><span class="va">sd</span>, X97.5. <span class="op">=</span> <span class="va">pars</span><span class="op">+</span><span class="fl">1.96</span><span class="op">*</span><span class="va">sd</span>, Rhat <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">pars</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">thrn_mod</span><span class="op">$</span><span class="va">sdrep</span>, <span class="st">"Est"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">pars</span> <span class="op">&lt;-</span> <span class="va">pars</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pars</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"log_PE|log_q|log_tau"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pars</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">sd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unlist.html" class="external-link">unlist</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">thrn_mod</span><span class="op">$</span><span class="va">sdrep</span>, <span class="st">"Std"</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">sd</span> <span class="op">&lt;-</span> <span class="va">sd</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sd</span><span class="op">)</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/grep.html" class="external-link">grepl</a></span><span class="op">(</span><span class="st">"log_PE|log_q|log_tau"</span>, <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">sd</span><span class="op">)</span><span class="op">)</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">psum</span> <span class="op">&lt;-</span> <span class="va">psum</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/bind_rows.html" class="external-link">bind_rows</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>Stock <span class="op">=</span> <span class="st">'GOA Thornyhead'</span>, Model <span class="op">=</span> <span class="st">'Base_MMLE_Laplace'</span>, FixedEffect <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/colnames.html" class="external-link">rownames</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/summary.html" class="external-link">summary</a></span><span class="op">(</span><span class="va">thrn_comp_log_tau</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">$</span><span class="va">summary</span><span class="op">[</span><span class="fl">1</span><span class="op">:</span><span class="fl">6</span>,,drop<span class="op">=</span><span class="cn">FALSE</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>                                      X50. <span class="op">=</span> <span class="va">pars</span>, sd <span class="op">=</span> <span class="va">sd</span>, row.names <span class="op">=</span> <span class="cn">NULL</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>                             <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>X2.5. <span class="op">=</span> <span class="va">X50.</span><span class="op">-</span><span class="fl">1.96</span><span class="op">*</span><span class="va">sd</span>,</span>
+<span>                                    X97.5. <span class="op">=</span> <span class="va">X50.</span><span class="op">+</span><span class="fl">1.96</span><span class="op">*</span><span class="va">sd</span>,</span>
+<span>                                    Rhat <span class="op">=</span> <span class="cn">NA</span><span class="op">)</span> <span class="op"><a href="../reference/pipe.html">%&gt;%</a></span></span>
+<span>                             <span class="fu"><a href="https://dplyr.tidyverse.org/reference/select.html" class="external-link">select</a></span><span class="op">(</span><span class="op">-</span><span class="va">sd</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co"># write.csv(psum, 'vignettes/ex4_param_table.csv')</span></span></code></pre></div>
 <p><strong>Results for testing the validity of the Laplace
 approximation</strong></p>
-<p>The compared quantiles from full MCMC testing (x-axis) and the
-Laplace approximation (y-axis) are given with the black points in the
-figure below. The gray line is the 1:1 line. Points that fall on the
-gray line indicate that the quantile value is the same between the two
-cases.</p>
-<p>For the simpler AI Pcod model (left panel), the Laplace approximation
-and full MCMC testing show a similar distribution, indicating that the
-Laplace approximation is reasonable.</p>
-<p>For the more complex GOA Thornyhead model (right panels), the
-log_tau_biomass parameter shows significant deviations between the two
-model cases. Moreover, there are significant unresolved sampling
-problems of the log_tau_biomass parameter in both cases, indicating that
-the Laplace approximation might be inappropriate and that further
-investigation into model structure might be necessary.</p>
-<!-- ![](ex4_mcmc_qq.png){width="10in"} -->
+<p>Figure 6 gives the compared quantiles from full MCMC testing (x-axis)
+and the Laplace approximation (y-axis) for AI Pcod and GOA Thornyhead
+models.</p>
+<p>For the simpler AI Pcod model (Figure 6, left panel), the Laplace
+approximation and full MCMC testing show a similar distribution,
+indicating that the Laplace approximation is reasonable. Additionally
+the estimates of fixed effects are nearly identical between the base
+model and MCMC models with and without the Laplace approximation (Table
+1).</p>
+<p>For the more complex GOA Thornyhead model, the preliminary model
+results based on 1000 iterations exhibited poor diagnostics for all
+process error parameters and the additional observation error for the
+biomass survey (<code>log_tau_biomass</code>). We increased the number
+of MCMC iterations to 5000 in an effort to improve convergence
+diagnostics; however, the log_tau_biomass parameter continued to show
+significant deviations between the models with and without the Laplace
+approximation (Figure 6, right panels). A comparison of the fixed
+effects estimates between the base models show large differences in the
+parameter estimates and their associated estimates of uncertainty (Table
+1). This indicates that the Laplace approximation is likely inaccurate,
+and that further investigation into model structure might be
+necessary.</p>
+<p><em>Table 1. AI Pcod and GOA Thornyhead fixed effect estimates with
+95% confidence or credible intervals for maximum likelihood or MCMC
+models, respectively (CI). Fixed effects estimates are compared between
+the base model run with marginal maximum likelihood estimation assuming
+the Laplace approximation (“Base_MMLE_Laplace”) and MCMC models with and
+without the Laplace approximation (“MCMC_Laplace” and
+“MCMC_withoutLaplace”, respectively). The Rhat statistic is provided for
+MCMC models and is a convergence metric (convergence = Rhat = 1).
+Nonconverged parameters are highlighted in bold. The parameter estimate
+for the MCMC models is the median of the posterior samples.</em></p>
+<p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_param_table.PNG" style="width:6in"></p>
 <p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_mcmc_qq.png" style="width:10in"></p>
+<p><em>Figure 6. Results from Laplace approximation testing. We compare
+the results of running a model without assuming normality of random
+effects (MCMC, x-axis) and running a model assuming normality of random
+effects (Laplace approximation, y-axis), where the quantiles of each are
+plotted against each other for each fixed effect in the model. The gray
+line is the 1:1 line; points that fall on the gray line indicate that
+the quantile value is the same between the two cases. The top panel
+gives the plot for the AI Pcod model (one fixed effect), and the bottom
+panels give the plots for the GOA Thornyhead model (six fixed
+effects).</em></p>
 </div>
 <div class="section level3">
 <h3 id="parameter-correlation-are-the-model-parameters-identifiable-and-non-redundant">4. Parameter correlation: Are the model parameters identifiable and
@@ -713,41 +794,30 @@ which minimize the log-likelihood, i.e., the sampled parameters will be
 correlated. To reduce redundancy,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>β</mi><mn>1</mn></msub><mo>+</mo><msub><mi>β</mi><mn>2</mn></msub></mrow><annotation encoding="application/x-tex">\beta_1 + \beta_2</annotation></semantics></math>
 can be redefined as
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math>.
-In more complex, hierarchical models, parameter redundancy is not always
-intuitive and can be solved by increasing the number of parameters
-(Gimenez et al., 2004; Cole, 2019), but can be checked using various
-diagnostics. One simple diagnostic is to check for parameter
-correlations.</p>
-<p>Using the MCMC sampling framework, we can check for parameter
-correlations to help us identify possible redundancy in parameters using
-the <code>bayesplot</code> library (Gabry et al., 2019; Gabry and Mahr,
-2024). If the sampled parameters are identifiable and non-redundant, we
-would see no correlation between parameters. For simplicity here, we
-only use the model case with the Laplace approximation.</p>
-<p>Note this is unnecessary for the AI Pcod model, since there is only
-one fixed effect parameter estimated in that model.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">p2_mcmc_thrn</span> <span class="op">&lt;-</span> <span class="fu">bayesplot</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/bayesplot/reference/MCMC-scatterplots.html" class="external-link">mcmc_pairs</a></span><span class="op">(</span><span class="va">thrn_comp_log_tau</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>,</span>
-<span>                      off_diag_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>size <span class="op">=</span> <span class="fl">0.8</span>, alpha <span class="op">=</span> <span class="fl">1</span><span class="op">/</span><span class="fl">5</span><span class="op">)</span>,</span>
-<span>                      pars <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"log_PE[1]"</span>, <span class="st">"log_PE[2]"</span>, <span class="st">"log_PE[3]"</span>,</span>
-<span>                               <span class="st">"log_q"</span>, <span class="st">"log_tau_biomass"</span>, <span class="st">"log_tau_cpue"</span><span class="op">)</span>,</span>
-<span>                      grid_args <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>top <span class="op">=</span> <span class="st">"GOA Thornyhead: Pairwise correlation matrix of the posterior draws"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggsave.html" class="external-link">ggsave</a></span><span class="op">(</span>plot <span class="op">=</span> <span class="va">p2_mcmc_thrn</span>, filename <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="st">"vignettes/ex4_pairs_thrn.png"</span><span class="op">)</span>, width <span class="op">=</span> <span class="fl">11</span>, height <span class="op">=</span> <span class="fl">8</span>, units <span class="op">=</span> <span class="st">"in"</span>, bg <span class="op">=</span> <span class="st">"white"</span><span class="op">)</span></span></code></pre></div>
-<p>The figure below shows a pairwise correlation matrix of the posterior
-draws for the GOA Thornyhead model (the MCMC model with the Laplace
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>β</mi><mn>0</mn></msub><annotation encoding="application/x-tex">\beta_0</annotation></semantics></math>.</p>
+<div class="section level4">
+<h4 id="results-of-parameter-correlation-analysis">
+<strong>Results of parameter correlation analysis</strong><a class="anchor" aria-label="anchor" href="#results-of-parameter-correlation-analysis"></a>
+</h4>
+<p>Figure 7 shows a pairwise correlation matrix of the posterior draws
+for the GOA Thornyhead model (the MCMC model with the Laplace
 approximation), with histograms of the univariate marginal distributions
 on the diagonal and a scatterplot of the bivariate distributions off the
-diagonal. There are clear identifiability issues with the
-log_tau_biomass parameter, which appears to have a bimodal
-distributions. The pairwise scatterplots on the off-diagonals show that
-this bimodality in log_tau_biomass is causing interactions (i.e.,
-correlation) with almost all other parameters in the model. This
-diagnostic is a clear indication that there is model mis-specification
-that warrants further investigation.</p>
-<!-- ![](ex4_pairs_thrn.png){width="10in"} -->
+diagonal. There are significant unresolved sampling problems of the
+log_tau_biomass parameter, shown by the non-normal and heavily skewed
+distribution of log_tau_biomass. The pairwise scatterplots on the
+off-diagonals show that the heavy left tails in log_tau_biomass are
+causing interactions (i.e., correlation) with almost all other
+parameters in the model. This diagnostic is a clear indication that
+there is model mis-specification that warrants further
+investigation.</p>
 <p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_pairs_thrn.png" style="width:10in"></p>
+<p><em>Figure 7. Pairs plot for the GOA Thornyhead MCMC model assuming
+the Laplace approximation. The diagonal plots give the distribution of
+each fixed effect for 2500 MCMC draws. The off-diagonal elements give
+the parameter-by-parameter correlation, where each point gives the
+parameter values estimated from the same MCMC simulation.</em></p>
+</div>
 </div>
 <div class="section level3">
 <h3 id="is-the-goa-thornyhead-model-really-converged">5. Is the GOA Thornyhead model really converged?<a class="anchor" aria-label="anchor" href="#is-the-goa-thornyhead-model-really-converged"></a>
@@ -760,7 +830,7 @@ reasonable). Within the MCMC framework, we can look at the mixing of
 MCMC across multiple chains using a diagnostic called a traceplot to
 assess convergence. The following code shows how to do that within the
 <code>rstan</code> library (Stan Development Team, 2024):</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">p1_mcmc_pcod</span> <span class="op">&lt;-</span> <span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-method-traceplot.html" class="external-link">traceplot</a></span><span class="op">(</span><span class="va">pcod_comp</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span>label <span class="op">=</span> <span class="st">"Traceplots to assess mixing across Markov chains and convergence"</span>, subtitle <span class="op">=</span> <span class="st">"AI Pcod"</span><span class="op">)</span></span>
 <span><span class="va">p1_mcmc_thrn</span> <span class="op">&lt;-</span> <span class="fu">rstan</span><span class="fu">::</span><span class="fu"><a href="https://mc-stan.org/rstan/reference/stanfit-method-traceplot.html" class="external-link">traceplot</a></span><span class="op">(</span><span class="va">thrn_comp_log_tau</span><span class="op">[[</span><span class="fl">3</span><span class="op">]</span><span class="op">]</span>, ncol <span class="op">=</span> <span class="fl">3</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span>label <span class="op">=</span> <span class="cn">NULL</span>, subtitle <span class="op">=</span> <span class="st">"GOA Thornyhead"</span><span class="op">)</span></span>
 <span><span class="fu">cowplot</span><span class="fu">::</span><span class="fu"><a href="https://wilkelab.org/cowplot/reference/plot_grid.html" class="external-link">plot_grid</a></span><span class="op">(</span><span class="va">p1_mcmc_pcod</span>, <span class="va">p1_mcmc_thrn</span>, ncol <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
@@ -771,40 +841,68 @@ the AI Pcod model MCMC chains are fully mixed and the model is converged
 see that the estimation of additional observation error
 (log_tau_biomass) is causing convergence issues and the MCMC chains are
 not well mixed.</p>
-<!-- ![](ex4_traceplots.png){width="10in"} -->
 <p><img src="https://raw.githubusercontent.com/afsc-assessments/rema/master/vignettes/ex4_traceplots.png" style="width:10in"></p>
+<p><em>Figure 8.  MCMC traceplots for AI Pcod (top panel) and GOA
+Thornyhead (bottom panels). Each subpanel is an individual parameter,
+and the plot gives the value of the parameter (y-axis) for each
+simulation draw (x-axis) for each model chain (color).</em></p>
 </div>
 <div class="section level3">
-<h3 id="why-should-we-care">Why should we care?<a class="anchor" aria-label="anchor" href="#why-should-we-care"></a>
+<h3 id="when-should-we-care-about-failed-model-diagnostics">
+<strong>When should we care about failed model
+diagnostics?</strong><a class="anchor" aria-label="anchor" href="#when-should-we-care-about-failed-model-diagnostics"></a>
 </h3>
-<p>The REMA model is used within the North Pacific Fishery Management
-Council to obtain exploitable biomass estimates for Tier 4 crab and Tier
-5 groundfish and as a method to apportion Acceptable Biological Catches
-among management regions (Sullivan et al., 2022). So then if it’s
-primary purpose is to smooth noisy survey biomass estimates (i.e., if
-we’re using it as a fancy average), do we need to care about potential
-red flags raised during model validation? In the case of the GOA
-thornyhead model, for example, it appears there is an issue with the
-estimation of the additional observation error, pointing to potential
+<p>The REMA model is used within the NPFMC to obtain exploitable biomass
+estimates for Tier 4 crab and Tier 5 groundfish and as a method to
+apportion Acceptable Biological Catches among management regions
+(Sullivan et al., 2022). So then, if its primary purpose is to smooth
+noisy survey biomass estimates (i.e., if we are using it as a fancy
+average), do we need to care about potential red flags raised during
+model validation? </p>
+<ul>
+<li><p><strong>Yes:</strong> In the case of the GOA Thornyhead model,
+for example, it appears there is an issue with the estimation of the
+additional observation error, pointing to potential
 over-parameterization of the model and/or parameter redundancy. Because
 terminal year predictions from the REMA model are the quantities
 directly used for management, and the estimation of additional
 observation error by definition increases the “smoothness” of model
-predictions, the answer is likely yes in this particular case.</p>
+predictions, the answer is likely yes in this particular case. </p></li>
+<li><p><strong>Maybe not:</strong> In a hypothetical case where the
+estimation of year predictions show no diagnostic concerns, but
+uncertainty estimations show possible diagnostic problems, model
+validation red flags might be less important. This is because
+uncertainty results from REMA are not generally used for fisheries
+management at the NPFMC. In other words, failed model validation
+criteria are primarily a concern when they impact the quantities of
+interest in the model (in our case, biomass predictions). Model
+validation, and subsequent interpretation, should be considered in light
+of the goal of the model, rather than as a binary pass/fail testing
+procedure.</p></li>
+</ul>
 </div>
 <div class="section level3">
 <h3 id="preliminary-recommendations">Preliminary recommendations<a class="anchor" aria-label="anchor" href="#preliminary-recommendations"></a>
 </h3>
-<p>The model validation methods presented in this vignette are tools for
-stock assessment scientists to evaluate existing models and guide
-development of future models. From this analysis, we found the MCMC
-diagnostics and OSA residuals to be the most useful diagnostics for the
-REMA model, and we recommend they are explored for existing models using
-multivariate configurations with multiple process errors, multi-survey
-versions using CPUE indices like the longline survey, and models
-estimating additional observation error. Additionally, we recommend
-these model diagnostics be used when recommending new models for
-management.</p>
+<p>The model validation methods presented in this paper, along with
+reproducible code available on the REMA website (<a href="https://afsc-assessments.github.io/rema/articles/ex4_model_validation.html" class="uri">https://afsc-assessments.github.io/rema/articles/ex4_model_validation.html</a>),
+are tools for stock assessment scientists to evaluate existing models
+and guide development of future models. From this analysis, we found
+that the REMA model can recover parameters across the range of
+complexity relevant to NPFMC Tier 4 and Tier 5 stocks. Our analysis
+suggests that the MCMC diagnostics and OSA residuals to be the most
+useful diagnostics for the REMA model. When models fail these
+diagnostics, it may indicate that the model is too complex and
+simplifications should be considered; we have highlighted several places
+in this document how diagnostic features can help make choices about the
+most appropriate model simplifications (pool PEs, remove additional OEs,
+etc.) in light of REMA model assumption and trade-offs between model
+parameters. Our results indicate that these diagnostics are most
+important to explore for existing models using multivariate
+configurations with multiple process errors, multi-survey versions using
+CPUE indices like the longline survey, and models estimating additional
+observation error. Additionally, we recommend these model diagnostics be
+used when recommending new models for management.</p>
 </div>
 <div class="section level3">
 <h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
