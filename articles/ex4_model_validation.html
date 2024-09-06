@@ -112,10 +112,6 @@ run for all operational REMA models at the NPFMC.</p></li>
 on which model validation methods are most relevant and informative for
 REMA.</p></li>
 </ol>
-<p>A living version of this document is available on the REMA website:
-<a href="https://afsc-assessments.github.io/rema/articles/ex4_model_validation.html" class="uri">https://afsc-assessments.github.io/rema/articles/ex4_model_validation.html</a>.
-This website is code-enhanced with reproducible code to support model
-validation for all operational REMA models at the NPFMC.</p>
 <p>Interested but otherwise busy readers are encouraged to skip to the
 “When should we care about failed model diagnostics?” and
 “Recommendations” sections. Table 1 and Figures 6-8 show examples of a
@@ -124,7 +120,7 @@ REMA model failing model validation criteria.</p>
 <div class="section level3">
 <h3 id="a-testing-framework-for-rema-model-validation">A testing framework for REMA model validation<a class="anchor" aria-label="anchor" href="#a-testing-framework-for-rema-model-validation"></a>
 </h3>
-<p>In this paper, we will be testing that (1) REMA is working as
+<p>In this analysis, we will be testing that (1) REMA is working as
 expected (i.e., code has been implemented correctly and parameters are
 estimated without bias), and (2) that the assumptions made when
 parameterizing and estimating REMA are valid, including assumptions
@@ -884,25 +880,24 @@ procedure.</p></li>
 <div class="section level3">
 <h3 id="preliminary-recommendations">Preliminary recommendations<a class="anchor" aria-label="anchor" href="#preliminary-recommendations"></a>
 </h3>
-<p>The model validation methods presented in this paper, along with
-reproducible code available on the REMA website (<a href="https://afsc-assessments.github.io/rema/articles/ex4_model_validation.html" class="uri">https://afsc-assessments.github.io/rema/articles/ex4_model_validation.html</a>),
-are tools for stock assessment scientists to evaluate existing models
-and guide development of future models. From this analysis, we found
-that the REMA model can recover parameters across the range of
-complexity relevant to NPFMC Tier 4 and Tier 5 stocks. Our analysis
-suggests that the MCMC diagnostics and OSA residuals to be the most
-useful diagnostics for the REMA model. When models fail these
-diagnostics, it may indicate that the model is too complex and
-simplifications should be considered; we have highlighted several places
-in this document how diagnostic features can help make choices about the
-most appropriate model simplifications (pool PEs, remove additional OEs,
-etc.) in light of REMA model assumption and trade-offs between model
-parameters. Our results indicate that these diagnostics are most
-important to explore for existing models using multivariate
-configurations with multiple process errors, multi-survey versions using
-CPUE indices like the longline survey, and models estimating additional
-observation error. Additionally, we recommend these model diagnostics be
-used when recommending new models for management.</p>
+<p>The model validation methods presented here are tools for stock
+assessment scientists to evaluate existing models and guide development
+of future models. From this analysis, we found that the REMA model can
+recover parameters across the range of complexity relevant to NPFMC Tier
+4 and Tier 5 stocks. Our analysis suggests that the MCMC diagnostics and
+OSA residuals to be the most useful diagnostics for the REMA model. When
+models fail these diagnostics, it may indicate that the model is too
+complex and simplifications should be considered. We have highlighted
+several places in this document how diagnostic features can help make
+choices about the most appropriate model simplifications (pool process
+errors, remove additional observation errors, etc.) in light of REMA
+model assumptions and trade-offs between model parameters. Our results
+indicate that these diagnostics are most important to explore for
+existing models using multivariate configurations with multiple process
+errors, multi-survey versions using CPUE indices like the longline
+survey, and models estimating additional observation error. While model
+validation may not be needed for all existing REMA models, we recommend
+they be used when recommending new models for management.</p>
 </div>
 <div class="section level3">
 <h3 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
