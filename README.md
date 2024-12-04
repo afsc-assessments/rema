@@ -3,7 +3,7 @@
 
 Sullivan, J., C. Monnahan, P. Hulson, J. Ianelli, J. Thorson, and A. Havron. 2022a. REMA: a consensus version of the random effects model for ABC apportionment and Tier 4/5 assessments. Plan Team Report, Joint Groundfish Plan Teams, North Pacific Fishery Management Council. 605 W 4th Ave, Suite 306 Anchorage, AK 99501. [Available through the Oct 2022 Joint GPT e-Agenda](https://meetings.npfmc.org/CommentReview/DownloadFile?p=eaa760cf-8a4e-4c05-aa98-82615da1982a.pdf&fileName=Tier%204_5%20Random%20Effects.pdf). 
 
-Living documentation for REMA model equations is available on the REMA website: [](https://afsc-assessments.github.io/rema/articles/rema_equations.html)
+Living documentation for REMA model equations is available on the REMA website: https://afsc-assessments.github.io/rema/articles/rema_equations.html
 
 ## Background
 

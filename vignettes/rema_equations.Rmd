@@ -135,7 +135,7 @@ effects implementation of ADMB, parameters defined inside the
 (Skaug and Fournier 2013). In the ADMB version of the REMA model, the
 calculation of predicted CPUE [i.e. $ln(\hat{I}_{t})=ln(q)+ln(\hat{B})$]
 occurred outside rather than inside the `SEPARABLE_FUNCTION`, and as a
-results, violated this rule and affecting the accuracy of the Laplace
+result, violated this rule and affecting the accuracy of the Laplace
 approximation.
 
 We explored this error in a [simplified
