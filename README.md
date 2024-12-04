@@ -3,6 +3,8 @@
 
 Sullivan, J., C. Monnahan, P. Hulson, J. Ianelli, J. Thorson, and A. Havron. 2022a. REMA: a consensus version of the random effects model for ABC apportionment and Tier 4/5 assessments. Plan Team Report, Joint Groundfish Plan Teams, North Pacific Fishery Management Council. 605 W 4th Ave, Suite 306 Anchorage, AK 99501. [Available through the Oct 2022 Joint GPT e-Agenda](https://meetings.npfmc.org/CommentReview/DownloadFile?p=eaa760cf-8a4e-4c05-aa98-82615da1982a.pdf&fileName=Tier%204_5%20Random%20Effects.pdf). 
 
+Living documentation for REMA model equations is available on the REMA website: [](https://afsc-assessments.github.io/rema/articles/rema_equations.html)
+
 ## Background
 
 The random effects (RE) model was developed by the North Pacific Fisheries Management Council (NPFMC) Groundfish Plan Team's Survey Averaging working group and has been used at the Alaska Fisheries Science Center (AFSC) since [2013](https://github.com/afsc-assessments/SurveyAverageRandomEffects/blob/013c9a937fa0133f594c7d66248677685ae77010/code/re.tpl) to estimate biomass in data-limited groundfish and crab stock assessments, and to apportion catch among management areas. The RE model estimates biomass as a series of random effects and the underlying state dynamics are modeled as a random walk ([Oct 2013 Joint GPT minutes](https://meetings.npfmc.org/CommentReview/DownloadFile?p=11009549-068b-40cf-903d-67f90686db60.pdf&fileName=C4%20c1%20Joint%20Plan%20Team%20Minutes.pdf)). 
@@ -39,10 +41,11 @@ list.files(rema_examples)
 # Vignettes
 library(rema)
 browseVignettes("rema")
+vignette(topic = "rema_equations") # view technical details offline
 vignette(topic = "ex1_basics")
 vignette(topic = "ex2_cpue")
 vignette(topic = "ex3_zeros")
-vignette(topic = "rema_equations") # view technical details offline
+vignette(topic = "ex4_model_validation")
 ```
 
 ## The `rema` worflow

@@ -91,10 +91,10 @@ single, shared process error variance.
 
 In situations where an auxiliary biomass or catch per unit effort (CPUE)
 survey $I_{t}$ and associated variance $\sigma_{I_{t}}$ are available,
-an additional scaling parameter $q$ can be estimated to facilitate the
+an additional scaling parameter $q$ (estimated in log-space) can be estimated to facilitate the
 inclusion of the new information into biomass predictions. The predicted
 annual CPUE survey index $\hat{I}_{t}$ is calculated as $$
-\hat{I}_{t} = q * e^{\hat{B}_{t}}
+\hat{I}_{t} = e^{q} * e^{\hat{B}_{t}}
 $$ and the CPUE survey observations has an additional measurement
 equation and likelihood component similar to the biomass survey: $$
 ln(I_{t}) = ln(\hat{I}_{t}) + \epsilon_{I}, \text{where } \epsilon_{I} \sim N(0, \sigma_{ln(I_t)}^2), 

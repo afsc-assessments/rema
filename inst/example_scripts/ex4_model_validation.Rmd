@@ -59,7 +59,7 @@ In this vignette, we will be testing that (1) the REMA model is working as expec
 
 Testing the REMA model across this range of complexity helps ensure that model and model assumptions are valid in a variety of realistic, management-relevant cases.
 
-It is important to note that model validation does not mean the model is "more right" or "more correct." Model validation does not help an analyst with model selection, except to identify models which are not functioning properly, nor does it ensure that the model makes "better" predictions. Rather, model validation is a way to ensure that the model is operating as expected, without introducing bias or violating statistical assumptions upon which the model is based, and  (Auger‐Méthé et al., 2016; Auger‐Méthé et al., 2021).
+It is important to note that model validation does not mean the model is "more right" or "more correct." Model validation does not help an analyst with model selection, except to identify models which are not functioning properly, nor does it ensure that the model makes "better" predictions. Rather, model validation is a way to ensure that the model is operating as expected, without introducing bias or violating statistical assumptions upon which the model is based, and (Auger‐Méthé et al., 2016; Auger‐Méthé et al., 2021).
 
 The key questions we aim to answer are:
 
@@ -68,7 +68,6 @@ The key questions we aim to answer are:
 -   Are the normality assumptions made when estimating random effects via the Laplace approximation valid? By comparing a non-Laplace approximation and a Laplace approximation of the model via MCMC, we test if the distribution of the fixed effects parameters' posteriors are normal or normal-like.
 -   Are the parameters unique and non-redundant? Checking the correlation between parameters helps us identify if parameters are redundant with each other.
 -   Is the model identifiable? Using a likelihood profiling approach, we will test if model parameters are identifiable, which means they have a solution (i.e., a minimum log-likelihood) and aren't highly correlated with another parameter
-
 
 ### Prepare data for each stock here
 
@@ -278,7 +277,7 @@ All the model parameters show a single, smooth curve, indicating that the parame
 
 ### 3. Laplace approximation: Are the model assumptions related to random effects estimation reasonable?
 
-The `rema` library was developed in Template Model Builder (`TMB`), which uses maximum marginal likelihood estimation with the Laplace approximation to efficiently estimate high dimensional, non-linear mixed effects models in a frequentist framework (Skaug and Fournier, 2006; Kristensen et al., 2012; Kristensen, 2018). The primary assumption in models using the Laplace approximation is that the random effects follow a normal distribution. This assumption simplifies the complex integrals that make up the likelihood function. The Laplace approximation is fast and accurate when the normality assumption is met; however, if the true distribution of the random effects is not normal, the Laplace approximation may introduce bias into the parameter estimates. 
+The `rema` library was developed in Template Model Builder (`TMB`), which uses maximum marginal likelihood estimation with the Laplace approximation to efficiently estimate high dimensional, non-linear mixed effects models in a frequentist framework (Skaug and Fournier, 2006; Kristensen et al., 2012; Kristensen, 2018). The primary assumption in models using the Laplace approximation is that the random effects follow a normal distribution. This assumption simplifies the complex integrals that make up the likelihood function. The Laplace approximation is fast and accurate when the normality assumption is met; however, if the true distribution of the random effects is not normal, the Laplace approximation may introduce bias into the parameter estimates.
 
 We can test the validity of the Laplace approximation using Markov chain Monte Carlo (MCMC) sampling, comparing the distributions of the fixed effects parameters from MCMC-sampled models with and without the Laplace approximation (Monnahan and Kristensen, 2018). To do so, we compare the distributions using QQ plots between the two model cases. The Laplace approximation is a reasonable assumption if the sampling quantiles for the two models (with and without the Laplace approximation) are similar, i.e., they fall on the 1:1 line. This can also help us identify bias introduced by the Laplace approximation, for example, if the median (50%) is different when using the Laplace approximation.
 
@@ -435,21 +434,21 @@ thrn_resid$plots$cpue_resids + ggtitle('GOA thornyheads CPUE strata')
 
 ### Why should we care?
 
-The REMA model is used within the North Pacific Fishery Management Council to obtain exploitable biomass estimates for Tier 4 crab and Tier 5 groundfish and as a method to apportion Acceptable Biological Catches among management regions. It's primary purpose is to smooth noisy survey biomass estimates. If it's just a fancy average, why should we care about potential red flags raised through during model validation? In the case of the GOA thornyhead model, for example, it appears there is an issue with the estimation of the additional observation error, pointing to potential over-parameterization of the model and/or parameter redundancy. Because terminal year predictions from the REMA model are used for management and the estimation of additional observation error increases the "smoothness" of model predictions, the model issues issues revealed for GOA Thornyhead may warrant further evaluation. 
+The REMA model is used within the North Pacific Fishery Management Council to obtain exploitable biomass estimates for Tier 4 crab and Tier 5 groundfish and as a method to apportion Acceptable Biological Catches among management regions. It's primary purpose is to smooth noisy survey biomass estimates. If it's just a fancy average, why should we care about potential red flags raised through during model validation? In the case of the GOA thornyhead model, for example, it appears there is an issue with the estimation of the additional observation error, pointing to potential over-parameterization of the model and/or parameter redundancy. Because terminal year predictions from the REMA model are used for management and the estimation of additional observation error increases the "smoothness" of model predictions, the model issues issues revealed for GOA Thornyhead may warrant further evaluation.
 
 ### Recommendations
-The model validation methods presented in this vignette are tools for stock assessment scientists to evaluate existing models and guide development of future models. From this analysis, we found the MCMC diagnostics and OSA residuals to be the most useful diagnostics for the REMA model, and we recommend they are explored for existing models using multivariate configurations with multiple process errors, multi-survey versions using CPUE indices like the longline survey, and models estimating additional observation error. Additionally, we recommend these model diagnostics be used when recommending new models for management. 
+
+The model validation methods presented in this vignette are tools for stock assessment scientists to evaluate existing models and guide development of future models. From this analysis, we found the MCMC diagnostics and OSA residuals to be the most useful diagnostics for the REMA model, and we recommend they are explored for existing models using multivariate configurations with multiple process errors, multi-survey versions using CPUE indices like the longline survey, and models estimating additional observation error. Additionally, we recommend these model diagnostics be used when recommending new models for management.
 
 ### References
 
-https://apps-afsc.fisheries.noaa.gov/Plan_Team/2023/AIpcod.pdf
+<https://apps-afsc.fisheries.noaa.gov/Plan_Team/2023/AIpcod.pdf>
 
-https://discourse.mc-stan.org/t/preservation-of-mcmc-sample-results/15252/3
+<https://discourse.mc-stan.org/t/preservation-of-mcmc-sample-results/15252/3>
 
-https://backend.orbit.dtu.dk/ws/files/163017606/Validation_EES.pdf
+<https://backend.orbit.dtu.dk/ws/files/163017606/Validation_EES.pdf>
 
-[1] Auger‐Méthé, M., Newman, K., Cole, D., Empacher, F., Gryba, R., King, A. A.,  Leos-Barajas, J. ´
-Mills Flemming, A. Nielsen, G. Petris, & Thomas, L. (2021). A guide to state–space modeling of ecological time series. Ecological Monographs, 91(4), e01470.
+[1] Auger‐Méthé, M., Newman, K., Cole, D., Empacher, F., Gryba, R., King, A. A., Leos-Barajas, J. ´ Mills Flemming, A. Nielsen, G. Petris, & Thomas, L. (2021). A guide to state–space modeling of ecological time series. Ecological Monographs, 91(4), e01470.
 
 [2] Auger-Méthé, M., Field, C., Albertsen, C.M., Derocher, A.E., Lewis, M.A., Jonsen, I.D., Flemming, J.M. 2016. State-space models’ dirty little secrets: even simple linear Gaussian models can have estimation problems. Scientific reports, 6(1), 26677.
 

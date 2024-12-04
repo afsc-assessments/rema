@@ -527,7 +527,7 @@ From the traceplots for both models in the figures below, we see that the AI Pco
 
 *Figure 8.  MCMC traceplots for AI Pcod (top panel) and GOA Thornyhead (bottom panels). Each subpanel is an individual parameter, and the plot gives the value of the parameter (y-axis) for each simulation draw (x-axis) for each model chain (color).*
 
-### **When should we care about failed model diagnostics?** 
+### **When should we care about failed model diagnostics?**
 
 The REMA model is used within the NPFMC to obtain exploitable biomass estimates for Tier 4 crab and Tier 5 groundfish and as a method to apportion Acceptable Biological Catches among management regions (Sullivan et al., 2022). So then, if its primary purpose is to smooth noisy survey biomass estimates (i.e., if we are using it as a fancy average), do we need to care about potential red flags raised during model validation? 
 
