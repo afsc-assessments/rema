@@ -31,7 +31,7 @@ file.copy(from = file.path(path = file.path(rema_path, "example_data"),
 setwd(out_path)
 
 # read in data ----
-nonsst <- read.csv('ebsshelf_orox.csv')
+nonsst <- read.csv('ebsshelf_orox_biomass.csv')
 
 # m1: zeros as NAs ----
 input1 <- prepare_rema_input(model_name = 'zeros as NAs',
@@ -42,7 +42,8 @@ tidy_rema(m1)
 m1$report()
 m1$sdrep
 m1sum <- tidy_rema(m1)
-plot_rema(m1sum)
+m1plots <- plot_rema(m1sum)
+m1plots$biomass_by_strata
 
 # m2: small constant = 0.0001, cv = 0.5 ----
 input2 <- prepare_rema_input(model_name = 'small constant = 0.0001, cv = 0.5',

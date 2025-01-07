@@ -73,14 +73,18 @@ plots <- plot_rema(tidy_rema = output,
                    biomass_ylab = 'Biomass (t)')
 plots$biomass_by_strata
 
-# (6) Experimental one-step-ahead (OSA) residuals for model validation
+# (6) One-step-ahead (OSA) residuals for model validation
 ?get_osa_residuals
-osa <- get_osa_residuals(m, options = list(method = "cdf"))
-cowplot::plot_grid(osa$plots$biomass_resids,
-                   osa$plots$biomass_qqplot,
-                   osa$plots$biomass_hist,
-                   osa$plots$biomass_fitted,
-                   ncol = 1)
+osa <- get_osa_residuals(m)
+
+# dataframe of the resulting residuals
+osa$residuals$biomass
+
+# diagnostic plots
+names(osa$plots)
+osa$plots$qq
+osa$plots$biomass_resids
+osa$plots$biomass_fitted
 
 # (7) Compare with ADMB RE model results
 compare <- compare_rema_models(rema_models = list(m),
