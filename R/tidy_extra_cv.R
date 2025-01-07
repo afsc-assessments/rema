@@ -93,7 +93,7 @@ tidy_extra_cv <- function(tidy_rema,
       dplyr::mutate(extra_cv = tidy_rema$parameter_estimates %>%
                       filter(parameter == 'extra_biomass_cv') %>%
                       pull(estimate),
-                    tot_sd_log_obs = ifelse(obs > 0, sqrt(log(obs_cv^2 + extra_cv^2 + 1)), NA),
+                    tot_sd_log_obs = ifelse(obs > 0, sqrt(log((obs_cv + extra_cv)^2 + 1)), NA),
                     tot_obs_lci = exp(log_obs - qnorm(1 - alpha_ci/2) * tot_sd_log_obs),
                     tot_obs_uci = exp(log_obs + qnorm(1 - alpha_ci/2) * tot_sd_log_obs))
   }
