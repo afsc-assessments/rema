@@ -91,9 +91,10 @@ single, shared process error variance.
 
 In situations where an auxiliary biomass or catch per unit effort (CPUE)
 survey $I_{t}$ and associated variance $\sigma_{I_{t}}$ are available,
-an additional scaling parameter $q$ (estimated in log-space) can be estimated to facilitate the
-inclusion of the new information into biomass predictions. The predicted
-annual CPUE survey index $\hat{I}_{t}$ is calculated as $$
+an additional scaling parameter $q$ (estimated in log-space) can be
+estimated to facilitate the inclusion of the new information into
+biomass predictions. The predicted annual CPUE survey index
+$\hat{I}_{t}$ is calculated as $$
 \hat{I}_{t} = e^{q} * e^{\hat{B}_{t}}
 $$ and the CPUE survey observations has an additional measurement
 equation and likelihood component similar to the biomass survey: $$
@@ -175,11 +176,11 @@ One approach to addressing this issue is to estimate additional
 observation error. This method is commonly implemented in Stock
 Synthesis, has been implemented in Alaskan crab stock assessments (Zheng
 and Siddeek 2020), and has been explored in several groundfish
-assessments as well. Using the biomass survey variance as an example,
-the extra estimated error ($\sigma_{\tau}$) is specified as:
+assessments as well. Using the biomass survey as an example, the extra
+estimated error ($\sigma_{\tau}$) is specified as:
 
 $$
-\sigma_{ln(B_t)}=\sqrt{ln((\frac{\sigma_{B_t}}{B_t})^2+{\sigma_{\tau}}^2+1)}.
+\sigma_{ln(B_t)}=\sqrt{ln((\frac{\sigma_{B_t}}{B_t}+{\sigma_{\tau}})^2+1)}.
 $$ This approach is a new method for Tier 5 stock assessments and
 apportionment methods at the AFSC. A reproducible example with GOA
 shortraker is outlined in the [Fitting to an additional CPUE
