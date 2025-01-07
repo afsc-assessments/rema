@@ -75,6 +75,8 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/JaneSullivan-NOAA/rema" class="external-link">rema</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Error in get(paste0(generic, ".", class), envir = get_method_env()) : </span></span>
+<span><span class="co">#&gt;   object 'type_sum.accel' not found</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://wilkelab.org/cowplot/" class="external-link">cowplot</a></span><span class="op">)</span> <span class="co"># install.packages('cowplot') # helpful plotting utilities</span></span>
@@ -132,20 +134,20 @@ of a scaling parameter
 <span>                            q_options <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>pointer_biomass_cpue_strata <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_rema.html">fit_rema</a></span><span class="op">(</span><span class="va">input</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Model runtime: 0.2 seconds </span></span>
+<span><span class="co">#&gt; Model runtime: 0.1 seconds </span></span>
 <span><span class="co">#&gt; stats::nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
-<span><span class="co">#&gt; Maximum gradient component: 4.12e-04 </span></span>
+<span><span class="co">#&gt; Maximum gradient component: 4.13e-04 </span></span>
 <span><span class="co">#&gt; Max gradient parameter: log_PE </span></span>
 <span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
 <span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_rema.html">tidy_rema</a></span><span class="op">(</span><span class="va">m1</span><span class="op">)</span></span>
 <span><span class="va">output</span><span class="op">$</span><span class="va">parameter_estimates</span></span>
 <span><span class="co">#&gt;           model_name           parameter  estimate    std_err       lci</span></span>
-<span><span class="co">#&gt; 1 M1: TMB status quo       process_error 0.1696964 0.03914612 0.1079729</span></span>
-<span><span class="co">#&gt; 2 M1: TMB status quo scaling_parameter_q 0.4123880 0.04474590 0.3333857</span></span>
-<span><span class="co">#&gt; 3 M1: TMB status quo scaling_parameter_q 1.2127809 0.10874662 1.0173198</span></span>
-<span><span class="co">#&gt; 4 M1: TMB status quo scaling_parameter_q 2.1164194 0.30469400 1.5960887</span></span>
+<span><span class="co">#&gt; 1 M1: TMB status quo       process_error 0.1696963 0.03914611 0.1079728</span></span>
+<span><span class="co">#&gt; 2 M1: TMB status quo scaling_parameter_q 0.4123880 0.04474591 0.3333857</span></span>
+<span><span class="co">#&gt; 3 M1: TMB status quo scaling_parameter_q 1.2127808 0.10874666 1.0173197</span></span>
+<span><span class="co">#&gt; 4 M1: TMB status quo scaling_parameter_q 2.1164193 0.30469404 1.5960886</span></span>
 <span><span class="co">#&gt;         uci</span></span>
-<span><span class="co">#&gt; 1 0.2667047</span></span>
+<span><span class="co">#&gt; 1 0.2667045</span></span>
 <span><span class="co">#&gt; 2 0.5101115</span></span>
 <span><span class="co">#&gt; 3 1.4457965</span></span>
 <span><span class="co">#&gt; 4 2.8063798</span></span>
@@ -211,7 +213,7 @@ conduct model selection.</p>
 <span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_rema.html">fit_rema</a></span><span class="op">(</span><span class="va">input2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Model runtime: 0.1 seconds </span></span>
 <span><span class="co">#&gt; stats::nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
-<span><span class="co">#&gt; Maximum gradient component: 1.58e-05 </span></span>
+<span><span class="co">#&gt; Maximum gradient component: 2.77e-04 </span></span>
 <span><span class="co">#&gt; Max gradient parameter: log_q </span></span>
 <span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
 <span><span class="va">out2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_rema.html">tidy_rema</a></span><span class="op">(</span><span class="va">m2</span><span class="op">)</span></span></code></pre></div>
@@ -304,10 +306,10 @@ model selection process and is not exhaustive).</p>
 <tr class="odd">
 <td align="left">M1: TMB status quo</td>
 <td align="left">process_error</td>
-<td align="right">0.1696964</td>
+<td align="right">0.1696963</td>
 <td align="right">0.0391461</td>
-<td align="right">0.1079729</td>
-<td align="right">0.2667047</td>
+<td align="right">0.1079728</td>
+<td align="right">0.2667045</td>
 </tr>
 <tr class="even">
 <td align="left">M1: TMB status quo</td>
@@ -320,66 +322,66 @@ model selection process and is not exhaustive).</p>
 <tr class="odd">
 <td align="left">M1: TMB status quo</td>
 <td align="left">scaling_parameter_q</td>
-<td align="right">1.2127809</td>
-<td align="right">0.1087466</td>
-<td align="right">1.0173198</td>
+<td align="right">1.2127808</td>
+<td align="right">0.1087467</td>
+<td align="right">1.0173197</td>
 <td align="right">1.4457965</td>
 </tr>
 <tr class="even">
 <td align="left">M1: TMB status quo</td>
 <td align="left">scaling_parameter_q</td>
-<td align="right">2.1164194</td>
+<td align="right">2.1164193</td>
 <td align="right">0.3046940</td>
-<td align="right">1.5960887</td>
+<td align="right">1.5960886</td>
 <td align="right">2.8063798</td>
 </tr>
 <tr class="odd">
 <td align="left">M2: TMB extra obs error</td>
 <td align="left">process_error</td>
-<td align="right">0.0811987</td>
-<td align="right">0.0414474</td>
-<td align="right">0.0298578</td>
-<td align="right">0.2208209</td>
+<td align="right">0.0808477</td>
+<td align="right">0.0400208</td>
+<td align="right">0.0306416</td>
+<td align="right">0.2133167</td>
 </tr>
 <tr class="even">
 <td align="left">M2: TMB extra obs error</td>
 <td align="left">scaling_parameter_q</td>
-<td align="right">0.4163631</td>
-<td align="right">0.0712154</td>
-<td align="right">0.2977702</td>
-<td align="right">0.5821878</td>
+<td align="right">0.4184250</td>
+<td align="right">0.0704177</td>
+<td align="right">0.3008617</td>
+<td align="right">0.5819267</td>
 </tr>
 <tr class="odd">
 <td align="left">M2: TMB extra obs error</td>
 <td align="left">scaling_parameter_q</td>
-<td align="right">1.1272648</td>
-<td align="right">0.1861890</td>
-<td align="right">0.8155188</td>
-<td align="right">1.5581810</td>
+<td align="right">1.1860894</td>
+<td align="right">0.1834338</td>
+<td align="right">0.8759422</td>
+<td align="right">1.6060513</td>
 </tr>
 <tr class="even">
 <td align="left">M2: TMB extra obs error</td>
 <td align="left">scaling_parameter_q</td>
-<td align="right">2.0421164</td>
-<td align="right">0.3874923</td>
-<td align="right">1.4078769</td>
-<td align="right">2.9620766</td>
+<td align="right">2.0383602</td>
+<td align="right">0.4008311</td>
+<td align="right">1.3864280</td>
+<td align="right">2.9968468</td>
 </tr>
 <tr class="odd">
 <td align="left">M2: TMB extra obs error</td>
 <td align="left">extra_biomass_cv</td>
-<td align="right">0.5032289</td>
-<td align="right">0.1264378</td>
-<td align="right">0.3075379</td>
-<td align="right">0.8234411</td>
+<td align="right">0.2483632</td>
+<td align="right">0.0920616</td>
+<td align="right">0.1201074</td>
+<td align="right">0.5135761</td>
 </tr>
 <tr class="even">
 <td align="left">M2: TMB extra obs error</td>
 <td align="left">extra_cpue_cv</td>
-<td align="right">0.2544343</td>
-<td align="right">0.0612432</td>
-<td align="right">0.1587408</td>
-<td align="right">0.4078147</td>
+<td align="right">0.1224046</td>
+<td align="right">0.0462574</td>
+<td align="right">0.0583611</td>
+<td align="right">0.2567270</td>
 </tr>
 </tbody>
 </table>
@@ -403,17 +405,17 @@ model selection process and is not exhaustive).</p>
 <tbody>
 <tr class="odd">
 <td align="left">M2: TMB extra obs error</td>
-<td align="right">96.36947</td>
+<td align="right">95.79626</td>
 <td align="right">6</td>
-<td align="right">204.7</td>
-<td align="right">0</td>
+<td align="right">203.6</td>
+<td align="right">0.0</td>
 </tr>
 <tr class="even">
 <td align="left">M1: TMB status quo</td>
-<td align="right">111.37320</td>
+<td align="right">111.37317</td>
 <td align="right">4</td>
 <td align="right">230.7</td>
-<td align="right">26</td>
+<td align="right">27.1</td>
 </tr>
 </tbody>
 </table>
@@ -449,9 +451,9 @@ this purpose.</p>
 <tr class="even">
 <td align="left">M2: TMB extra obs error</td>
 <td align="right">2022</td>
-<td align="right">0.4124545</td>
-<td align="right">0.5229923</td>
-<td align="right">0.0645532</td>
+<td align="right">0.4175339</td>
+<td align="right">0.5169581</td>
+<td align="right">0.0655080</td>
 </tr>
 </tbody>
 </table>

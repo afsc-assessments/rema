@@ -75,6 +75,8 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/JaneSullivan-NOAA/rema" class="external-link">rema</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; Error in get(paste0(generic, ".", class), envir = get_method_env()) : </span></span>
+<span><span class="co">#&gt;   object 'type_sum.accel' not found</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://yihui.org/knitr/" class="external-link">knitr</a></span><span class="op">)</span></span>
@@ -262,7 +264,7 @@ argument:</p>
 <span><span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_rema.html">fit_rema</a></span><span class="op">(</span><span class="va">input</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Model runtime: 0.1 seconds </span></span>
 <span><span class="co">#&gt; stats::nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
-<span><span class="co">#&gt; Maximum gradient component: 1.90e-11 </span></span>
+<span><span class="co">#&gt; Maximum gradient component: 1.92e-11 </span></span>
 <span><span class="co">#&gt; Max gradient parameter: log_PE </span></span>
 <span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span></code></pre></div>
 <ol start="4" style="list-style-type: decimal">
@@ -297,10 +299,10 @@ scale.</p>
 <tbody><tr class="odd">
 <td align="left">TMB: AI shortraker</td>
 <td align="left">process_error</td>
-<td align="right">0.1557776</td>
+<td align="right">0.1557774</td>
 <td align="right">0.1044475</td>
-<td align="right">0.0418584</td>
-<td align="right">0.5797328</td>
+<td align="right">0.0418582</td>
+<td align="right">0.5797331</td>
 </tr></tbody>
 </table>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
@@ -347,9 +349,9 @@ scale.</p>
 <td align="left">biomass_pred</td>
 <td align="right">1980</td>
 <td align="right">9.689900</td>
-<td align="right">0.3344752</td>
+<td align="right">0.3344751</td>
 <td align="right">16153.63</td>
-<td align="right">8386.182</td>
+<td align="right">8386.187</td>
 <td align="right">31115.44</td>
 <td align="right">6829.3</td>
 <td align="right">0.5531111</td>
@@ -364,10 +366,10 @@ scale.</p>
 <td align="left">biomass_pred</td>
 <td align="right">1981</td>
 <td align="right">9.768171</td>
-<td align="right">0.2704639</td>
+<td align="right">0.2704638</td>
 <td align="right">17468.78</td>
-<td align="right">10281.186</td>
-<td align="right">29681.23</td>
+<td align="right">10281.190</td>
+<td align="right">29681.22</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
@@ -381,10 +383,10 @@ scale.</p>
 <td align="left">biomass_pred</td>
 <td align="right">1982</td>
 <td align="right">9.846441</td>
-<td align="right">0.2155808</td>
+<td align="right">0.2155807</td>
 <td align="right">18891.00</td>
-<td align="right">12380.902</td>
-<td align="right">28824.23</td>
+<td align="right">12380.903</td>
+<td align="right">28824.22</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
@@ -400,8 +402,8 @@ scale.</p>
 <td align="right">9.924711</td>
 <td align="right">0.1784564</td>
 <td align="right">20429.01</td>
-<td align="right">14399.421</td>
-<td align="right">28983.43</td>
+<td align="right">14399.418</td>
+<td align="right">28983.42</td>
 <td align="right">26275.5</td>
 <td align="right">0.2006878</td>
 <td align="right">10.176392</td>
@@ -415,10 +417,10 @@ scale.</p>
 <td align="left">biomass_pred</td>
 <td align="right">1984</td>
 <td align="right">9.848307</td>
-<td align="right">0.1919367</td>
+<td align="right">0.1919366</td>
 <td align="right">18926.28</td>
-<td align="right">12992.373</td>
-<td align="right">27570.34</td>
+<td align="right">12992.375</td>
+<td align="right">27570.33</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
 <td align="right">NA</td>
@@ -467,7 +469,7 @@ perform model selection using AIC.</p>
 <span><span class="va">m1</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_rema.html">fit_rema</a></span><span class="op">(</span><span class="va">input1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Model runtime: 0.1 seconds </span></span>
 <span><span class="co">#&gt; stats::nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
-<span><span class="co">#&gt; Maximum gradient component: 9.81e-10 </span></span>
+<span><span class="co">#&gt; Maximum gradient component: 9.80e-10 </span></span>
 <span><span class="co">#&gt; Max gradient parameter: log_PE </span></span>
 <span><span class="co">#&gt; TMB:sdreport() was performed successfully for this model</span></span>
 <span><span class="va">output</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/tidy_rema.html">tidy_rema</a></span><span class="op">(</span>rema_model <span class="op">=</span> <span class="va">m1</span><span class="op">)</span></span>
@@ -542,7 +544,7 @@ perform model selection using AIC.</p>
 <td align="left">biomass_pred</td>
 <td align="right">1982</td>
 <td align="right">8.792938</td>
-<td align="right">0.4034013</td>
+<td align="right">0.4034014</td>
 <td align="right">6587.561</td>
 <td align="right">2987.781</td>
 <td align="right">14524.48</td>
@@ -562,7 +564,7 @@ perform model selection using AIC.</p>
 <td align="right">0.3847739</td>
 <td align="right">6587.561</td>
 <td align="right">3098.878</td>
-<td align="right">14003.76</td>
+<td align="right">14003.77</td>
 <td align="right">NA</td>
 <td align="right">9.000024</td>
 <td align="right">NA</td>
@@ -593,7 +595,7 @@ perform model selection using AIC.</p>
 <td align="left">biomass_pred</td>
 <td align="right">1985</td>
 <td align="right">8.792938</td>
-<td align="right">0.3445106</td>
+<td align="right">0.3445107</td>
 <td align="right">6587.561</td>
 <td align="right">3353.333</td>
 <td align="right">12941.14</td>
@@ -610,8 +612,8 @@ perform model selection using AIC.</p>
 <td align="left">biomass_pred</td>
 <td align="right">1986</td>
 <td align="right">8.792938</td>
-<td align="right">0.3224994</td>
-<td align="right">6587.560</td>
+<td align="right">0.3224995</td>
+<td align="right">6587.561</td>
 <td align="right">3501.165</td>
 <td align="right">12394.72</td>
 <td align="right">NA</td>
@@ -641,7 +643,7 @@ perform model selection using AIC.</p>
 <td align="right">1982</td>
 <td align="right">24821.5</td>
 <td align="right">11212.94</td>
-<td align="right">54946.07</td>
+<td align="right">54946.08</td>
 </tr>
 <tr class="even">
 <td align="left">TMB: single PE</td>
@@ -665,7 +667,7 @@ perform model selection using AIC.</p>
 <td align="right">1985</td>
 <td align="right">24821.5</td>
 <td align="right">11948.96</td>
-<td align="right">51561.54</td>
+<td align="right">51561.55</td>
 </tr>
 <tr class="odd">
 <td align="left">TMB: single PE</td>
@@ -673,7 +675,7 @@ perform model selection using AIC.</p>
 <td align="right">1986</td>
 <td align="right">24821.5</td>
 <td align="right">12220.35</td>
-<td align="right">50416.45</td>
+<td align="right">50416.46</td>
 </tr>
 </tbody>
 </table>
@@ -761,7 +763,7 @@ omit the <code>admb_re = admb_re</code> argument in the
 <span>                            admb_re <span class="op">=</span> <span class="va">admb_re</span><span class="op">)</span> </span>
 <span></span>
 <span><span class="va">m2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/fit_rema.html">fit_rema</a></span><span class="op">(</span><span class="va">input2</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Model runtime: 0.3 seconds </span></span>
+<span><span class="co">#&gt; Model runtime: 0.2 seconds </span></span>
 <span><span class="co">#&gt; stats::nlminb thinks the model has converged: mod$opt$convergence == 0</span></span>
 <span><span class="co">#&gt; Maximum gradient component: 2.31e-07 </span></span>
 <span><span class="co">#&gt; Max gradient parameter: log_PE </span></span>
@@ -792,7 +794,7 @@ omit the <code>admb_re = admb_re</code> argument in the
 <tbody>
 <tr class="odd">
 <td align="left">TMB: single PE</td>
-<td align="right">34.73785</td>
+<td align="right">34.73786</td>
 <td align="right">1</td>
 <td align="right">71.5</td>
 <td align="right">0.0</td>
@@ -848,7 +850,7 @@ omit the <code>admb_re = admb_re</code> argument in the
 <td align="right">0.1084952</td>
 <td align="right">0.0419428</td>
 <td align="right">0.0508566</td>
-<td align="right">0.2314587</td>
+<td align="right">0.2314588</td>
 </tr>
 <tr class="even">
 <td align="left">TMB: strata-specific PE</td>
