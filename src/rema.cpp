@@ -69,15 +69,6 @@ Type objective_function<Type>::operator() ()
   DATA_VECTOR(pmu_log_q); // normal prior
   DATA_VECTOR(psig_log_q);
 
-  // switch for estimating extra biomass cv (tau_biomass)
-  // DATA_INTEGER(extra_biomass_cv);
-  // DATA_INTEGER(extra_cpue_cv);
-
-  // upper bounds for extra cv on biomass or cpue survey observations, default =
-  // 1.5 (used to constrain tau parameter using the logit transformation)
-  // DATA_VECTOR(tau_biomass_upper);
-  // DATA_VECTOR(tau_cpue_upper);
-
   // data for one-step-ahead (OSA) residuals
   DATA_VECTOR(obsvec); // vector of all observations for OSA residuals
   DATA_VECTOR_INDICATOR(keep, obsvec); // for OSA residuals
@@ -92,19 +83,6 @@ Type objective_function<Type>::operator() ()
 
   PARAMETER_VECTOR(logit_tweedie_p); // tweedie power parameter (one for biomass survey and optional one for cpue survey)
   vector<Type> tweedie_p = Type(0.95) * invlogit(logit_tweedie_p) + Type(1.05);
-
-  // // extra cv (tau) for biomass and cpue observations
-  // PARAMETER_VECTOR(logit_tau_biomass);
-  // vector<Type> tau_biomass(logit_tau_biomass.size());
-  // for(int i = 0; i < logit_tau_biomass.size(); i++) {
-  //   tau_biomass(i) = tau_biomass_upper(i) / (Type(1.0) + exp(-logit_tau_biomass(i)));
-  // }
-  //
-  // PARAMETER_VECTOR(logit_tau_cpue);
-  // vector<Type> tau_cpue(logit_tau_cpue.size());
-  // for(int i = 0; i < logit_tau_cpue.size(); i++) {
-  //   tau_cpue(i) = tau_cpue_upper(i) / (Type(1.0) + exp(-logit_tau_cpue(i)));
-  // }
 
   // extra cv (tau) for biomass and cpue observations - originally this was
   // logit transformed but corrected to a log transformation in June 2024)
@@ -149,9 +127,8 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_biomass_sd(nyrs, n_strata_biomass);
   for(int i = 0; i < nyrs; i++) {
     for(int j = 0; j < n_strata_biomass; j++) {
-      log_biomass_sd(i,j) = biomass_cv(i,j) * biomass_cv(i,j) +
-        tau_biomass(pointer_extra_biomass_cv(j)) * tau_biomass(pointer_extra_biomass_cv(j)) +
-        Type(1.0);
+      // add additional observation error (tau) - convert arithmetic cv to log se
+      log_biomass_sd(i,j) = pow(biomass_cv(i,j) + tau_biomass(pointer_extra_biomass_cv(j)), 2) + Type(1.0);
       log_biomass_sd(i,j) = sqrt(log(log_biomass_sd(i,j)));
     }
   }
@@ -164,9 +141,8 @@ Type objective_function<Type>::operator() ()
   matrix<Type> log_cpue_sd(nyrs, n_strata_cpue);
   for(int i = 0; i < nyrs; i++) {
     for(int j = 0; j < n_strata_cpue; j++) {
-      log_cpue_sd(i,j) = cpue_cv(i,j) * cpue_cv(i,j) +
-        tau_cpue(pointer_extra_cpue_cv(j)) * tau_cpue(pointer_extra_cpue_cv(j)) +
-        Type(1.0);
+      // add additional observation error (tau) - convert arithmetic cv to log se
+      log_cpue_sd(i,j) = pow(cpue_cv(i,j) + tau_cpue(pointer_extra_cpue_cv(j)), 2) + Type(1.0);
       log_cpue_sd(i,j) = sqrt(log(log_cpue_sd(i,j)));
     }
   }
