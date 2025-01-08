@@ -264,12 +264,12 @@ exploitation is low.</p>
 observation error. This method is commonly implemented in Stock
 Synthesis, has been implemented in Alaskan crab stock assessments (Zheng
 and Siddeek 2020), and has been explored in several groundfish
-assessments as well. Using the biomass survey variance as an example,
-the extra estimated error
+assessments as well. Using the biomass survey as an example, the extra
+estimated error
 (<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>σ</mi><mi>τ</mi></msub><annotation encoding="application/x-tex">\sigma_{\tau}</annotation></semantics></math>)
 is specified as:</p>
-<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>σ</mi><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>B</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msub><mo>=</mo><msqrt><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>σ</mi><msub><mi>B</mi><mi>t</mi></msub></msub><msub><mi>B</mi><mi>t</mi></msub></mfrac><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo>+</mo><msup><msub><mi>σ</mi><mi>τ</mi></msub><mn>2</mn></msup><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msqrt><mi>.</mi></mrow><annotation encoding="application/x-tex">
-\sigma_{ln(B_t)}=\sqrt{ln((\frac{\sigma_{B_t}}{B_t})^2+{\sigma_{\tau}}^2+1)}.
+<p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>σ</mi><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>B</mi><mi>t</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msub><mo>=</mo><msqrt><mrow><mi>l</mi><mi>n</mi><mrow><mo stretchy="true" form="prefix">(</mo><msup><mrow><mo stretchy="true" form="prefix">(</mo><mfrac><msub><mi>σ</mi><msub><mi>B</mi><mi>t</mi></msub></msub><msub><mi>B</mi><mi>t</mi></msub></mfrac><mo>+</mo><msub><mi>σ</mi><mi>τ</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mn>2</mn></msup><mo>+</mo><mn>1</mn><mo stretchy="true" form="postfix">)</mo></mrow></mrow></msqrt><mi>.</mi></mrow><annotation encoding="application/x-tex">
+\sigma_{ln(B_t)}=\sqrt{ln((\frac{\sigma_{B_t}}{B_t}+{\sigma_{\tau}})^2+1)}.
 </annotation></semantics></math> This approach is a new method for Tier
 5 stock assessments and apportionment methods at the AFSC. A
 reproducible example with GOA shortraker is outlined in the <a href="https://afsc-assessments.github.io/rema/articles/ex2_cpue.html">Fitting
