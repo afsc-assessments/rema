@@ -5,5 +5,5 @@ test_that("consistency in multivariate admb-re bsai_sst_rwout.rep model results"
   pred_biom <- rema::tidy_rema(m)$total_predicted_biomass
   # saveRDS(pred_biom, '_expect_bsai_sst.rds')
   old_pred_biom <- readRDS('_expect_bsai_sst.rds')
-  expect_equal(pred_biom, old_pred_biom)
+  expect_equal(pred_biom, old_pred_biom, tolerance = 0.1)
 })

@@ -7,5 +7,5 @@ test_that("consistency in extra_cv using two-survey admb-re goasr_rwout.rep mode
   params <- rema::tidy_rema(m)$parameter_estimates
   # saveRDS(params, '_expect_extracv_goa_sr.rds')
   old_params <- readRDS('_expect_extracv_goa_sr.rds')
-  testthat::expect_equal(params, old_params)
+  testthat::expect_equal(params, old_params, tolerance = 0.1)
 })

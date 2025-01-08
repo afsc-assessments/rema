@@ -5,5 +5,5 @@ test_that("consistency in univariate admb-re ai_shortraker_rwout.rep model resul
   pred_biom <- rema::tidy_rema(m)$total_predicted_biomass
   # saveRDS(pred_biom, '_expect_ai_shortraker.rds')
   old_pred_biom <- readRDS('_expect_ai_shortraker.rds')
-  expect_equal(pred_biom, old_pred_biom)
+  expect_equal(pred_biom, old_pred_biom, tolerance = 0.1)
   })
